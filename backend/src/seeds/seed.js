@@ -12,6 +12,11 @@ import { Broker } from '../models/Broker.js';
 import { SalesOrder } from '../models/SalesOrder.js';
 import { Camera } from '../models/Camera.js';
 import { ProductionLog } from '../models/ProductionLog.js';
+import { Location } from '../models/Location.js';
+import { Roll } from '../models/Roll.js';
+import { RollMovement } from '../models/RollMovement.js';
+import { Counter } from '../models/Counter.js';
+import { demoLocations, getDemoRollsAndMovements } from './rollSeeds.js';
 import { connectDB } from '../config/db.js';
 import { logger } from '../utils/logger.js';
 
@@ -264,6 +269,28 @@ const seed = async () => {
       logger.info('✅ Seeded 50 looms, workers, alarms, stock, brokers, ready goods, cameras, and logs.');
     } else {
       logger.info(`ℹ️  Factory database already contains ${machineCount} machines.`);
+    }
+
+    // Seed master storage locations if not already present
+    const locationCount = await Location.countDocuments();
+    if (locationCount === 0) {
+      await Location.insertMany(demoLocations);
+      logger.info(`✅ Seeded ${demoLocations.length} storage & production locations.`);
+    }
+
+    // Seed demo rolls and movement ledger if not already present
+    const rollCount = await Roll.countDocuments();
+    if (rollCount === 0) {
+      const year = new Date().getFullYear();
+      const { rolls, movements } = getDemoRollsAndMovements(admin?._id);
+      await Roll.insertMany(rolls);
+      await RollMovement.insertMany(movements);
+      await Counter.findOneAndUpdate(
+        { key: `roll-${year}` },
+        { $set: { seq: rolls.length } },
+        { upsert: true }
+      );
+      logger.info(`✅ Seeded ${rolls.length} demo fabric rolls with full movement histories.`);
     }
 
     logger.info(`========================================================`);

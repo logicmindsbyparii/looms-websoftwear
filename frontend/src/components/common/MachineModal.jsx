@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { api } from '../../api/client';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LoomVisual from './LoomVisual';
@@ -17,7 +18,8 @@ import {
   Layers,
   User,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  QrCode
 } from 'lucide-react';
 
 export default function MachineModal() {
@@ -27,16 +29,24 @@ export default function MachineModal() {
     machines,
     updateMachineStatus,
     showToast,
-    addProductionLog
+    addProductionLog,
+    setInspectRollCode
   } = useApp();
   const { t } = useTranslation();
 
   const [addMetersInput, setAddMetersInput] = useState('');
   const [defectType, setDefectType] = useState('None');
-
-  if (!selectedMachineId) return null;
+  const [machineRolls, setMachineRolls] = useState([]);
 
   const machine = machines.find(m => m.id === selectedMachineId);
+
+  useEffect(() => {
+    if (machine?.id) {
+      api.get(`/rolls?machineId=${machine.id}&limit=4`)
+        .then(res => setMachineRolls(res.data || []))
+        .catch(() => {});
+    }
+  }, [machine?.id]);
   if (!machine) return null;
 
   const handleAddProduction = (e) => {
@@ -250,6 +260,45 @@ export default function MachineModal() {
               </button>
             </div>
           </form>
+
+          {/* Recent Fabric Rolls from this Loom */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+              <span className="flex items-center gap-1.5">
+                <QrCode className="w-4 h-4 text-blue-600" />
+                <span>Recent Rolls Cut From This Loom ({machineRolls.length})</span>
+              </span>
+              <span className="text-[11px] text-slate-700 font-mono">Roll QR Ledger</span>
+            </div>
+
+            {machineRolls.length === 0 ? (
+              <p className="text-xs text-slate-700 py-1">No tracked rolls cut from this loom yet.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {machineRolls.map(r => (
+                  <div
+                    key={r._id || r.id}
+                    onClick={() => {
+                      setSelectedMachineId(null);
+                      setInspectRollCode(r.id);
+                    }}
+                    className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <div className="font-mono font-bold text-slate-900">{r.id}</div>
+                      <div className="text-[10px] text-slate-700">{r.fabric}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono font-black text-slate-800">{Number(r.metres).toFixed(1)}m</div>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                        {r.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>,

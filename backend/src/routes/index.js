@@ -13,8 +13,14 @@ import productionLogRoutes from './productionLogRoutes.js';
 import settingsRoutes from './settingsRoutes.js';
 import auditRoutes from './auditRoutes.js';
 import dataRoutes from './dataRoutes.js';
+import rollRoutes from './rollRoutes.js';
+import locationRoutes from './locationRoutes.js';
+import publicRollRoutes from './publicRollRoutes.js';
 
 const router = Router();
+
+// Public routes (no auth required)
+router.use('/public/rolls', publicRollRoutes);
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
@@ -30,6 +36,8 @@ router.use('/production-logs', productionLogRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/audit', auditRoutes);
 router.use('/data', dataRoutes);
+router.use('/rolls', rollRoutes);
+router.use('/locations', locationRoutes);
 
 export default router;
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from '../../api/client';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import StatCard from '../common/StatCard';
@@ -14,7 +15,8 @@ import {
   Users,
   Plus,
   MessageSquare,
-  Trash2
+  Trash2,
+  QrCode
 } from 'lucide-react';
 
 export default function SalesView() {
@@ -32,6 +34,7 @@ export default function SalesView() {
     adminWhatsAppPhone,
     salesWhatsAppPhone,
     openWhatsAppShare,
+    setActiveTab,
     showToast
   } = useApp();
   const { t } = useTranslation();
@@ -62,6 +65,29 @@ export default function SalesView() {
   // Totals
   const totalReadyMeters = readyGoods.reduce((acc, g) => acc + (g.qty || 0), 0);
   const totalOrderValue = salesOrders.reduce((acc, o) => acc + (o.total || 0), 0);
+
+  const handleBulkGenerateRolls = async (lot) => {
+    try {
+      const rollsCount = lot.rollCount || Math.max(1, Math.round(lot.qty / 100));
+      const metresPerRoll = Math.round((lot.qty / rollsCount) * 100) / 100;
+      const rollsData = Array.from({ length: rollsCount }, () => ({
+        metres: metresPerRoll,
+        quality: lot.quality,
+        fabric: lot.fabric
+      }));
+
+      const res = await api.post('/rolls/bulk', {
+        machineId: 'M-01',
+        lotId: lot.id,
+        rollsData
+      });
+
+      showToast(`Generated ${res.data.length} individual roll QRs for lot ${lot.id}!`, 'success');
+      setActiveTab('rolls');
+    } catch (err) {
+      showToast(err.message || 'Failed to generate roll QRs', 'error');
+    }
+  };
 
   const handleAddReadyGoods = (e) => {
     e.preventDefault();
@@ -304,6 +330,13 @@ export default function SalesView() {
                   </td>
                   <td className="py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => handleBulkGenerateRolls(g)}
+                        className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded transition-colors"
+                        title="Generate Individual Roll QRs from this lot"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         onClick={() => {
                           const msg = buildReadyGoodsMessage(g);

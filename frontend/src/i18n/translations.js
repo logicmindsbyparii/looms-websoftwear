@@ -27,6 +27,8 @@ export const TRANSLATIONS = {
       "rawmaterial": "Raw Material & Yarn",
       "sales": "Sales & Ready Goods",
       "analytics": "Analytics & Reports",
+      "rolls": "Rolls & QR Tracking",
+      "scanQr": "Scan QR",
       "users": "User Accounts",
       "activeLooms": "ACTIVE LOOMS",
       "millStatus": "MILL STATUS"
@@ -461,6 +463,8 @@ export const TRANSLATIONS = {
       "rawmaterial": "કાચો માલ અને યાર્ન",
       "sales": "વેચાણ અને તૈયાર માલ",
       "analytics": "વિશ્લેષણ અને અહેવાલ",
+      "rolls": "રોલ્સ અને QR ટ્રેકિંગ",
+      "scanQr": "QR સ્કેન કરો",
       "users": "વપરાશકર્તા ખાતાઓ",
       "activeLooms": "સક્રિય લૂમ",
       "millStatus": "મિલ સ્થિતિ"
@@ -895,6 +899,8 @@ export const TRANSLATIONS = {
       "rawmaterial": "कच्चा माल एवं धागा",
       "sales": "बिक्री एवं तैयार माल",
       "analytics": "विश्लेषण एवं रिपोर्ट",
+      "rolls": "रोल्स और QR ट्रैकिंग",
+      "scanQr": "QR स्कैन करें",
       "users": "उपयोगकर्ता खाते",
       "activeLooms": "सक्रिय लूम",
       "millStatus": "मिल स्थिति"
@@ -1329,6 +1335,8 @@ export const TRANSLATIONS = {
       "rawmaterial": "कच्चा माल आणि सूत",
       "sales": "विक्री आणि तयार माल",
       "analytics": "विश्लेषण आणि अहवाल",
+      "rolls": "रोल्स आणि QR ट्रॅकिंग",
+      "scanQr": "QR स्कॅन करा",
       "users": "वापरकर्ता खाती",
       "activeLooms": "सक्रिय लूम",
       "millStatus": "गिरणी स्थिती"

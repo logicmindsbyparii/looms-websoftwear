@@ -398,3 +398,74 @@ export function buildDailyAdminExecutiveReport({ machines = [], productionLogs =
 ========================================
 🚀 *LOOMUS 2.0 Smart Textile Suite*`;
 }
+
+export function buildRollMessage(roll, publicUrl = '') {
+  const lang = getCurrentLang();
+  const url = publicUrl || `${window.location.origin}/?roll=${roll.qrToken || roll.id}`;
+  const metresStr = `${Number(roll.metres).toFixed(2)}m`;
+  const machineStr = roll.machineName || roll.machineId || 'Loom';
+  const locationStr = roll.locationId || 'Floor';
+
+  if (lang === 'gu') {
+    return `🏷️ *LOOMUS ટેક્સટાઇલ — તાકા રોલ વિગતો*
+🆔 *રોલ ID:* ${roll.id}
+🧵 *કાપડ:* ${roll.fabric}
+✨ *ગુણવત્તા:* ${roll.quality || 'A-Grade'}
+📏 *લંબાઈ:* ${metresStr}
+🏭 *લૂમ:* ${machineStr}
+📍 *સ્થાન:* ${locationStr}
+🟢 *સ્થિતિ:* ${roll.status}
+----------------------------------------
+📲 *QR ચકાસણી લિંક:*
+${url}
+----------------------------------------
+✅ LOOMUS 2.0 રોલ ટ્રેકિંગ`;
+  }
+
+  if (lang === 'hi') {
+    return `🏷️ *LOOMUS टेक्सटाइल — ताका रोल विवरण*
+🆔 *रोल ID:* ${roll.id}
+🧵 *कपड़ा:* ${roll.fabric}
+✨ *गुणवत्ता:* ${roll.quality || 'A-Grade'}
+📏 *लंबाई:* ${metresStr}
+🏭 *लूम मशीन:* ${machineStr}
+📍 *स्थान:* ${locationStr}
+🟢 *स्थिति:* ${roll.status}
+----------------------------------------
+📲 *QR सत्यापन लिंक:*
+${url}
+----------------------------------------
+✅ LOOMUS 2.0 रोल ट्रैकिंग`;
+  }
+
+  if (lang === 'mr') {
+    return `🏷️ *LOOMUS टेक्सटाईल — ताका रोल तपशील*
+🆔 *रोल ID:* ${roll.id}
+🧵 *कापड:* ${roll.fabric}
+✨ *दर्जा:* ${roll.quality || 'A-Grade'}
+📏 *लांबी:* ${metresStr}
+🏭 *लूम मशीन:* ${machineStr}
+📍 *स्थान:* ${locationStr}
+🟢 *स्थिती:* ${roll.status}
+----------------------------------------
+📲 *QR पडताळणी लिंक:*
+${url}
+----------------------------------------
+✅ LOOMUS 2.0 रोल ट्रॅकिंग`;
+  }
+
+  return `🏷️ *LOOMUS TEXTILE — FABRIC ROLL DETAILS*
+🆔 *Roll ID:* ${roll.id}
+🧵 *Fabric:* ${roll.fabric}
+✨ *Quality:* ${roll.quality || 'A-Grade (Export)'}
+📏 *Length:* ${metresStr}
+🏭 *Loom:* ${machineStr}
+📍 *Location:* ${locationStr}
+🟢 *Status:* ${roll.status}
+----------------------------------------
+📲 *Verify & Track QR:*
+${url}
+----------------------------------------
+✅ LOOMUS 2.0 Roll QR Tracking`;
+}
+

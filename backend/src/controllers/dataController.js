@@ -7,6 +7,11 @@ import { Broker } from '../models/Broker.js';
 import { SalesOrder } from '../models/SalesOrder.js';
 import { Camera } from '../models/Camera.js';
 import { ProductionLog } from '../models/ProductionLog.js';
+import { Location } from '../models/Location.js';
+import { Roll } from '../models/Roll.js';
+import { RollMovement } from '../models/RollMovement.js';
+import { Counter } from '../models/Counter.js';
+import { demoLocations, getDemoRollsAndMovements } from '../seeds/rollSeeds.js';
 import { User } from '../models/User.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
@@ -55,7 +60,10 @@ export const exportData = asyncHandler(async (req, res) => {
     Broker.find(),
     SalesOrder.find(),
     Camera.find(),
-    ProductionLog.find()
+    ProductionLog.find(),
+    Location.find(),
+    Roll.find(),
+    RollMovement.find()
   ]);
 
   const backup = {
@@ -68,6 +76,9 @@ export const exportData = asyncHandler(async (req, res) => {
     salesOrders,
     cameras,
     productionLogs,
+    locations,
+    rolls,
+    rollMovements,
     exportedAt: new Date().toISOString()
   };
 
@@ -121,6 +132,18 @@ export const importData = asyncHandler(async (req, res) => {
     await ProductionLog.deleteMany({});
     if (data.productionLogs.length > 0) await ProductionLog.insertMany(data.productionLogs);
   }
+  if (Array.isArray(data.locations)) {
+    await Location.deleteMany({});
+    if (data.locations.length > 0) await Location.insertMany(data.locations);
+  }
+  if (Array.isArray(data.rolls)) {
+    await Roll.deleteMany({});
+    if (data.rolls.length > 0) await Roll.insertMany(data.rolls);
+  }
+  if (Array.isArray(data.rollMovements)) {
+    await RollMovement.deleteMany({ __forceLedgerPurge: true });
+    if (data.rollMovements.length > 0) await RollMovement.insertMany(data.rollMovements);
+  }
 
   await logAuditEvent({
     action: 'DATA_BACKUP_IMPORT',
@@ -143,7 +166,10 @@ export const loadDemoData = asyncHandler(async (req, res) => {
     Broker.deleteMany({}),
     SalesOrder.deleteMany({}),
     Camera.deleteMany({}),
-    ProductionLog.deleteMany({})
+    ProductionLog.deleteMany({}),
+    Location.deleteMany({}),
+    Roll.deleteMany({}),
+    RollMovement.deleteMany({ __forceLedgerPurge: true })
   ]);
 
   // Generate 50 Demo Machines
@@ -256,6 +282,9 @@ export const loadDemoData = asyncHandler(async (req, res) => {
     { id: 'PR-902', time: '10:45 AM', machine: 'M-12', fabric: 'Cotton 40s Combed', shift: 'Morning', output: 68, target: 70, quality: 'A-Grade (Export)', defects: 0.2, operator: 'Prakash Rathod' }
   ];
 
+  const { rolls: demoRolls, movements: demoMovements } = getDemoRollsAndMovements(req.user?._id);
+  const year = new Date().getFullYear();
+
   await Promise.all([
     Machine.insertMany(demoMachines),
     Worker.insertMany(demoWorkers),
@@ -265,7 +294,11 @@ export const loadDemoData = asyncHandler(async (req, res) => {
     ReadyGoods.insertMany(demoReadyGoods),
     SalesOrder.insertMany(demoSalesOrders),
     Camera.insertMany(demoCameras),
-    ProductionLog.insertMany(demoProductionLogs)
+    ProductionLog.insertMany(demoProductionLogs),
+    Location.insertMany(demoLocations),
+    Roll.insertMany(demoRolls),
+    RollMovement.insertMany(demoMovements),
+    Counter.findOneAndUpdate({ key: `roll-${year}` }, { $set: { seq: demoRolls.length } }, { upsert: true })
   ]);
 
   await logAuditEvent({
@@ -300,7 +333,10 @@ export const clearAllData = asyncHandler(async (req, res) => {
     Broker.deleteMany({}),
     SalesOrder.deleteMany({}),
     Camera.deleteMany({}),
-    ProductionLog.deleteMany({})
+    ProductionLog.deleteMany({}),
+    Location.deleteMany({}),
+    Roll.deleteMany({}),
+    RollMovement.deleteMany({ __forceLedgerPurge: true })
   ]);
 
   await logAuditEvent({

@@ -49,6 +49,9 @@ export function AppProvider({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [inspectRollCode, setInspectRollCode] = useState(null);
+  const [activeLabelRoll, setActiveLabelRoll] = useState(null);
 
   // Idle Timeout Warning Modal State
   const [idleWarning, setIdleWarning] = useState({ show: false, countdown: 60 });
@@ -261,6 +264,14 @@ export function AppProvider({ children }) {
 
     socket.on('production_log:deleted', ({ id }) => {
       setProductionLogs(prev => prev.filter(l => l.id !== id));
+    });
+
+    socket.on('roll:created', (roll) => {
+      showToast(`Roll ${roll.id} (${roll.fabric}) created`, 'info');
+    });
+
+    socket.on('roll:updated', (roll) => {
+      // Roll status or location updated
     });
 
     socket.on('factory:data_reloaded', () => {
@@ -979,6 +990,12 @@ export function AppProvider({ children }) {
     isMobileMenuOpen,
     isWhatsAppModalOpen,
     isUsersModalOpen,
+    isScanModalOpen,
+    setIsScanModalOpen,
+    inspectRollCode,
+    setInspectRollCode,
+    activeLabelRoll,
+    setActiveLabelRoll,
     idleWarning,
     stayLoggedIn,
     setIsDataManagerOpen,

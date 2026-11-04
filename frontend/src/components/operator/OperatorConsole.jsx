@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from '../../api/client';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LoomVisual from '../common/LoomVisual';
@@ -20,7 +21,8 @@ import {
   Scissors,
   Plus,
   Cpu,
-  MessageSquare
+  MessageSquare,
+  QrCode
 } from 'lucide-react';
 
 export default function OperatorConsole() {
@@ -32,6 +34,7 @@ export default function OperatorConsole() {
     updateMachineStatus,
     addProductionLog,
     setIsAddMachineOpen,
+    setActiveLabelRoll,
     adminWhatsAppPhone,
     showToast
   } = useApp();
@@ -94,6 +97,23 @@ export default function OperatorConsole() {
       defects: 0.2,
       operator: currentMachine.operator || 'Loom Operator'
     });
+  };
+
+  const handleCutRollAndPrint = async () => {
+    try {
+      const outputMeters = currentMachine.output && currentMachine.output > 0 ? currentMachine.output : 50;
+      const res = await api.post('/rolls', {
+        machineId: currentMachine.id,
+        metres: outputMeters,
+        fabric: currentMachine.fabric,
+        quality: 'A-Grade (Export)',
+        shift: 'Morning'
+      });
+      showToast(`Roll ${res.data.id} cut & registered! Opening QR sticker...`, 'success');
+      setActiveLabelRoll(res.data);
+    } catch (err) {
+      showToast(err.message || 'Failed to cut roll', 'error');
+    }
   };
 
   return (
@@ -309,13 +329,23 @@ export default function OperatorConsole() {
               </div>
             </div>
 
-            <button
-              onClick={handleLogRoll}
-              className="w-full mt-5 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-sky-600/20 flex items-center justify-center gap-2"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              {t('operator.logFinishedRoll')}
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-5">
+              <button
+                onClick={handleLogRoll}
+                className="py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-sky-600/20 flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                {t('operator.logFinishedRoll')}
+              </button>
+
+              <button
+                onClick={handleCutRollAndPrint}
+                className="py-3 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2"
+              >
+                <QrCode className="w-4 h-4" />
+                <span>Cut Roll & Print QR</span>
+              </button>
+            </div>
           </div>
 
           {/* Speed & Air Jet Sliders */}

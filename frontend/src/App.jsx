@@ -28,12 +28,18 @@ import RawMaterialView from './components/views/RawMaterialView';
 import SalesView from './components/views/SalesView';
 import AnalyticsView from './components/views/AnalyticsView';
 import UsersView from './components/views/UsersView';
+import RollsView from './components/views/RollsView';
+import PublicRollPage from './components/rolls/PublicRollPage';
+import ScanModal from './components/scanner/ScanModal';
+import RollDetailModal from './components/rolls/RollDetailModal';
+import RollQrLabel from './components/rolls/RollQrLabel';
+import { useHardwareScanner } from './hooks/useHardwareScanner';
 import { Clock } from 'lucide-react';
 
 // Role-Based Access Control (RBAC) Tab Whitelists
 const ROLE_ALLOWED_TABS = {
-  Admin: ['dashboard', 'machines', 'control', 'production', 'camera', 'alarms', 'workers', 'rawmaterial', 'sales', 'analytics', 'users'],
-  Supervisor: ['supervisor-floor', 'machines', 'production', 'alarms', 'workers', 'camera', 'rawmaterial'],
+  Admin: ['dashboard', 'machines', 'control', 'production', 'camera', 'alarms', 'workers', 'rawmaterial', 'sales', 'analytics', 'users', 'rolls'],
+  Supervisor: ['supervisor-floor', 'machines', 'production', 'alarms', 'workers', 'camera', 'rawmaterial', 'rolls'],
   Operator: ['operator-console', 'machines', 'production', 'alarms']
 };
 
@@ -52,9 +58,32 @@ export default function App() {
     userRole,
     idleWarning,
     stayLoggedIn,
-    logout
+    logout,
+    isScanModalOpen,
+    setIsScanModalOpen,
+    inspectRollCode,
+    setInspectRollCode,
+    activeLabelRoll,
+    setActiveLabelRoll
   } = useApp();
   const { t } = useTranslation();
+  const [forceLogin, setForceLogin] = React.useState(false);
+
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const urlRollCode = searchParams ? searchParams.get('roll') : null;
+
+  // Global hardware scanner listener
+  useHardwareScanner((code) => {
+    setInspectRollCode(code);
+  });
+
+  // Deep linking when authenticated: open roll detail and clean URL
+  React.useEffect(() => {
+    if (urlRollCode && isAuthenticated) {
+      setInspectRollCode(urlRollCode);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [urlRollCode, isAuthenticated, setInspectRollCode]);
 
   if (isAuthLoading) {
     return (
@@ -66,6 +95,11 @@ export default function App() {
         <div className="text-xs text-slate-400 font-mono tracking-widest uppercase mt-1">{t('common.loading')}</div>
       </div>
     );
+  }
+
+  // Public unauthenticated QR roll scan page
+  if (urlRollCode && !isAuthenticated && !forceLogin) {
+    return <PublicRollPage rollCode={urlRollCode} onGoToLogin={() => setForceLogin(true)} />;
   }
 
   if (!isAuthenticated) {
@@ -117,6 +151,8 @@ export default function App() {
         return userRole === 'Admin' ? <AnalyticsView /> : <SupervisorFloor />;
       case 'users':
         return userRole === 'Admin' ? <UsersView /> : <DashboardView />;
+      case 'rolls':
+        return <RollsView onOpenScan={() => setIsScanModalOpen(true)} />;
       default:
         return userRole === 'Admin' ? <DashboardView /> : userRole === 'Supervisor' ? <SupervisorFloor /> : <OperatorConsole />;
     }
@@ -146,6 +182,28 @@ export default function App() {
       <WhatsAppConfigModal />
       <WhatsAppShareModal />
       <FloatingWhatsApp />
+
+      {/* Roll QR Scanner & Detail Modals */}
+      <ScanModal
+        isOpen={isScanModalOpen}
+        onClose={() => setIsScanModalOpen(false)}
+        onScanSuccess={(code) => {
+          setIsScanModalOpen(false);
+          setInspectRollCode(code);
+        }}
+      />
+      {inspectRollCode && (
+        <RollDetailModal
+          rollCode={inspectRollCode}
+          onClose={() => setInspectRollCode(null)}
+        />
+      )}
+      {activeLabelRoll && (
+        <RollQrLabel
+          roll={activeLabelRoll}
+          onClose={() => setActiveLabelRoll(null)}
+        />
+      )}
 
       {/* Idle Timeout Warning Modal */}
       {idleWarning?.show && createPortal(

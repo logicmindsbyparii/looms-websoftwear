@@ -19,3 +19,16 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false
 });
 
+export const publicRollLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 60, // max 60 requests per 5 minutes
+  message: {
+    success: false,
+    errorCode: 'PUBLIC_ROLL_RATE_LIMIT_EXCEEDED',
+    message: 'Too many scan requests from this IP address, please try again in a few minutes'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+

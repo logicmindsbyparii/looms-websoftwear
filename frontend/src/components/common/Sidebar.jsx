@@ -20,7 +20,8 @@ import {
   X,
   Plus,
   Database,
-  UserCheck
+  UserCheck,
+  QrCode
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -55,6 +56,7 @@ export default function Sidebar() {
     { id: 'workers', label: t('nav.workers'), icon: Users },
     { id: 'rawmaterial', label: t('nav.rawmaterial'), icon: Layers },
     { id: 'sales', label: t('nav.sales'), icon: Briefcase },
+    { id: 'rolls', label: t('nav.rolls') || 'Rolls & QR Tracking', icon: QrCode },
     { id: 'analytics', label: t('nav.analytics'), icon: TrendingUp },
     { id: 'users', label: t('nav.users'), icon: UserCheck }
   ];
@@ -67,6 +69,7 @@ export default function Sidebar() {
     { id: 'workers', label: t('nav.workers'), icon: Users },
     { id: 'camera', label: t('nav.camera'), icon: Camera },
     { id: 'rawmaterial', label: t('nav.rawmaterial'), icon: Layers },
+    { id: 'rolls', label: t('nav.rolls') || 'Rolls & QR Tracking', icon: QrCode },
   ];
 
   const operatorNav = [

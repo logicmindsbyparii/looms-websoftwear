@@ -8,8 +8,10 @@ import {
   SlidersHorizontal,
   Menu,
   ChevronDown,
+  MessageSquare,
   Users,
-  Eye
+  Eye,
+  QrCode
 } from 'lucide-react';
 
 export default function Header() {
@@ -23,6 +25,9 @@ export default function Header() {
     logout,
     isMobileMenuOpen,
     setIsMobileMenuOpen,
+    setIsWhatsAppModalOpen,
+    setIsScanModalOpen,
+    adminWhatsAppPhone,
     isPreviewMode
   } = useApp();
   const { t } = useTranslation();
@@ -55,43 +60,53 @@ export default function Header() {
             </span>
             <span>
               {machines.length > 0
-                ? `${runningCount}/${machines.length} ACTIVE LOOMS`
-                : t('app.allSystemsNominal')}
+                ? `${runningCount}/${machines.length} ${t('nav.activeLooms')}`
+                : `0/0 ${t('nav.activeLooms')}`}
             </span>
           </div>
         </div>
 
-        {/* Right Action Icons & Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Language Switcher */}
+        {/* Right Side: Language Switcher + Critical Alarm + User Profile + Scan QR + WhatsApp */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* Multi-Language Dropdown */}
           <LanguageSwitcher />
 
-          {/* Alarm Bell with Counter */}
+          {/* Critical Alarm Bell Notification */}
           <button
             onClick={() => setActiveTab('alarms')}
-            className="relative p-1.5 sm:p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
-            title="Active Alarms"
-            aria-label="Active Alarms"
+            className={`relative p-2 rounded-xl transition-all ${
+              criticalAlarmsCount > 0
+                ? 'bg-rose-50 text-rose-600 border border-rose-200 animate-pulse'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+            title="Active Loom Breakage & Quality Alarms"
+            aria-label="Active Loom Alarms"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
             {alarms.length > 0 && (
-              <span className={`absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold text-white ${criticalAlarmsCount > 0 ? 'bg-rose-600 animate-bounce' : 'bg-amber-500'}`}>
+              <span className={`absolute -top-1 -right-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full text-white ${
+                criticalAlarmsCount > 0 ? 'bg-rose-600' : 'bg-amber-500'
+              }`}>
                 {alarms.length}
               </span>
             )}
           </button>
 
-          {/* User Profile & Dropdown */}
-          <div className="relative flex items-center gap-1 pl-1 sm:pl-2 border-l border-slate-200">
+          {/* User Profile Pill Menu */}
+          <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-1.5 p-1 rounded-xl hover:bg-slate-100 transition-colors"
-              title={currentUser.displayName}
+              className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-sm"
+              title="User Account Options"
+              aria-label="User Account Options"
             >
-              <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center shadow-md shadow-sky-500/20">
-                {currentUser.avatar || currentUser.displayName?.[0] || 'U'}
+              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[11px] font-bold">
+                {currentUser?.displayName?.[0] || 'A'}
               </div>
-              <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
+              <span className="text-xs font-bold tracking-tight font-mono">
+                {userRole === 'Admin' ? 'Admin' : userRole === 'Supervisor' ? 'Supervisor' : 'Operator'}
+              </span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </button>
 
             {/* User Dropdown Menu */}
@@ -176,6 +191,28 @@ export default function Header() {
               </div>
             )}
           </div>
+
+          {/* Scan QR Button */}
+          <button
+            onClick={() => setIsScanModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-300 text-blue-800 rounded-xl font-bold text-xs transition-all shadow-2xs shrink-0"
+            title="Scan Roll QR or Barcode"
+            aria-label="Scan QR"
+          >
+            <QrCode className="w-3.5 h-3.5 text-blue-600" />
+            <span className="hidden sm:inline">Scan QR</span>
+          </button>
+
+          {/* WhatsApp Direct Reporting Button in the Right Side Corner */}
+          <button
+            onClick={() => setIsWhatsAppModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-xl font-bold text-xs transition-all shadow-2xs shrink-0"
+            title={`Configure WhatsApp Alerts & Reports (Admin: ${adminWhatsAppPhone})`}
+            aria-label="Configure WhatsApp"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600" />
+            <span className="hidden sm:inline">WhatsApp</span>
+          </button>
         </div>
       </div>
     </header>

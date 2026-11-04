@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "html5-qrcode": "^2.3.8",
+    "jsbarcode": "^3.12.3",
     "lucide-react": "^0.460.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "socket.io-client": "^4.8.1",
@@ -26,4 +29,3 @@
     "vite": "^5.4.11"
   }
 }
-
