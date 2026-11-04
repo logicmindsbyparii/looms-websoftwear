@@ -9,7 +9,7 @@ import { RollMovement } from '../src/models/RollMovement.js';
 import { Counter } from '../src/models/Counter.js';
 import bcrypt from 'bcryptjs';
 
-const TEST_MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/loomus_test_db';
+const TEST_MONGO_URI = process.env.TEST_MONGO_URI || 'mongodb://127.0.0.1:27017/loomus_test_db';
 
 describe('LOOMUS 2.0 Roll QR Tracking & Ledger Tests', () => {
   let adminToken = '';

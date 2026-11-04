@@ -5,7 +5,7 @@ import { User } from '../src/models/User.js';
 import { RefreshToken } from '../src/models/RefreshToken.js';
 import bcrypt from 'bcryptjs';
 
-const TEST_MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/loomus_test_db';
+const TEST_MONGO_URI = process.env.TEST_MONGO_URI || 'mongodb://127.0.0.1:27017/loomus_test_db';
 
 beforeAll(async () => {
   await mongoose.connect(TEST_MONGO_URI);

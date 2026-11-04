@@ -24,7 +24,8 @@ export default function LoginScreen() {
 
   const [selectedRole, setSelectedRole] = useState('Admin');
   const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('');
+  const DEFAULT_PASSWORDS = { Admin: 'Admin@Loomus2026!', Supervisor: 'Supervisor@Loomus2026!', Operator: 'Operator@Loomus2026!' };
+  const [password, setPassword] = useState('Admin@Loomus2026!');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -57,9 +58,8 @@ export default function LoginScreen() {
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
-    if (!username || username === 'admin' || username === 'supervisor' || username === 'operator') {
-      setUsername(role.toLowerCase());
-    }
+    setUsername(role.toLowerCase());
+    setPassword(DEFAULT_PASSWORDS[role] || 'Admin@Loomus2026!');
   };
 
   const handleLoginSubmit = async (e) => {
