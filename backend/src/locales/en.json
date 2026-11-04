@@ -1,0 +1,18 @@
+{
+  "AUTH_INVALID_CREDENTIALS": "Invalid username or password",
+  "AUTH_ACCOUNT_LOCKED": "Account is temporarily locked due to multiple failed attempts. Please try again later.",
+  "AUTH_ACCOUNT_DEACTIVATED": "Account has been deactivated. Please contact your mill manager.",
+  "AUTH_PORTAL_FORBIDDEN": "You do not have permission to access this portal with your current role.",
+  "AUTH_TOKEN_MISSING": "Authentication token missing or invalid",
+  "AUTH_TOKEN_EXPIRED": "Session expired, please login again",
+  "AUTH_2FA_REQUIRED": "Two-factor authentication code required",
+  "AUTH_2FA_CODE_INVALID": "Invalid 2FA verification code",
+  "AUTH_WEAK_PASSWORD": "Password does not meet complexity requirements",
+  "AUTH_PASSWORD_INCORRECT": "Incorrect password provided",
+  "STOCK_INSUFFICIENT": "Insufficient stock available",
+  "STOCK_NEGATIVE_FORBIDDEN": "Stock balance cannot fall below zero",
+  "MACHINE_NOT_FOUND": "Loom machine not found",
+  "ORDER_NOT_FOUND": "Sales order not found",
+  "CANNOT_DEMOTE_LAST_ADMIN": "Cannot demote or deactivate the last remaining active Administrator"
+}
+
