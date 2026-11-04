@@ -85,6 +85,16 @@ export default function App() {
     }
   }, [urlRollCode, isAuthenticated, setInspectRollCode]);
 
+  const allowedTabs = ROLE_ALLOWED_TABS[userRole] || ROLE_ALLOWED_TABS.Operator;
+  const isTabAllowed = allowedTabs.includes(activeTab);
+
+  // Auto-redirect if tab is not permitted for the user's role
+  React.useEffect(() => {
+    if (isAuthenticated && !allowedTabs.includes(activeTab)) {
+      setActiveTab(ROLE_DEFAULT_TAB[userRole] || 'operator-console');
+    }
+  }, [isAuthenticated, activeTab, userRole, allowedTabs, setActiveTab]);
+
   if (isAuthLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4">
@@ -111,15 +121,7 @@ export default function App() {
     );
   }
 
-  const allowedTabs = ROLE_ALLOWED_TABS[userRole] || ROLE_ALLOWED_TABS.Operator;
-  const isTabAllowed = allowedTabs.includes(activeTab);
 
-  // Auto-redirect if tab is not permitted for the user's role
-  React.useEffect(() => {
-    if (!allowedTabs.includes(activeTab)) {
-      setActiveTab(ROLE_DEFAULT_TAB[userRole] || 'operator-console');
-    }
-  }, [activeTab, userRole, allowedTabs, setActiveTab]);
 
   const renderActiveView = () => {
     const currentTab = isTabAllowed ? activeTab : (ROLE_DEFAULT_TAB[userRole] || 'operator-console');
