@@ -37,19 +37,19 @@ export default function DashboardView() {
   } = useApp();
   const { t } = useTranslation();
 
-  const runningLooms = machines.filter(m => m.status === 'running').length;
-  const stoppedLooms = machines.filter(m => m.status === 'stopped').length;
-  const idleLooms = machines.filter(m => m.status === 'idle' || m.status === 'maintenance').length;
+  const runningLooms = (machines || []).filter(m => m?.status === 'running').length;
+  const stoppedLooms = (machines || []).filter(m => m?.status === 'stopped').length;
+  const idleLooms = (machines || []).filter(m => m?.status === 'idle' || m?.status === 'maintenance').length;
 
-  const totalMetersToday = machines.reduce((acc, m) => acc + (m.output || 0), 0);
+  const totalMetersToday = (machines || []).reduce((acc, m) => acc + (m?.output || 0), 0);
   const avgEfficiency = runningLooms > 0
-    ? Math.round(machines.filter(m => m.status === 'running').reduce((acc, m) => acc + (m.efficiency || 0), 0) / runningLooms)
+    ? Math.round((machines || []).filter(m => m?.status === 'running').reduce((acc, m) => acc + (m?.efficiency || 0), 0) / runningLooms)
     : 0;
 
-  const shedACount = machines.filter(m => m.shed?.toLowerCase().includes('shed a') && m.status === 'running').length;
-  const shedBCount = machines.filter(m => m.shed?.toLowerCase().includes('shed b') && m.status === 'running').length;
+  const shedACount = (machines || []).filter(m => m?.shed?.toLowerCase().includes('shed a') && m?.status === 'running').length;
+  const shedBCount = (machines || []).filter(m => m?.shed?.toLowerCase().includes('shed b') && m?.status === 'running').length;
 
-  const topMachines = [...machines].sort((a, b) => (b.output || 0) - (a.output || 0)).slice(0, 5);
+  const topMachines = [...(machines || [])].sort((a, b) => (b?.output || 0) - (a?.output || 0)).slice(0, 5);
 
   return (
     <div className="space-y-6">

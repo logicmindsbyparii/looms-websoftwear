@@ -34,8 +34,8 @@ export default function Header() {
 
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const criticalAlarmsCount = alarms.filter(a => a.type === 'critical').length;
-  const runningCount = machines.filter(m => m.status === 'running').length;
+  const criticalAlarmsCount = (alarms || []).filter(a => a?.type === 'critical').length;
+  const runningCount = (machines || []).filter(m => m?.status === 'running').length;
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3 sm:px-6 h-16 flex items-center transition-all shrink-0">
@@ -113,8 +113,8 @@ export default function Header() {
             {showUserMenu && (
               <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95">
                 <div className="px-4 py-2 border-b border-slate-100">
-                  <div className="font-bold text-xs text-slate-800">{currentUser.displayName}</div>
-                  <div className="text-[11px] text-slate-400 font-mono">@{currentUser.username} ({t(`roles.${userRole}`)})</div>
+                  <div className="font-bold text-xs text-slate-800">{currentUser?.displayName || 'Admin'}</div>
+                  <div className="text-[11px] text-slate-400 font-mono">@{currentUser?.username || 'admin'} ({t(`roles.${userRole}`)})</div>
                 </div>
 
                 {/* Admin Role Preview / View As Switcher */}

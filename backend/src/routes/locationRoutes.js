@@ -22,3 +22,4 @@ router.patch('/:id', requireRole('Admin'), updateLocation);
 router.delete('/:id', requireRole('Admin'), deleteLocation);
 
 export default router;
+

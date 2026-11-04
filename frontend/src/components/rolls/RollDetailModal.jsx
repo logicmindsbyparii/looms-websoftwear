@@ -268,11 +268,11 @@ export default function RollDetailModal({ rollCode, onClose, onRefresh }) {
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                   <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Length (Metres)</div>
                   <div className="text-2xl font-black text-slate-900 mt-1 font-mono">
-                    {Number(data.roll.metres).toFixed(2)}m
+                    {Number(data?.roll?.metres || 0).toFixed(2)}m
                   </div>
                   {data.roll.originalMetres && data.roll.originalMetres !== data.roll.metres && (
                     <div className="text-[10px] text-amber-600 font-medium">
-                      Orig: {data.roll.originalMetres.toFixed(2)}m
+                      Orig: {Number(data?.roll?.originalMetres || 0).toFixed(2)}m
                     </div>
                   )}
                 </div>
@@ -661,3 +661,4 @@ export default function RollDetailModal({ rollCode, onClose, onRefresh }) {
     </div>
   );
 }
+

@@ -217,3 +217,4 @@ export default function PublicRollPage({ rollCode, onGoToLogin }) {
     </div>
   );
 }
+

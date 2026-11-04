@@ -11,7 +11,15 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   const [facingMode, setFacingMode] = useState('environment'); // 'environment' | 'user'
 
   const html5QrCodeRef = useRef(null);
+  const isMountedRef = useRef(true);
   const scannerContainerId = 'loomus-qr-reader-container';
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Helper to extract clean roll code from URL or raw ID
   const parseScannedCode = (decodedText) => {
@@ -47,6 +55,10 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   const startScanner = async () => {
     setCameraError(null);
     try {
+      if (typeof document === 'undefined') return;
+      const container = document.getElementById(scannerContainerId);
+      if (!container) return;
+
       if (html5QrCodeRef.current) {
         await stopScanner();
       }
@@ -71,21 +83,25 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         }
       );
 
-      setIsScanning(true);
+      if (isMountedRef.current) {
+        setIsScanning(true);
+      }
 
       // Check torch capability
       try {
         const stream = html5QrCode.getRunningTrackCapabilities();
-        if (stream && stream.torch) {
+        if (stream && stream.torch && isMountedRef.current) {
           setHasTorch(true);
         }
       } catch (e) {
-        setHasTorch(false);
+        if (isMountedRef.current) setHasTorch(false);
       }
     } catch (err) {
       console.warn('Camera failed to initialize:', err);
-      setCameraError('Camera access unavailable. You can type or paste the Roll ID below.');
-      setIsScanning(false);
+      if (isMountedRef.current) {
+        setCameraError('Camera access unavailable. You can type or paste the Roll ID below.');
+        setIsScanning(false);
+      }
     }
   };
 
@@ -97,12 +113,14 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         }
         await html5QrCodeRef.current.clear();
       } catch (e) {
-        console.warn('Scanner stop error:', e);
+        // scanner stopped
       }
       html5QrCodeRef.current = null;
     }
-    setIsScanning(false);
-    setIsTorchOn(false);
+    if (isMountedRef.current) {
+      setIsScanning(false);
+      setIsTorchOn(false);
+    }
   };
 
   useEffect(() => {
@@ -264,3 +282,4 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     </div>
   );
 }
+

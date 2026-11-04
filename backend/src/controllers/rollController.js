@@ -116,3 +116,4 @@ export const voidRoll = asyncHandler(async (req, res) => {
   const roll = await rollService.voidRoll(id.toUpperCase(), { reason }, req.user, req);
   res.status(200).json(new ApiResponse(200, roll, `Roll ${roll.id} marked as Void`));
 });
+

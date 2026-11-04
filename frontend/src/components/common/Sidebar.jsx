@@ -41,9 +41,9 @@ export default function Sidebar() {
   } = useApp();
   const { t } = useTranslation();
 
-  const runningCount = machines.filter(m => m.status === 'running').length;
-  const stoppedCount = machines.filter(m => m.status === 'stopped').length;
-  const idleCount = machines.filter(m => m.status === 'idle' || m.status === 'maintenance').length;
+  const runningCount = (machines || []).filter(m => m?.status === 'running').length;
+  const stoppedCount = (machines || []).filter(m => m?.status === 'stopped').length;
+  const idleCount = (machines || []).filter(m => m?.status === 'idle' || m?.status === 'maintenance').length;
 
   // Role-tailored navigation items
   const adminNav = [

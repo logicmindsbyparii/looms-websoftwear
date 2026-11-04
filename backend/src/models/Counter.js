@@ -29,3 +29,4 @@ export async function getNextSequence(key) {
   );
   return counter.seq;
 }
+

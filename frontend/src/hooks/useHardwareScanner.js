@@ -68,3 +68,4 @@ export function useHardwareScanner(onScan, options = {}) {
     };
   }, [enabled, maxInterval, minChars]);
 }
+

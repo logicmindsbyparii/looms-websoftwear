@@ -255,3 +255,4 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     </div>
   );
 }
+

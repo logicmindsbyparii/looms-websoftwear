@@ -132,3 +132,4 @@ rollSchema.index({ machineId: 1, createdAt: -1 });
 rollSchema.index({ fabric: 1, status: 1 });
 
 export const Roll = mongoose.model('Roll', rollSchema);
+

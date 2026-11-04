@@ -24,6 +24,25 @@ export const soundEffects = {
   // Success chime - disabled per user preference
   success: () => {},
 
+  // Beep feedback for barcode/QR scanner
+  beep: () => {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200, now);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } catch (e) {}
+  },
+
   // Machine spin up hum - disabled per user preference
   machineStart: () => {},
 

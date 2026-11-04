@@ -98,3 +98,4 @@ export const deleteLocation = asyncHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, { id: location.id }, 'Location deleted successfully'));
 });
+

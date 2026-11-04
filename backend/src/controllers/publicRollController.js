@@ -15,3 +15,4 @@ export const getPublicRoll = asyncHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, publicData, 'Roll details verified successfully'));
 });
+

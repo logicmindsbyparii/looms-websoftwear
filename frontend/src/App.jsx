@@ -184,14 +184,16 @@ export default function App() {
       <FloatingWhatsApp />
 
       {/* Roll QR Scanner & Detail Modals */}
-      <ScanModal
-        isOpen={isScanModalOpen}
-        onClose={() => setIsScanModalOpen(false)}
-        onScanSuccess={(code) => {
-          setIsScanModalOpen(false);
-          setInspectRollCode(code);
-        }}
-      />
+      {isScanModalOpen && (
+        <ScanModal
+          isOpen={isScanModalOpen}
+          onClose={() => setIsScanModalOpen(false)}
+          onScanSuccess={(code) => {
+            setIsScanModalOpen(false);
+            setInspectRollCode(code);
+          }}
+        />
+      )}
       {inspectRollCode && (
         <RollDetailModal
           rollCode={inspectRollCode}
