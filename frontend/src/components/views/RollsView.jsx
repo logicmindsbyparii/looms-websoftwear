@@ -324,7 +324,7 @@ export default function RollsView({ onOpenScan }) {
                 <th className="py-3 px-4">Location</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">Produced Date</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3 px-4 pr-16 md:pr-24 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
@@ -385,7 +385,7 @@ export default function RollsView({ onOpenScan }) {
                     <td className="py-3.5 px-4 text-slate-700 text-[11px]">
                       {formatDate(roll.producedAt)}
                     </td>
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 pr-16 md:pr-24 text-center">
                       <div className="flex items-center justify-center space-x-1.5">
                         <button
                           onClick={() => setInspectRollCode(roll.id)}

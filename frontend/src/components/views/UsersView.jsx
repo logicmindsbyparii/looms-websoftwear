@@ -217,7 +217,7 @@ export default function UsersView() {
                 <th className="py-3 px-4">{t('users.accountStatus')}</th>
                 <th className="py-3 px-4">{t('users.assignedLooms')}</th>
                 <th className="py-3 px-4">{t('common.phone')}</th>
-                <th className="py-3 px-4 text-right">{t('common.actions')}</th>
+                <th className="py-3 px-4 pr-16 md:pr-24 text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -297,7 +297,7 @@ export default function UsersView() {
                         <div className="text-[11px] text-slate-600">{u.phone || '—'}</div>
                       </td>
 
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 pr-16 md:pr-24 text-right">
                         <div className="flex items-center justify-end gap-1">
                           {isLocked && (
                             <button

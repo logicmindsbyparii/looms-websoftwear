@@ -227,7 +227,7 @@ export default function WorkersView() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[700px]">
             <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-400 uppercase">
               <tr>
                 <th className="py-3 px-4">ID</th>
@@ -237,7 +237,7 @@ export default function WorkersView() {
                 <th className="py-3 px-4">{t('common.phone')}</th>
                 <th className="py-3 px-4">{t('common.statusLabel')}</th>
                 {(userRole === 'Admin' || userRole === 'Supervisor') && (
-                  <th className="py-3 px-4 text-right">{t('common.actions')}</th>
+                  <th className="py-3 px-4 pr-16 md:pr-24 text-right">{t('common.actions')}</th>
                 )}
               </tr>
             </thead>
@@ -263,7 +263,7 @@ export default function WorkersView() {
                     </span>
                   </td>
                   {(userRole === 'Admin' || userRole === 'Supervisor') && (
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 pr-16 md:pr-24 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <select
                           value={w.status}

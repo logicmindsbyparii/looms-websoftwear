@@ -201,7 +201,7 @@ export default function RawMaterialView() {
                 <th className="py-3 px-4">{t('common.total')}</th>
                 <th className="py-3 px-4">{t('stock.supplierName')}</th>
                 {(userRole === 'Admin' || userRole === 'Supervisor') && (
-                  <th className="py-3 px-4 text-right">{t('common.actions')}</th>
+                  <th className="py-3 px-4 pr-16 md:pr-24 text-right">{t('common.actions')}</th>
                 )}
               </tr>
             </thead>
@@ -225,7 +225,7 @@ export default function RawMaterialView() {
                     <td className="py-3 px-4 font-mono font-bold text-slate-800">{formatRupees(s.current * s.rate)}</td>
                     <td className="py-3 px-4 text-slate-500">{s.supplier}</td>
                     {(userRole === 'Admin' || userRole === 'Supervisor') && (
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 pr-16 md:pr-24 text-right">
                         <button
                           onClick={() => deleteStock(s.id)}
                           className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg"

@@ -183,7 +183,7 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden h-full">
         <Header />
 
-        <main className="flex-1 h-full overflow-y-auto overscroll-y-auto p-3 sm:p-5 md:p-8 pb-28 md:pb-8 bg-slate-50/60 grid-mesh scroll-smooth">
+        <main className="flex-1 h-full overflow-y-auto overscroll-y-auto p-3 sm:p-5 md:p-8 pb-36 md:pb-36 bg-slate-50/60 grid-mesh scroll-smooth">
           {renderActiveView()}
         </main>
       </div>

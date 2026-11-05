@@ -287,7 +287,7 @@ export default function ProductionView() {
                 <th className="pb-2.5">{t('production.grading')}</th>
                 <th className="pb-2.5">{t('production.defectPercent')}</th>
                 <th className="pb-2.5">{t('common.operator')}</th>
-                <th className="pb-2.5 text-right">{t('common.delete')}</th>
+                <th className="pb-2.5 pr-16 md:pr-24 text-right">{t('common.delete')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -311,7 +311,7 @@ export default function ProductionView() {
                   </td>
                   <td className="py-3 font-mono text-slate-500">{log.defects} m</td>
                   <td className="py-3 text-slate-600">{log.operator}</td>
-                  <td className="py-3 text-right">
+                  <td className="py-3 pr-16 md:pr-24 text-right">
                     {(userRole === 'Admin' || userRole === 'Supervisor') && (
                       <button
                         onClick={() => deleteProductionLog(log.id)}

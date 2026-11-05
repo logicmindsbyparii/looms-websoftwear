@@ -307,7 +307,7 @@ export default function SalesView() {
                 <th className="pb-2.5">{t('common.rate')}</th>
                 <th className="pb-2.5">{t('common.total')}</th>
                 <th className="pb-2.5">{t('common.statusLabel')}</th>
-                <th className="pb-2.5 text-right">{t('common.actions')}</th>
+                <th className="pb-2.5 pr-16 md:pr-24 text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -328,7 +328,7 @@ export default function SalesView() {
                       {t(`status.${g.status}`)}
                     </span>
                   </td>
-                  <td className="py-3 text-right">
+                  <td className="py-3 pr-16 md:pr-24 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => handleBulkGenerateRolls(g)}
