@@ -28,7 +28,50 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     `METRES: ${metresVal}`
   ].join('\n');
 
-  const qrValue = offlineCardText;
+  // Format mode: 'text' (Direct Offline Card on Phone - NO Web/IP) vs 'url' (Web Link)
+  const [qrFormat, setQrFormat] = useState(() => {
+    try {
+      return localStorage.getItem('loomus_qr_format') || 'text';
+    } catch (e) {
+      return 'text';
+    }
+  });
+
+  const [customWebUrl, setCustomWebUrl] = useState(() => {
+    try {
+      return localStorage.getItem('loomus_qr_web_url') || '';
+    } catch (e) {
+      return '';
+    }
+  });
+
+  const [showConfig, setShowConfig] = useState(false);
+
+  const qrValue = qrFormat === 'url' && customWebUrl.trim()
+    ? `${customWebUrl.replace(/\/+$/, '')}/?roll=${roll?.qrToken || rollId}`
+    : offlineCardText;
+
+  const handleFormatChange = (fmt) => {
+    setQrFormat(fmt);
+    try {
+      localStorage.setItem('loomus_qr_format', fmt);
+    } catch (e) {}
+    if (showToast) {
+      showToast(
+        fmt === 'text'
+          ? 'Switched to Direct Offline Phone Card (No Web/IP needed)'
+          : 'Switched to Web URL Link',
+        'info'
+      );
+    }
+  };
+
+  const handleWebUrlChange = (val) => {
+    setCustomWebUrl(val);
+    try {
+      localStorage.setItem('loomus_qr_web_url', val);
+    } catch (e) {}
+  };
 
   useEffect(() => {
     if (barcodeRef.current && rollId) {
