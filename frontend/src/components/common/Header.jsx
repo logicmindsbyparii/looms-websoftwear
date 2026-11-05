@@ -97,17 +97,17 @@ export default function Header() {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-sm"
+              className="flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-800 transition-all shadow-2xs hover:shadow-xs group"
               title="User Account Options"
               aria-label="User Account Options"
             >
-              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[11px] font-bold">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-black text-white shadow-2xs ring-2 ring-sky-100 shrink-0">
                 {currentUser?.displayName?.[0] || 'A'}
               </div>
-              <span className="text-xs font-bold tracking-tight font-mono">
+              <span className="text-xs font-bold text-slate-800 tracking-wide font-sans">
                 {userRole === 'Admin' ? 'Admin' : userRole === 'Supervisor' ? 'Supervisor' : 'Operator'}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
             </button>
 
             {/* User Dropdown Menu */}
