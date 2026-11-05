@@ -37,8 +37,7 @@ export default function Sidebar() {
     setIsMobileMenuOpen,
     setIsAddMachineOpen,
     setIsDataManagerOpen,
-    isSidebarCollapsed,
-    toggleSidebar
+    isSidebarCollapsed
   } = useApp();
   const { t } = useTranslation();
 
@@ -107,7 +106,7 @@ export default function Sidebar() {
   };
 
   const renderNavLinks = (collapsed = false) => (
-    <div className="flex-1 overflow-y-auto modern-scrollbar px-2.5 py-3 space-y-1 min-h-0">
+    <div className="flex-1 overflow-y-auto modern-scrollbar px-2 py-2.5 space-y-1 min-h-0">
       <nav className="space-y-1">
         {currentNav.map((item) => {
           const Icon = item.icon;
@@ -118,16 +117,22 @@ export default function Sidebar() {
               key={item.id}
               onClick={() => handleNavClick(item.id)}
               title={collapsed ? item.label : undefined}
-              className={`group w-full flex items-center h-10 rounded-xl text-xs font-bold transition-all text-left cursor-pointer relative overflow-hidden ${
+              className={`group w-full flex items-center h-8.5 px-2 rounded-xl text-xs font-semibold transition-colors duration-75 text-left cursor-pointer relative ${
                 isActive
-                  ? 'bg-sky-50 text-sky-900 font-extrabold shadow-2xs border-l-4 border-sky-600'
-                  : 'text-slate-600 hover:text-sky-700 hover:bg-slate-100/70 border-l-4 border-transparent'
+                  ? 'bg-sky-50 text-sky-900 font-bold shadow-2xs'
+                  : 'text-slate-600 hover:text-sky-700 hover:bg-slate-100/70'
               }`}
             >
-              {/* Stationary Centered Icon Container */}
-              <div className="w-10 h-10 flex items-center justify-center shrink-0">
+              {/* Active Indicator Accent Bar */}
+              {isActive && (
+                <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-sky-600 rounded-r-full" />
+              )}
+
+              {/* Refined Small Icon Container */}
+              <div className="w-6 h-6 flex items-center justify-center shrink-0">
                 <Icon
-                  className={`w-4.5 h-4.5 transition-colors ${
+                  strokeWidth={1.85}
+                  className={`w-3.5 h-3.5 transition-colors duration-75 ${
                     isActive ? 'text-sky-600' : 'text-slate-400 group-hover:text-slate-700'
                   }`}
                 />
@@ -135,16 +140,16 @@ export default function Sidebar() {
 
               {/* Smooth Gliding Label & Badge */}
               <div
-                className={`flex items-center justify-between flex-1 pr-3 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out ${
+                className={`flex items-center justify-between flex-1 pr-1 pl-2 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out ${
                   collapsed
-                    ? 'max-w-0 opacity-0 pointer-events-none -translate-x-2'
-                    : 'max-w-[180px] opacity-100 translate-x-0'
+                    ? 'max-w-0 opacity-0 pointer-events-none'
+                    : 'max-w-[180px] opacity-100'
                 }`}
               >
                 <span className="truncate">{item.label}</span>
                 {item.badge && (
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ml-2 shrink-0 ${
+                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-bold ml-1.5 shrink-0 ${
                       item.badgeColor ||
                       (isActive
                         ? 'bg-sky-100 text-sky-800 border border-sky-200'
@@ -156,8 +161,8 @@ export default function Sidebar() {
                 )}
               </div>
 
-              {/* Collapsed dot badge */}
-              {collapsed && item.badge && (
+              {/* Collapsed dot badge for alarms only */}
+              {collapsed && item.id === 'alarms' && alarms.length > 0 && (
                 <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
               )}
             </button>
@@ -167,7 +172,7 @@ export default function Sidebar() {
 
       {/* Quick Action Buttons */}
       {(userRole === 'Admin' || userRole === 'Supervisor') && (
-        <div className="pt-2 space-y-1.5 border-t border-slate-100 mt-2">
+        <div className="pt-2 space-y-1 border-t border-slate-100 mt-2">
           {/* Add Loom Button */}
           <button
             onClick={() => {
@@ -175,16 +180,16 @@ export default function Sidebar() {
               setIsMobileMenuOpen(false);
             }}
             title={collapsed ? t('dashboard.addLoomBtn') : undefined}
-            className="w-full flex items-center h-10 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200/80 text-sky-800 text-xs font-bold transition-all cursor-pointer shadow-2xs group overflow-hidden"
+            className="w-full flex items-center h-8.5 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200/80 text-sky-800 text-xs font-bold transition-colors duration-75 cursor-pointer shadow-2xs group"
           >
-            <div className="w-10 h-10 flex items-center justify-center shrink-0">
-              <Plus className="w-5 h-5 text-sky-600 group-hover:scale-110 transition-transform" />
+            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <Plus strokeWidth={2} className="w-3.5 h-3.5 text-sky-600 group-hover:scale-110 transition-transform" />
             </div>
             <div
-              className={`flex-1 pr-3 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out text-left ${
+              className={`flex-1 pr-1 pl-2 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out text-left ${
                 collapsed
-                  ? 'max-w-0 opacity-0 pointer-events-none -translate-x-2'
-                  : 'max-w-[180px] opacity-100 translate-x-0'
+                  ? 'max-w-0 opacity-0 pointer-events-none'
+                  : 'max-w-[180px] opacity-100'
               }`}
             >
               <span>{t('dashboard.addLoomBtn')}</span>
@@ -199,16 +204,16 @@ export default function Sidebar() {
                 setIsMobileMenuOpen(false);
               }}
               title={collapsed ? 'Data Reset' : undefined}
-              className="w-full flex items-center h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs group overflow-hidden"
+              className="w-full flex items-center h-8.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-colors duration-75 cursor-pointer shadow-2xs group"
             >
-              <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                <Database className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" />
+              <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                <Database strokeWidth={2} className="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
               </div>
               <div
-                className={`flex-1 pr-3 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out text-left ${
+                className={`flex-1 pr-1 pl-2 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out text-left ${
                   collapsed
-                    ? 'max-w-0 opacity-0 pointer-events-none -translate-x-2'
-                    : 'max-w-[180px] opacity-100 translate-x-0'
+                    ? 'max-w-0 opacity-0 pointer-events-none'
+                    : 'max-w-[180px] opacity-100'
                 }`}
               >
                 <span>Data Reset</span>
@@ -228,7 +233,7 @@ export default function Sidebar() {
             className="p-2 flex flex-col items-center justify-center gap-1 transition-all duration-300 cursor-default"
             title={`Looms: ${runningCount} Run, ${stoppedCount} Stop, ${idleCount} Idle | Power: ${powerLoadPercent}%`}
           >
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-mono font-bold text-xs shadow-2xs">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-mono font-bold text-xs shadow-2xs">
               {runningCount}
             </div>
             <span className="text-[8.5px] font-mono text-slate-400 font-bold">RUN</span>
@@ -293,20 +298,20 @@ export default function Sidebar() {
         {/* Brand Header */}
         <div className="h-16 px-3 border-b border-slate-200/90 bg-white flex items-center shrink-0 overflow-hidden">
           <div className="flex items-center min-w-0">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20 font-bold font-display text-base tracking-wider shrink-0">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20 font-bold font-display text-sm tracking-wider shrink-0">
               LM
             </div>
             <div
-              className={`ml-3 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out ${
+              className={`ml-2.5 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out ${
                 isSidebarCollapsed
-                  ? 'max-w-0 opacity-0 pointer-events-none -translate-x-2'
-                  : 'max-w-[180px] opacity-100 translate-x-0'
+                  ? 'max-w-0 opacity-0 pointer-events-none'
+                  : 'max-w-[180px] opacity-100'
               }`}
             >
-              <span className="font-extrabold tracking-tight text-base font-display text-slate-900 block leading-tight">
+              <span className="font-extrabold tracking-tight text-sm font-display text-slate-900 block leading-tight">
                 TEAM LMP
               </span>
-              <p className="text-[9.5px] font-semibold text-slate-400 tracking-wider uppercase font-mono truncate">
+              <p className="text-[9px] font-semibold text-slate-400 tracking-wider uppercase font-mono truncate">
                 {t('app.tagline')}
               </p>
             </div>
@@ -315,7 +320,7 @@ export default function Sidebar() {
 
         {/* Role Banner Indicator (Smooth slide up/down) */}
         <div
-          className={`border-b border-slate-100 bg-slate-50/70 shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`border-b border-slate-100 bg-slate-50/70 shrink-0 overflow-hidden transition-[max-height,opacity] duration-200 ease-in-out ${
             isSidebarCollapsed ? 'max-h-0 opacity-0 py-0' : 'max-h-12 px-4 py-2 opacity-100'
           }`}
         >

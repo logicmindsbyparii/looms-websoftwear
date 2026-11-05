@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LoomVisual from '../common/LoomVisual';
@@ -34,25 +34,29 @@ export default function MachinesView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('id'); // 'id' | 'output' | 'rpm' | 'efficiency'
 
-  const filteredMachines = machines
-    .filter(m => {
-      const matchShed = shedFilter === 'all' || m.shed.toLowerCase().includes(shedFilter.toLowerCase());
-      const matchStatus = statusFilter === 'all' || m.status === statusFilter;
-      const matchSearch = m.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          m.fabric.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          m.model.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchShed && matchStatus && matchSearch;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'output') return (b.output || 0) - (a.output || 0);
-      if (sortBy === 'rpm') return (b.rpm || 0) - (a.rpm || 0);
-      if (sortBy === 'efficiency') return (b.efficiency || 0) - (a.efficiency || 0);
-      return a.id.localeCompare(b.id);
-    });
+  const filteredMachines = useMemo(() => {
+    return (machines || [])
+      .filter((m) => {
+        const matchShed = shedFilter === 'all' || (m.shed || '').toLowerCase().includes(shedFilter.toLowerCase());
+        const matchStatus = statusFilter === 'all' || m.status === statusFilter;
+        const matchSearch =
+          !searchQuery ||
+          (m.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (m.fabric || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (m.model || '').toLowerCase().includes(searchQuery.toLowerCase());
+        return matchShed && matchStatus && matchSearch;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'output') return (b.output || 0) - (a.output || 0);
+        if (sortBy === 'rpm') return (b.rpm || 0) - (a.rpm || 0);
+        if (sortBy === 'efficiency') return (b.efficiency || 0) - (a.efficiency || 0);
+        return (a.id || '').localeCompare(b.id || '');
+      });
+  }, [machines, shedFilter, statusFilter, searchQuery, sortBy]);
 
-  const runningCount = machines.filter(m => m.status === 'running').length;
-  const stoppedCount = machines.filter(m => m.status === 'stopped').length;
-  const idleCount = machines.filter(m => m.status === 'idle' || m.status === 'maintenance').length;
+  const runningCount = useMemo(() => (machines || []).filter(m => m.status === 'running').length, [machines]);
+  const stoppedCount = useMemo(() => (machines || []).filter(m => m.status === 'stopped').length, [machines]);
+  const idleCount = useMemo(() => (machines || []).filter(m => m.status === 'idle' || m.status === 'maintenance').length, [machines]);
 
   return (
     <div className="space-y-6">

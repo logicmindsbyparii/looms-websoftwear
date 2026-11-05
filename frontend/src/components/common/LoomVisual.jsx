@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
+function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
   const isRunning = status === 'running';
   const isIdle = status === 'idle';
   const isStopped = status === 'stopped';
@@ -105,4 +105,6 @@ export default function LoomVisual({ status = 'running', rpm = 850, compact = fa
     </div>
   );
 }
+
+export default memo(LoomVisual);
 
