@@ -20,9 +20,7 @@ import {
   Plus,
   Database,
   UserCheck,
-  QrCode,
-  ChevronLeft,
-  ChevronRight
+  QrCode
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -272,30 +270,12 @@ export default function Sidebar() {
                   </p>
                 </div>
               </div>
-
-              {/* Sidebar Collapse Arrow Button */}
-              <button
-                onClick={toggleSidebar}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all cursor-pointer shrink-0"
-                title="Collapse Sidebar"
-                aria-label="Collapse Sidebar"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
             </>
           ) : (
             <div className="flex items-center justify-center relative w-full">
-              <button
-                onClick={toggleSidebar}
-                className="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-xs font-bold font-display text-sm tracking-wider cursor-pointer hover:ring-2 hover:ring-sky-400 transition-all group relative"
-                title="Expand Sidebar (Click Arrow)"
-                aria-label="Expand Sidebar"
-              >
-                <span>LM</span>
-                <span className="absolute -right-2 top-2 w-4 h-4 rounded-full bg-white border border-slate-200 shadow-xs text-slate-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ChevronRight className="w-3 h-3" />
-                </span>
-              </button>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-xs font-bold font-display text-sm tracking-wider">
+                LM
+              </div>
             </div>
           )}
         </div>

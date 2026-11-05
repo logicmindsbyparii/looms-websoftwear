@@ -13,7 +13,9 @@ import {
   Users,
   Eye,
   QrCode,
-  RotateCcw
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export default function Header() {
@@ -27,6 +29,8 @@ export default function Header() {
     logout,
     isMobileMenuOpen,
     setIsMobileMenuOpen,
+    isSidebarCollapsed,
+    toggleSidebar,
     setIsWhatsAppModalOpen,
     setIsScanModalOpen,
     adminWhatsAppPhone,
@@ -42,16 +46,30 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3 sm:px-6 h-16 flex items-center transition-all shrink-0">
       <div className="w-full flex items-center justify-between gap-2 sm:gap-4">
-        {/* Left Side: Mobile Hamburger + Active Looms Badge */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Left Side: Mobile Hamburger + Desktop Sidebar Arrow Toggle + Active Looms Badge */}
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
+            className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             title="Toggle Navigation Menu"
             aria-label="Toggle Navigation Menu"
           >
             <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Desktop Sidebar Toggle Arrow Button (Bahar wala arrow) */}
+          <button
+            onClick={toggleSidebar}
+            className="hidden md:flex p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer items-center justify-center border border-slate-200/80 shadow-2xs hover:shadow-xs active:scale-95"
+            title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            aria-label="Toggle Sidebar"
+          >
+            {isSidebarCollapsed ? (
+              <ChevronRight className="w-4 h-4 text-slate-700" />
+            ) : (
+              <ChevronLeft className="w-4 h-4 text-slate-700" />
+            )}
           </button>
 
           {/* Plant Live Operational Status Badge: ACTIVE LOOMS */}
