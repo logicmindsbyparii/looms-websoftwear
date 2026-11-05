@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { soundEffects } from '../../utils/soundEffects';
 
 export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
@@ -23,10 +23,12 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
   // Helper to extract clean roll code from URL, raw text, or ID
   const parseScannedCode = (decodedText) => {
+    if (!decodedText) return '';
     try {
       if (decodedText.includes('roll=')) {
         const url = new URL(decodedText, window.location.origin);
-        return url.searchParams.get('roll') || decodedText;
+        const code = url.searchParams.get('roll');
+        if (code) return code.trim();
       }
     } catch (e) {}
 
@@ -39,20 +41,21 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     return decodedText.trim();
   };
 
-  const triggerSuccessFeedback = (code) => {
+  const triggerSuccessFeedback = () => {
     try {
       soundEffects.beep();
     } catch (e) {}
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
-        navigator.vibrate(100);
+        navigator.vibrate([80, 40, 80]);
       } catch (e) {}
     }
   };
 
   const handleDetectedCode = (decodedText) => {
+    if (!decodedText) return;
     const cleanCode = parseScannedCode(decodedText);
-    triggerSuccessFeedback(cleanCode);
+    triggerSuccessFeedback();
     stopScanner();
     if (onScanSuccess) {
       onScanSuccess(cleanCode);
@@ -70,23 +73,50 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         await stopScanner();
       }
 
-      const html5QrCode = new Html5Qrcode(scannerContainerId);
+      // High-speed hardware-accelerated configuration (BarcodeDetector native ML)
+      const html5QrCode = new Html5Qrcode(scannerContainerId, {
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.DATA_MATRIX
+        ],
+        verbose: false,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
+      });
       html5QrCodeRef.current = html5QrCode;
 
+      // Ultra-sensitive scan parameters:
+      // - fps: 30 (continuous frame inspection)
+      // - qrbox: covers 95% of viewport so even if a partial or corner of QR is seen, it scans immediately
       const config = {
-        fps: 15,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
+        fps: 30,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const size = Math.max(220, Math.floor(minEdge * 0.95));
+          return { width: size, height: size };
+        },
+        aspectRatio: 1.0,
+        disableFlip: false
+      };
+
+      const cameraConstraints = {
+        facingMode: { ideal: facingMode },
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 }
       };
 
       await html5QrCode.start(
-        { facingMode },
+        cameraConstraints,
         config,
         (decodedText) => {
           handleDetectedCode(decodedText);
         },
-        (errorMessage) => {
-          // ignore per-frame parse failures
+        () => {
+          // Frame failure ignored - keep scanning at 30 fps
         }
       );
 
@@ -94,11 +124,18 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         setIsScanning(true);
       }
 
-      // Check torch capability
+      // Check capabilities for torch and continuous focus
       try {
         const stream = html5QrCode.getRunningTrackCapabilities();
-        if (stream && stream.torch && isMountedRef.current) {
-          setHasTorch(true);
+        if (stream && isMountedRef.current) {
+          if (stream.torch) {
+            setHasTorch(true);
+          }
+          if (stream.focusMode && Array.isArray(stream.focusMode) && stream.focusMode.includes('continuous')) {
+            await html5QrCode.applyVideoConstraints({
+              advanced: [{ focusMode: 'continuous' }]
+            });
+          }
         }
       } catch (e) {
         if (isMountedRef.current) setHasTorch(false);
@@ -134,7 +171,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     if (isOpen) {
       const timer = setTimeout(() => {
         startScanner();
-      }, 300);
+      }, 80);
       return () => clearTimeout(timer);
     } else {
       stopScanner();
@@ -165,7 +202,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     e.preventDefault();
     if (!manualCode.trim()) return;
     const cleanCode = parseScannedCode(manualCode);
-    triggerSuccessFeedback(cleanCode);
+    triggerSuccessFeedback();
     stopScanner();
     if (onScanSuccess) {
       onScanSuccess(cleanCode);
@@ -176,14 +213,19 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Top Header */}
         <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-xl">📷</span>
+          <div className="flex items-center space-x-2.5">
+            <span className="text-xl">⚡</span>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Scan Roll QR / Barcode</h3>
-              <p className="text-xs text-slate-700">Camera & Barcode Scanner Gun Ready</p>
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-sm font-bold text-slate-900">Instant QR & Barcode Scanner</h3>
+                <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-emerald-200 animate-pulse">
+                  Ultra-Fast
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">Turant Scan • Camera & Hardware Gun Active</p>
             </div>
           </div>
           <button
@@ -191,7 +233,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
               stopScanner();
               onClose();
             }}
-            className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-all"
+            className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-all cursor-pointer"
           >
             ✕
           </button>
@@ -199,21 +241,21 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
         {/* Viewfinder Area */}
         <div className="p-6 flex flex-col items-center">
-          <div className="relative w-full aspect-square max-w-[280px] rounded-2xl overflow-hidden bg-slate-900 border-2 border-blue-500 shadow-inner flex items-center justify-center">
+          <div className="relative w-full aspect-square max-w-[290px] rounded-2xl overflow-hidden bg-slate-900 border-2 border-sky-500 shadow-xl flex items-center justify-center">
             <div id={scannerContainerId} className="w-full h-full object-cover" />
 
             {/* Viewfinder Target Overlays */}
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-              <div className="w-48 h-48 border-2 border-white/60 rounded-2xl relative shadow-2xl">
-                {/* Corner markers */}
-                <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-blue-400 -mt-1 -ml-1 rounded-tl-sm" />
-                <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-blue-400 -mt-1 -mr-1 rounded-tr-sm" />
-                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-blue-400 -mb-1 -ml-1 rounded-bl-sm" />
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-blue-400 -mb-1 -mr-1 rounded-br-sm" />
+              <div className="w-56 h-56 border border-white/40 rounded-2xl relative shadow-2xl">
+                {/* Glowing Corner markers */}
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-sky-400 -mt-1 -ml-1 rounded-tl-lg shadow-sm" />
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-sky-400 -mt-1 -mr-1 rounded-tr-lg shadow-sm" />
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-sky-400 -mb-1 -ml-1 rounded-bl-lg shadow-sm" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-sky-400 -mb-1 -mr-1 rounded-br-lg shadow-sm" />
 
-                {/* Animated scanline */}
+                {/* Animated high-speed laser line */}
                 {isScanning && (
-                  <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent shadow-lg shadow-blue-400/80 animate-bounce absolute top-1/2" />
+                  <div className="w-full h-1 bg-gradient-to-r from-transparent via-sky-400 to-transparent shadow-lg shadow-sky-400/90 animate-pulse absolute top-1/2 -translate-y-1/2" />
                 )}
               </div>
             </div>
@@ -225,7 +267,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
                 <p className="text-xs text-slate-300">{cameraError}</p>
                 <button
                   onClick={startScanner}
-                  className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all mt-2"
+                  className="px-3 py-1.5 rounded-xl bg-sky-600 text-white text-xs font-bold hover:bg-sky-700 transition-all mt-2 cursor-pointer"
                 >
                   Retry Camera
                 </button>
@@ -238,7 +280,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
             {hasTorch && (
               <button
                 onClick={toggleTorch}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center space-x-1.5 transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center space-x-1.5 transition-all cursor-pointer ${
                   isTorchOn
                     ? 'bg-amber-100 text-amber-800 border-amber-300'
                     : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
@@ -251,7 +293,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
             <button
               onClick={toggleFacingMode}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 flex items-center space-x-1.5 transition-all"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 flex items-center space-x-1.5 transition-all cursor-pointer"
             >
               <span>🔄</span>
               <span>Switch Cam</span>
@@ -271,16 +313,16 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 placeholder="e.g. TK-2026-000001 or paste QR URL"
-                className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono"
+                className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white font-mono"
               />
               <button
                 type="submit"
-                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20"
+                className="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold transition-all shadow-md shadow-sky-500/20 cursor-pointer"
               >
                 Lookup
               </button>
             </div>
-            <p className="text-[11px] text-slate-700">
+            <p className="text-[11px] text-slate-500 font-medium">
               💡 Hardware USB/Bluetooth barcode guns can scan directly anytime.
             </p>
           </form>
@@ -289,4 +331,3 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     </div>
   );
 }
-
