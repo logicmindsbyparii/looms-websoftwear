@@ -44,10 +44,10 @@ export default function Header() {
   const runningCount = (machines || []).filter(m => m?.status === 'running').length;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3 sm:px-6 h-16 flex items-center transition-all shrink-0">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3 md:pl-2 md:pr-6 h-16 flex items-center transition-all shrink-0">
       <div className="w-full flex items-center justify-between gap-2 sm:gap-4">
         {/* Left Side: Mobile Hamburger + Desktop Sidebar Arrow Toggle + Active Looms Badge */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -58,10 +58,10 @@ export default function Header() {
             <Menu className="w-5 h-5" />
           </button>
 
-          {/* Desktop Sidebar Toggle Arrow Button (Bahar wala arrow) */}
+          {/* Desktop Sidebar Toggle Arrow Button (Bahar wala arrow - close to sidebar) */}
           <button
             onClick={toggleSidebar}
-            className="hidden md:flex p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer items-center justify-center border border-slate-200/80 shadow-2xs hover:shadow-xs active:scale-95"
+            className="hidden md:flex p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer items-center justify-center border border-slate-200/80 shadow-2xs hover:shadow-xs active:scale-95"
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             aria-label="Toggle Sidebar"
           >
