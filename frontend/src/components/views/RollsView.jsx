@@ -5,7 +5,7 @@ import { formatDate } from '../../utils/formatters';
 import { buildRollMessage, openWhatsApp } from '../../utils/whatsapp';
 import RollDetailModal from '../rolls/RollDetailModal';
 import RollQrLabel from '../rolls/RollQrLabel';
-import { Eye, QrCode } from 'lucide-react';
+import { Eye, QrCode, Plus } from 'lucide-react';
 import { WhatsAppBrandIcon } from '../common/WhatsAppIcon';
 
 export default function RollsView({ onOpenScan }) {
@@ -153,14 +153,6 @@ export default function RollsView({ onOpenScan }) {
         </div>
 
         <div className="flex items-center space-x-2.5">
-          <button
-            onClick={onOpenScan}
-            className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20"
-          >
-            <span>📷</span>
-            <span>Scan QR / Barcode</span>
-          </button>
-
           {(userRole === 'Admin' || userRole === 'Supervisor') && (
             <button
               onClick={() => {
@@ -170,9 +162,9 @@ export default function RollsView({ onOpenScan }) {
                 }
                 setIsCreateRollOpen(true);
               }}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-bold transition-all shadow-sm"
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95"
             >
-              <span>➕</span>
+              <Plus className="w-4 h-4" />
               <span>Cut & Log Roll</span>
             </button>
           )}

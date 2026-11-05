@@ -161,7 +161,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/90 grid-mesh flex items-center justify-center p-3 sm:p-4">
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-3 sm:p-4">
       <div className="w-full max-w-md bg-white rounded-3xl p-5 sm:p-8 border border-slate-200 shadow-2xl relative overflow-hidden">
         {/* Top Accent Gradient Bar */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 via-indigo-600 to-emerald-500" />

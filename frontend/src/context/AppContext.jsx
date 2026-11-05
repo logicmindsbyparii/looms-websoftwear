@@ -179,7 +179,16 @@ export function AppProvider({ children }) {
 
     socket.on('emergency:stop', ({ alarm, machines: stoppedMachines, triggeredBy }) => {
       if (stoppedMachines) setMachines(stoppedMachines);
-      if (alarm) setAlarms(prev => [alarm, ...prev.filter(a => a.id !== alarm.id)]);
+      if (alarm) {
+        setAlarms(prev => [
+          alarm,
+          ...prev.filter(a =>
+            a.id !== alarm.id &&
+            (!a._id || !alarm._id || a._id !== alarm._id) &&
+            !(a.code === 'E-STOP' && a.title === alarm.title && a.time === alarm.time)
+          )
+        ]);
+      }
       if (soundEnabled) soundEffects.emergency();
       showToast(`🚨 FACTORY EMERGENCY STOP ACTIVATED BY ${triggeredBy || 'USER'}!`, 'error');
     });
@@ -655,7 +664,16 @@ export function AppProvider({ children }) {
     try {
       const res = await api.post('/machines/emergency-stop');
       if (res.data?.machines) setMachines(res.data.machines);
-      if (res.data?.alarm) setAlarms(prev => [res.data.alarm, ...prev]);
+      if (res.data?.alarm) {
+        setAlarms(prev => [
+          res.data.alarm,
+          ...prev.filter(a =>
+            a.id !== res.data.alarm.id &&
+            (!a._id || !res.data.alarm._id || a._id !== res.data.alarm._id) &&
+            !(a.code === 'E-STOP' && a.title === res.data.alarm.title && a.time === res.data.alarm.time)
+          )
+        ]);
+      }
       if (soundEnabled) soundEffects.emergency();
       showToast('🚨 FACTORY EMERGENCY STOP ACTIVATED!', 'error');
     } catch (err) {

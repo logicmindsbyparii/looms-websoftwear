@@ -54,18 +54,18 @@ export default function DashboardView() {
   return (
     <div className="space-y-6">
       {/* Top Banner / Factory Operational Command Bar */}
-      <div className="heavy-card rounded-2xl p-4 sm:p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white border-none shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-[11px] font-bold font-mono border border-emerald-500/30 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] sm:text-[11px] font-bold font-mono border border-emerald-200 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               {t('app.millFacility')}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black font-display tracking-tight text-white">
+          <h2 className="text-xl sm:text-2xl font-black font-display tracking-tight text-slate-900">
             {t('dashboard.factoryOverview')}
           </h2>
-          <p className="text-xs text-slate-300 mt-1 max-w-xl">
+          <p className="text-xs text-slate-500 mt-1 max-w-xl font-medium">
             {t('dashboard.monitoredUnits', { count: machines.length })}
           </p>
         </div>
@@ -112,7 +112,7 @@ export default function DashboardView() {
 
       {/* When 0 machines exist: Display Onboarding Setup Guide */}
       {machines.length === 0 && (
-        <div className="heavy-card rounded-3xl p-8 bg-gradient-to-br from-white via-sky-50/40 to-indigo-50/40 border border-sky-200 shadow-lg space-y-5">
+        <div className="heavy-card rounded-3xl p-8 bg-white border border-slate-200 shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-bold font-mono text-sky-700 uppercase tracking-wider bg-sky-100 px-2.5 py-1 rounded-md">
@@ -341,13 +341,17 @@ export default function DashboardView() {
               </button>
             </div>
 
-            {alarms.length === 0 ? (
-              <div className="p-6 text-center text-slate-400 text-xs">
-                {t('alarms.noAlarms')}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {alarms.slice(0, 4).map((a) => (
+            {(() => {
+              const uniqueDashboardAlarms = (alarms || []).filter((a, index, self) =>
+                index === self.findIndex(o => (o.id && o.id === a.id) || (o._id && o._id === a._id))
+              );
+              return uniqueDashboardAlarms.length === 0 ? (
+                <div className="p-6 text-center text-slate-400 text-xs">
+                  {t('alarms.noAlarms')}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {uniqueDashboardAlarms.slice(0, 4).map((a) => (
                   <div
                     key={a.id}
                     className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs ${
@@ -375,7 +379,8 @@ export default function DashboardView() {
                   </div>
                 ))}
               </div>
-            )}
+            );
+          })()}
           </div>
         </div>
 

@@ -243,16 +243,24 @@ export const emergencyStopAll = asyncHandler(async (req, res) => {
     }
   );
 
-  const alarmId = `AL-${Date.now().toString().slice(-4)}`;
-  const emergencyAlarm = await Alarm.create({
-    id: alarmId,
-    type: 'critical',
-    title: `EMERGENCY STOP TRIGGERED BY ${req.user.username.toUpperCase()}`,
-    machine: 'FACTORY-WIDE',
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    shed: 'All Sheds',
-    code: 'E-STOP'
+  // Prevent duplicate E-STOP alarms if triggered in rapid succession (< 10 seconds)
+  let emergencyAlarm = await Alarm.findOne({
+    code: 'E-STOP',
+    createdAt: { $gte: new Date(Date.now() - 10000) }
   });
+
+  if (!emergencyAlarm) {
+    const alarmId = `AL-${Date.now().toString().slice(-4)}`;
+    emergencyAlarm = await Alarm.create({
+      id: alarmId,
+      type: 'critical',
+      title: `EMERGENCY STOP TRIGGERED BY ${req.user.username.toUpperCase()}`,
+      machine: 'FACTORY-WIDE',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      shed: 'All Sheds',
+      code: 'E-STOP'
+    });
+  }
 
   const machines = await Machine.find().sort({ id: 1 });
 
@@ -265,7 +273,7 @@ export const emergencyStopAll = asyncHandler(async (req, res) => {
   await logAuditEvent({
     action: 'EMERGENCY_STOP_FACTORY_WIDE',
     performedBy: { userId: req.user._id, username: req.user.username, role: req.user.role },
-    details: { alarmId },
+    details: { alarmId: emergencyAlarm.id },
     req
   });
 

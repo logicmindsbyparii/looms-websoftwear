@@ -164,7 +164,7 @@ export default function UsersView() {
 
         <button
           onClick={() => setIsCreateOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-sky-600/20 active:scale-95 transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-sm active:scale-95 transition-all cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
           <span>{t('users.addUserBtn')}</span>
@@ -471,7 +471,7 @@ export default function UsersView() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md"
+                  className="flex-1 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl shadow-sm"
                 >
                   {t('common.save')}
                 </button>
