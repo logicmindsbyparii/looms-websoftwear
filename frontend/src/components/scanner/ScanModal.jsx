@@ -9,12 +9,14 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   const [hasTorch, setHasTorch] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [facingMode, setFacingMode] = useState('environment'); // 'environment' | 'user'
+  const [availableCameras, setAvailableCameras] = useState([]);
+  const [currentCameraIndex, setCurrentCameraIndex] = useState(0);
 
   const html5QrCodeRef = useRef(null);
   const nativeDetectorRef = useRef(null);
-  const videoTrackRef = useRef(null);
   const isDetectedRef = useRef(false);
   const isMountedRef = useRef(true);
+  const isStartingRef = useRef(false);
   const animFrameRef = useRef(null);
   const scannerContainerId = 'loomus-qr-reader-container';
 
@@ -70,6 +72,8 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   };
 
   const startScanner = async () => {
+    if (isStartingRef.current) return;
+    isStartingRef.current = true;
     setCameraError(null);
     isDetectedRef.current = false;
 
@@ -78,13 +82,12 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       const container = document.getElementById(scannerContainerId);
       if (!container) return;
 
-      if (html5QrCodeRef.current) {
-        await stopScanner();
-      }
+      // Stop any existing instance cleanly
+      await stopScanner();
+      container.innerHTML = '';
 
-      // Check if native BarcodeDetector API is directly available on window for 60 FPS hardware detection
-      const hasNativeDetector = typeof window !== 'undefined' && 'BarcodeDetector' in window;
-      if (hasNativeDetector) {
+      // Initialize hardware-accelerated BarcodeDetector if natively supported in browser
+      if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
         try {
           nativeDetectorRef.current = new window.BarcodeDetector({
             formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'data_matrix']
@@ -109,36 +112,69 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       });
       html5QrCodeRef.current = html5QrCode;
 
-      // Ultra-fast full-sensor scanning:
+      // Ultra-fast full-sensor configuration:
       // Omit qrbox restriction so the camera decodes anywhere across 100% of the sensor
-      const config = {
+      const scanConfig = {
         fps: 30,
         aspectRatio: 1.0,
         disableFlip: false
       };
 
-      const cameraConstraints = {
-        facingMode: { ideal: facingMode },
-        width: { ideal: 1280, min: 640 },
-        height: { ideal: 720, min: 480 }
-      };
-
-      await html5QrCode.start(
-        cameraConstraints,
-        config,
-        (decodedText) => {
-          handleDetectedCode(decodedText);
-        },
-        () => {
-          // Frame fail - ignore
+      // 1. Discover available camera hardware
+      let devices = availableCameras;
+      if (!devices || devices.length === 0) {
+        try {
+          const fetchedDevices = await Html5Qrcode.getCameras();
+          if (fetchedDevices && fetchedDevices.length > 0) {
+            devices = fetchedDevices;
+            if (isMountedRef.current) {
+              setAvailableCameras(fetchedDevices);
+            }
+          }
+        } catch (camErr) {
+          console.warn('Camera enumeration note:', camErr);
         }
-      );
+      }
+
+      // 2. Select initial target camera
+      let primaryTarget;
+      let secondaryFallback;
+
+      if (devices && devices.length > 0) {
+        const validIdx = currentCameraIndex % devices.length;
+        primaryTarget = devices[validIdx].id;
+        // Fallback to first available camera if targeted camera fails
+        secondaryFallback = devices[0].id;
+      } else {
+        // html5-qrcode strictly expects exactly 1 key in cameraIdOrConfig if passed as object:
+        // { facingMode: 'environment' } or { facingMode: 'user' }
+        primaryTarget = { facingMode };
+        secondaryFallback = { facingMode: facingMode === 'environment' ? 'user' : 'environment' };
+      }
+
+      // 3. Start scanning with fallback resilience for PC webcams and phones
+      try {
+        await html5QrCode.start(
+          primaryTarget,
+          scanConfig,
+          (decodedText) => handleDetectedCode(decodedText),
+          () => {} // Frame scan miss - ignore
+        );
+      } catch (firstErr) {
+        console.warn('Initial camera config rejected, attempting fallback:', firstErr);
+        await html5QrCode.start(
+          secondaryFallback,
+          scanConfig,
+          (decodedText) => handleDetectedCode(decodedText),
+          () => {}
+        );
+      }
 
       if (isMountedRef.current) {
         setIsScanning(true);
       }
 
-      // Additional 60 FPS direct video frame scanning hook via native BarcodeDetector
+      // 4. Hook 60 FPS direct video frame scanning via native BarcodeDetector if available
       if (nativeDetectorRef.current) {
         const videoElem = container.querySelector('video');
         if (videoElem) {
@@ -169,7 +205,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         }
       }
 
-      // Check capabilities for continuous autofocus and torch
+      // 5. Check hardware capabilities for continuous autofocus and torch
       try {
         const stream = html5QrCode.getRunningTrackCapabilities?.() || html5QrCode.getRunningTrackCameraCapabilities?.();
         if (stream && isMountedRef.current) {
@@ -191,6 +227,8 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         setCameraError('Camera access unavailable. You can type or paste the Roll ID below.');
         setIsScanning(false);
       }
+    } finally {
+      isStartingRef.current = false;
     }
   };
 
@@ -200,15 +238,16 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       animFrameRef.current = null;
     }
     if (html5QrCodeRef.current) {
-      try {
-        if (html5QrCodeRef.current.isScanning) {
-          await html5QrCodeRef.current.stop();
-        }
-        await html5QrCodeRef.current.clear();
-      } catch (e) {
-        // stopped
-      }
+      const qrCode = html5QrCodeRef.current;
       html5QrCodeRef.current = null;
+      try {
+        if (qrCode.isScanning) {
+          await qrCode.stop();
+        }
+        await qrCode.clear();
+      } catch (e) {
+        // gracefully ignore stop race
+      }
     }
     if (isMountedRef.current) {
       setIsScanning(false);
@@ -220,7 +259,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     if (isOpen) {
       const timer = setTimeout(() => {
         startScanner();
-      }, 50);
+      }, 80);
       return () => clearTimeout(timer);
     } else {
       stopScanner();
@@ -228,7 +267,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     return () => {
       stopScanner();
     };
-  }, [isOpen, facingMode]);
+  }, [isOpen, currentCameraIndex, facingMode]);
 
   const toggleTorch = async () => {
     if (!html5QrCodeRef.current) return;
@@ -244,7 +283,11 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   };
 
   const toggleFacingMode = () => {
-    setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
+    if (availableCameras && availableCameras.length > 1) {
+      setCurrentCameraIndex((prev) => (prev + 1) % availableCameras.length);
+    } else {
+      setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
+    }
   };
 
   const handleManualSubmit = (e) => {
@@ -291,7 +334,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         {/* Viewfinder Area */}
         <div className="p-6 flex flex-col items-center">
           <div className="relative w-full aspect-square max-w-[290px] rounded-2xl overflow-hidden bg-slate-900 border-2 border-sky-500 shadow-xl flex items-center justify-center">
-            <div id={scannerContainerId} className="w-full h-full object-cover" />
+            <div id={scannerContainerId} className="w-full h-full object-cover [&>video]:w-full [&>video]:h-full [&>video]:object-cover" />
 
             {/* Viewfinder Target Overlays */}
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
