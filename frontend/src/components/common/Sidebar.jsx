@@ -128,9 +128,10 @@ export default function Sidebar() {
               setIsAddMachineOpen(true);
               setIsMobileMenuOpen(false);
             }}
-            className="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 rounded-xl text-xs font-bold flex items-center justify-center transition-colors"
+            className="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-98"
           >
-            <span>+ Loom</span>
+            <span className="text-base font-black leading-none text-sky-700">+</span>
+            <span>Loom</span>
           </button>
 
           {userRole === 'Admin' && (
