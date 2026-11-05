@@ -74,7 +74,6 @@ export default function PublicRollPage({ rollCode, onGoToLogin }) {
           <div>
             <div className="flex items-center space-x-1.5">
               <span className="font-extrabold text-slate-900 tracking-tight text-lg">TEAM LMP</span>
-              <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">v2.0</span>
             </div>
             <p className="text-xs text-slate-700 font-medium tracking-wide">AUTHENTIC TEXTILE VERIFICATION</p>
           </div>

@@ -261,9 +261,6 @@ export default function Sidebar() {
                     <span className="font-extrabold tracking-tight text-base font-display text-slate-900 truncate">
                       TEAM LMP
                     </span>
-                    <span className="bg-sky-100 text-sky-800 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-sky-200 shrink-0">
-                      v2.0
-                    </span>
                   </div>
                   <p className="text-[9.5px] font-semibold text-slate-400 tracking-wider uppercase font-mono truncate">
                     {t('app.tagline')}
@@ -325,9 +322,6 @@ export default function Sidebar() {
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="font-extrabold text-sm text-slate-900">TEAM LMP</span>
-                    <span className="bg-sky-100 text-sky-800 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-sky-200">
-                      v2.0
-                    </span>
                   </div>
                   <span className="text-[10px] font-mono block text-slate-400">Navigation Menu</span>
                 </div>
