@@ -106,7 +106,7 @@ export default function Sidebar() {
   };
 
   const renderNavLinks = (collapsed = false) => (
-    <div className="flex-1 overflow-y-auto modern-scrollbar px-2 py-2.5 space-y-1 min-h-0">
+    <div className="flex-1 overflow-y-auto modern-scrollbar px-2.5 py-2.5 space-y-1 min-h-0">
       <nav className="space-y-1">
         {currentNav.map((item) => {
           const Icon = item.icon;
@@ -117,7 +117,7 @@ export default function Sidebar() {
               key={item.id}
               onClick={() => handleNavClick(item.id)}
               title={collapsed ? item.label : undefined}
-              className={`group w-full flex items-center h-8.5 px-2 rounded-xl text-xs font-semibold transition-colors duration-75 text-left cursor-pointer relative ${
+              className={`group w-full flex items-center h-10 px-2 rounded-xl text-xs font-semibold transition-colors duration-75 text-left cursor-pointer relative ${
                 isActive
                   ? 'bg-sky-50 text-sky-900 font-bold shadow-2xs'
                   : 'text-slate-600 hover:text-sky-700 hover:bg-slate-100/70'
@@ -128,11 +128,10 @@ export default function Sidebar() {
                 <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-sky-600 rounded-r-full" />
               )}
 
-              {/* Refined Small Icon Container */}
-              <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              {/* Icon Container with Balanced Size */}
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
                 <Icon
-                  strokeWidth={1.85}
-                  className={`w-3.5 h-3.5 transition-colors duration-75 ${
+                  className={`w-5 h-5 transition-colors duration-75 ${
                     isActive ? 'text-sky-600' : 'text-slate-400 group-hover:text-slate-700'
                   }`}
                 />
@@ -140,7 +139,7 @@ export default function Sidebar() {
 
               {/* Smooth Gliding Label & Badge */}
               <div
-                className={`flex items-center justify-between flex-1 pr-1 pl-2 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out ${
+                className={`flex items-center justify-between flex-1 pr-1.5 pl-2.5 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out ${
                   collapsed
                     ? 'max-w-0 opacity-0 pointer-events-none'
                     : 'max-w-[180px] opacity-100'
@@ -180,13 +179,13 @@ export default function Sidebar() {
               setIsMobileMenuOpen(false);
             }}
             title={collapsed ? t('dashboard.addLoomBtn') : undefined}
-            className="w-full flex items-center h-8.5 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200/80 text-sky-800 text-xs font-bold transition-colors duration-75 cursor-pointer shadow-2xs group"
+            className="w-full flex items-center h-10 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200/80 text-sky-800 text-xs font-bold transition-colors duration-75 cursor-pointer shadow-2xs group"
           >
-            <div className="w-6 h-6 flex items-center justify-center shrink-0">
-              <Plus strokeWidth={2} className="w-3.5 h-3.5 text-sky-600 group-hover:scale-110 transition-transform" />
+            <div className="w-8 h-8 flex items-center justify-center shrink-0">
+              <Plus className="w-[18px] h-[18px] text-sky-600 group-hover:scale-110 transition-transform" />
             </div>
             <div
-              className={`flex-1 pr-1 pl-2 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out text-left ${
+              className={`flex-1 pr-1.5 pl-2.5 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out text-left ${
                 collapsed
                   ? 'max-w-0 opacity-0 pointer-events-none'
                   : 'max-w-[180px] opacity-100'
@@ -204,13 +203,13 @@ export default function Sidebar() {
                 setIsMobileMenuOpen(false);
               }}
               title={collapsed ? 'Data Reset' : undefined}
-              className="w-full flex items-center h-8.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-colors duration-75 cursor-pointer shadow-2xs group"
+              className="w-full flex items-center h-10 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-colors duration-75 cursor-pointer shadow-2xs group"
             >
-              <div className="w-6 h-6 flex items-center justify-center shrink-0">
-                <Database strokeWidth={2} className="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform" />
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                <Database className="w-[18px] h-[18px] text-indigo-600 group-hover:scale-110 transition-transform" />
               </div>
               <div
-                className={`flex-1 pr-1 pl-2 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out text-left ${
+                className={`flex-1 pr-1.5 pl-2.5 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 ease-in-out text-left ${
                   collapsed
                     ? 'max-w-0 opacity-0 pointer-events-none'
                     : 'max-w-[180px] opacity-100'
