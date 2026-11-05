@@ -128,9 +128,8 @@ export default function Sidebar() {
               setIsAddMachineOpen(true);
               setIsMobileMenuOpen(false);
             }}
-            className="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 rounded-xl text-xs font-bold flex items-center justify-center transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" />
             <span>+ Loom</span>
           </button>
 
