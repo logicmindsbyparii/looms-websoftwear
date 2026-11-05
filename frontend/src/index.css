@@ -109,15 +109,57 @@
   background-image: none;
 }
 
-/* Modern elegant scrollbar for sidebar and scroll areas */
+/* ========================================================
+   GLOBAL MODERN ULTRA-SLEEK SCROLLBAR
+   Applies across Windows, Chrome, Edge, Safari & Firefox
+   ======================================================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #64748b;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Remove ugly native arrow buttons on Windows Chrome/Edge */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 .modern-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
 .modern-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 .modern-scrollbar::-webkit-scrollbar-track {
@@ -131,4 +173,10 @@
 
 .modern-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.modern-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
