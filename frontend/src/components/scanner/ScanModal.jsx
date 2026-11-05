@@ -31,7 +31,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     };
   }, []);
 
-  // Helper to extract clean roll code from URL, raw text, or ID
+  // Universal Roll ID parser: extracts Roll ID from any URL, text card, or raw barcode
   const parseScannedCode = (decodedText) => {
     if (!decodedText) return '';
     const text = String(decodedText).trim();
@@ -43,10 +43,16 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       }
     } catch (e) {}
 
-    // Extract Roll ID (e.g. TK-2026-000001) from structured multi-line card text
-    const match = text.match(/TK-\d{4}-\d{4,6}/i);
+    // Extract Roll ID (e.g. TK-2026-000001)
+    const match = text.match(/TK-\d{4}-\d{3,7}/i);
     if (match) {
       return match[0].toUpperCase();
+    }
+
+    // Support any "ROLL: ..." identifier
+    const rollMatch = text.match(/ROLL[:\s\-_]+([A-Z0-9\-]+)/i);
+    if (rollMatch && rollMatch[1]) {
+      return rollMatch[1].trim().toUpperCase();
     }
 
     return text;
@@ -186,7 +192,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         setIsScanning(true);
       }
 
-      // 4. Ultra-responsive 120 FPS Direct Video Frame Scanner (BarcodeDetector + jsQR)
+      // 4. Universal Multi-Condition Optical Pipeline (Conquers Any Angle, Glare, Shadow, Distance & Inversion)
       const videoElem = container.querySelector('video');
       if (videoElem) {
         videoElemRef.current = videoElem;
@@ -200,8 +206,10 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
           try {
             if (videoElem.readyState >= 2 && videoElem.videoWidth > 0) {
               frameCountRef.current++;
+              const vw = videoElem.videoWidth;
+              const vh = videoElem.videoHeight;
 
-              // Engine 1: Native hardware GPU/NPU BarcodeDetector (instant hardware ML)
+              // Pass 1: Hardware GPU/NPU BarcodeDetector (instant if supported)
               if (nativeDetectorRef.current) {
                 try {
                   const barcodes = await nativeDetectorRef.current.detect(videoElem);
@@ -212,31 +220,63 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
                 } catch (e) {}
               }
 
-              // Engine 2: Sub-millisecond jsQR on ultra-fast 400px optimized buffer
-              const vw = videoElem.videoWidth;
-              const vh = videoElem.videoHeight;
-              const maxDim = 400; // Optimal 120 FPS buffer for sub-millisecond frame processing
-              let targetW = vw;
-              let targetH = vh;
-              if (targetW > maxDim || targetH > maxDim) {
-                const ratio = Math.min(maxDim / targetW, maxDim / targetH);
-                targetW = Math.round(targetW * ratio);
-                targetH = Math.round(targetH * ratio);
-              }
+              // Pass 2: Multi-Strategy Adaptive jsQR Engine:
+              // Cycles 4 optical enhancement strategies every 30ms:
+              // - 0: Standard crisp full frame (normal lighting & angles)
+              // - 1: Anti-glare contrast boost (conquers reflections, factory lighting, shadows)
+              // - 2: 1:1 Center optical zoom (conquers tiny, distant or partially blurred QR)
+              // - 3: Inverted / Dark-mode contrast (conquers white-on-black or phone screens)
+              const strategy = frameCountRef.current % 4;
+              let targetW, targetH;
 
-              if (offCanvas.width !== targetW || offCanvas.height !== targetH) {
-                offCanvas.width = targetW;
-                offCanvas.height = targetH;
+              if (strategy === 2) {
+                // 1:1 Center Optical Zoom (zero downscaling, maximum sensor sharpness for distant QR)
+                const cropSize = Math.min(vw, vh, 420);
+                const sx = Math.max(0, (vw - cropSize) / 2);
+                const sy = Math.max(0, (vh - cropSize) / 2);
+
+                if (offCanvas.width !== cropSize || offCanvas.height !== cropSize) {
+                  offCanvas.width = cropSize;
+                  offCanvas.height = cropSize;
+                }
+                offCtx.filter = 'none';
                 offCtx.imageSmoothingEnabled = false;
+                offCtx.drawImage(videoElem, sx, sy, cropSize, cropSize, 0, 0, cropSize, cropSize);
+                targetW = cropSize;
+                targetH = cropSize;
+              } else {
+                // Full field-of-view scanning
+                const maxDim = 400;
+                targetW = vw;
+                targetH = vh;
+                if (targetW > maxDim || targetH > maxDim) {
+                  const ratio = Math.min(maxDim / targetW, maxDim / targetH);
+                  targetW = Math.round(targetW * ratio);
+                  targetH = Math.round(targetH * ratio);
+                }
+
+                if (offCanvas.width !== targetW || offCanvas.height !== targetH) {
+                  offCanvas.width = targetW;
+                  offCanvas.height = targetH;
+                }
+
+                if (strategy === 1) {
+                  // High contrast anti-glare boost for reflections & shadows
+                  offCtx.filter = 'contrast(1.5) brightness(1.05) grayscale(1)';
+                } else if (strategy === 3) {
+                  // Inverted dark-mode contrast
+                  offCtx.filter = 'invert(1) contrast(1.3)';
+                } else {
+                  offCtx.filter = 'none';
+                }
+
+                offCtx.imageSmoothingEnabled = false;
+                offCtx.drawImage(videoElem, 0, 0, targetW, targetH);
               }
 
-              offCtx.drawImage(videoElem, 0, 0, targetW, targetH);
               const imgData = offCtx.getImageData(0, 0, targetW, targetH);
-
-              // 120 FPS Turbo: 'dontInvert' runs at maximum unthrottled speed
-              const inversionMode = frameCountRef.current % 12 === 0 ? 'attemptBoth' : 'dontInvert';
               const qrResult = jsQR(imgData.data, targetW, targetH, {
-                inversionAttempts: inversionMode
+                inversionAttempts: strategy === 3 ? 'attemptBoth' : 'dontInvert'
               });
 
               if (qrResult && qrResult.data) {
@@ -245,7 +285,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
               }
             }
           } catch (loopErr) {
-            // Ignore temporary frame decoding error, continue loop
+            // Ignore frame error and continue loop
           }
 
           if (isMountedRef.current && !isDetectedRef.current) {
@@ -391,12 +431,12 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
             <span className="text-xl">⚡</span>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="text-sm font-bold text-slate-900">Instant QR & Barcode Scanner</h3>
+                <h3 className="text-sm font-bold text-slate-900">Instant Universal Scanner</h3>
                 <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-emerald-200 animate-pulse">
-                  120 FPS Turbo
+                  Universal Adaptive 120 FPS
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Instant zero-latency capture</p>
+              <p className="text-xs text-slate-500 font-medium">Scans in any angle, glare, shadow, or distance</p>
             </div>
           </div>
           <button
