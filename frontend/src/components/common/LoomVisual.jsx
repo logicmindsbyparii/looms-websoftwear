@@ -34,20 +34,20 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
         <line x1="92" y1="12" x2="92" y2="48" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round" />
 
         {/* Warp Threads (Tension Lines) */}
-        {[18, 26, 34, 42, 50, 58, 66, 74, 82].map((x, idx) => (
-          <line
-            key={idx}
-            x1={x}
-            y1="14"
-            x2={x}
-            y2="46"
-            stroke={isRunning ? '#38bdf8' : '#cbd5e1'}
-            strokeWidth="1.2"
-            strokeDasharray={isRunning ? '3,2' : 'none'}
-            opacity={0.8}
-            className={isRunning ? 'animate-pulse' : ''}
-          />
-        ))}
+        <g opacity={isRunning ? 0.9 : 0.45}>
+          {[18, 26, 34, 42, 50, 58, 66, 74, 82].map((x) => (
+            <line
+              key={x}
+              x1={x}
+              y1="14"
+              x2={x}
+              y2="46"
+              stroke={isRunning ? '#38bdf8' : '#cbd5e1'}
+              strokeWidth="1.2"
+              strokeDasharray={isRunning ? '3,2' : 'none'}
+            />
+          ))}
+        </g>
 
         {/* Reed / Beat Bar */}
         <line
@@ -60,7 +60,7 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
           opacity={0.6}
         />
 
-        {/* Shuttle or Weft Projectile */}
+        {/* Shuttle or Weft Projectile with GPU Hardware Acceleration */}
         <g
           className={
             isRunning
@@ -69,7 +69,21 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
               ? 'animate-shuttle-slow'
               : ''
           }
+          style={{
+            transformBox: 'fill-box',
+            willChange: 'transform'
+          }}
         >
+          {/* Crisp lightweight shadow accent below shuttle */}
+          <rect
+            x="40"
+            y="33"
+            width="20"
+            height="1.5"
+            rx="0.75"
+            fill="rgba(0,0,0,0.15)"
+          />
+          {/* Main Shuttle Body */}
           <rect
             x="40"
             y="26"
@@ -77,7 +91,6 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
             height="8"
             rx="4"
             fill={shuttleColor}
-            className="filter drop-shadow"
           />
           <polygon
             points="60,26 66,30 60,34"

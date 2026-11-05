@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LoomVisual from '../common/LoomVisual';
@@ -191,79 +191,88 @@ export default function MachinesView() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredMachines.map((m) => {
-            const isRunning = m.status === 'running';
-            return (
-              <div
-                key={m.id}
-                onClick={() => setSelectedMachineId(m.id)}
-                className={`group heavy-card rounded-2xl p-4 bg-white border hover:shadow-lg transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
-                  isRunning
-                    ? 'border-emerald-200/80 hover:border-emerald-400'
-                    : m.status === 'stopped'
-                    ? 'border-rose-200/80 hover:border-rose-400'
-                    : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                {/* Top Header Card */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono font-black text-sm text-slate-900 group-hover:text-sky-600 transition-colors">
-                      {m.id}
-                    </span>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase font-mono ${
-                        isRunning
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : m.status === 'stopped'
-                          ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                          : 'bg-amber-50 text-amber-700 border border-amber-200'
-                      }`}
-                    >
-                      {t(`status.${m.status}`)}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xs font-bold text-slate-800 truncate mb-1">
-                    {m.name}
-                  </h3>
-                  <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between">
-                    <span>{m.shed}</span>
-                    <span className="text-slate-600 font-semibold">{m.fabric}</span>
-                  </div>
-
-                  {/* Visual Shuttle Animation Graphic */}
-                  <div className="my-3 py-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center">
-                    <LoomVisual status={m.status} rpm={m.rpm} />
-                  </div>
-                </div>
-
-                {/* Bottom Metrics Bar */}
-                <div className="pt-2 border-t border-slate-100 grid grid-cols-3 gap-1 text-center text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-mono">RPM</span>
-                    <span className="font-extrabold font-mono text-slate-800">{m.rpm}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-mono">{t('common.output')}</span>
-                    <span className="font-extrabold font-mono text-slate-800">{m.output}m</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 block font-mono">EFF</span>
-                    <span
-                      className={`font-extrabold font-mono ${
-                        m.efficiency >= 85 ? 'text-emerald-600' : m.efficiency >= 60 ? 'text-amber-600' : 'text-slate-500'
-                      }`}
-                    >
-                      {m.efficiency}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {filteredMachines.map((m) => (
+            <MachineCard
+              key={m.id}
+              machine={m}
+              onSelect={setSelectedMachineId}
+              t={t}
+            />
+          ))}
         </div>
       )}
     </div>
   );
 }
+
+const MachineCard = memo(function MachineCard({ machine, onSelect, t }) {
+  const isRunning = machine.status === 'running';
+
+  return (
+    <div
+      onClick={() => onSelect(machine.id)}
+      className={`group heavy-card rounded-2xl p-4 bg-white border hover:shadow-md transition-colors duration-150 cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+        isRunning
+          ? 'border-emerald-200/80 hover:border-emerald-400'
+          : machine.status === 'stopped'
+          ? 'border-rose-200/80 hover:border-rose-400'
+          : 'border-slate-200 hover:border-slate-300'
+      }`}
+    >
+      {/* Top Header Card */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-mono font-black text-sm text-slate-900 group-hover:text-sky-600 transition-colors">
+            {machine.id}
+          </span>
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase font-mono ${
+              isRunning
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : machine.status === 'stopped'
+                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                : 'bg-amber-50 text-amber-700 border border-amber-200'
+            }`}
+          >
+            {t(`status.${machine.status}`)}
+          </span>
+        </div>
+
+        <h3 className="text-xs font-bold text-slate-800 truncate mb-1">
+          {machine.name}
+        </h3>
+        <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between">
+          <span>{machine.shed}</span>
+          <span className="text-slate-600 font-semibold">{machine.fabric}</span>
+        </div>
+
+        {/* Visual Shuttle Animation Graphic */}
+        <div className="my-3 py-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center">
+          <LoomVisual status={machine.status} rpm={machine.rpm} />
+        </div>
+      </div>
+
+      {/* Bottom Metrics Bar */}
+      <div className="pt-2 border-t border-slate-100 grid grid-cols-3 gap-1 text-center text-xs">
+        <div>
+          <span className="text-[10px] text-slate-400 block font-mono">RPM</span>
+          <span className="font-extrabold font-mono text-slate-800">{machine.rpm}</span>
+        </div>
+        <div>
+          <span className="text-[10px] text-slate-400 block font-mono">{t('common.output')}</span>
+          <span className="font-extrabold font-mono text-slate-800">{machine.output}m</span>
+        </div>
+        <div>
+          <span className="text-[10px] text-slate-400 block font-mono">EFF</span>
+          <span
+            className={`font-extrabold font-mono ${
+              machine.efficiency >= 85 ? 'text-emerald-600' : machine.efficiency >= 60 ? 'text-amber-600' : 'text-slate-500'
+            }`}
+          >
+            {machine.efficiency}%
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
