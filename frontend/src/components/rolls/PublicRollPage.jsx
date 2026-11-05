@@ -163,9 +163,17 @@ export default function PublicRollPage({ rollCode, onGoToLogin }) {
 
               {/* Specs Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1 sm:col-span-2">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                   <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Fabric Construction</div>
                   <div className="text-sm font-bold text-slate-900">{roll.fabric}</div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+                  <div className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Produced By Loom</div>
+                  <div className="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+                    <span>🏭</span>
+                    <span>{roll.machine?.name || roll.machine?.id || 'Weaving Loom'}</span>
+                  </div>
                 </div>
 
                 {roll.location && (

@@ -14,10 +14,11 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
   const fabricName = roll?.fabric || 'Cotton Grey';
   const qualityGrade = roll?.quality || 'A-Grade (Export)';
   const metresVal = `${Number(roll?.metres || 0).toFixed(2)} Metres`;
+  const machineInfo = roll?.machineName || roll?.machineId || 'M-01';
   const locationInfo = roll?.locationId || 'Main Floor';
   const prodDate = formatDate(roll?.producedAt) || new Date().toLocaleDateString();
 
-  // Pure Product Details in QR (Loom/machine information removed):
+  // Offline Phone Card Text with Product Details and Origin Loom Machine:
   const offlineCardText = [
     `TEAM LMP TEXTILE SUITE`,
     `==============================`,
@@ -25,6 +26,7 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     `FABRIC: ${fabricName}`,
     `QUALITY: ${qualityGrade}`,
     `LENGTH: ${metresVal}`,
+    `LOOM: ${machineInfo}`,
     `DATE: ${prodDate}`,
     `==============================`,
     `AUTHENTIC MILL VERIFIED FABRIC`
@@ -100,11 +102,12 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     ctx.font = 'bold 24px sans-serif';
     ctx.fillText(`${Number(roll?.metres || 0).toFixed(2)} m`, 18, 126);
 
-    // Product Details
+    // Product & Origin Loom Machine Details
     ctx.font = '10px sans-serif';
     ctx.fillStyle = '#334155';
-    ctx.fillText(`Loc: ${locationInfo}`, 18, 154);
-    ctx.fillText(`Date: ${prodDate}`, 18, 170);
+    ctx.fillText(`Loom: ${machineInfo}`, 18, 150);
+    ctx.fillText(`Loc: ${locationInfo}`, 18, 166);
+    ctx.fillText(`Date: ${prodDate}`, 18, 182);
 
     // Barcode image if rendered
     if (barcodeRef.current) {
@@ -275,6 +278,7 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
                 </div>
 
                 <div className="pt-1 text-[10px] space-y-0.5 text-slate-700">
+                  <div><span className="font-bold text-slate-900">Loom:</span> {machineInfo}</div>
                   <div><span className="font-bold text-slate-900">Loc:</span> {locationInfo}</div>
                   <div><span className="font-bold text-slate-900">Date:</span> {prodDate}</div>
                 </div>

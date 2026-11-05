@@ -98,9 +98,9 @@ export default function ControlView() {
             onChange={e => setSelectedLoom(e.target.value)}
             className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white text-slate-900 font-mono font-bold text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
           >
-            <option value="all">{t('control.allMachinesGlobal', { count: machines.length })}</option>
+            <option value="all" className="bg-white text-slate-900 py-1">{t('control.allMachinesGlobal', { count: machines.length })}</option>
             {machines.map(m => (
-              <option key={m.id} value={m.id}>
+              <option key={m.id} value={m.id} className="bg-white text-slate-900 py-1">
                 {m.id} ({m.fabric}) — {t(`status.${m.status}`) || m.status.toUpperCase()}
               </option>
             ))}

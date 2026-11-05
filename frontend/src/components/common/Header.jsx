@@ -120,7 +120,11 @@ export default function Header() {
               title="Return to Admin Mode"
             >
               <RotateCcw className="w-3.5 h-3.5 text-sky-600" />
-              <span className="hidden sm:inline">{t('roles.exitPreview') || 'Return to Admin'}</span>
+              <span className="hidden sm:inline">
+                {t('roles.exitPreview') && t('roles.exitPreview') !== 'roles.exitPreview'
+                  ? t('roles.exitPreview')
+                  : 'Return to Admin'}
+              </span>
               <span className="sm:hidden">Return to Admin</span>
             </button>
           )}
@@ -192,7 +196,11 @@ export default function Header() {
                       className="w-full text-left px-3 py-2 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       <RotateCcw className="w-3.5 h-3.5 text-sky-600" />
-                      <span>{t('roles.exitPreview') || 'Return to Admin'}</span>
+                      <span>
+                        {t('roles.exitPreview') && t('roles.exitPreview') !== 'roles.exitPreview'
+                          ? t('roles.exitPreview')
+                          : 'Return to Admin'}
+                      </span>
                     </button>
                   </div>
                 )}

@@ -412,6 +412,7 @@ export function buildRollMessage(roll, publicUrl = '') {
 🧵 *કાપડ:* ${roll.fabric}
 ✨ *ગુણવત્તા:* ${roll.quality || 'A-Grade'}
 📏 *લંબાઈ:* ${metresStr}
+🏭 *લૂમ:* ${machineStr}
 📍 *સ્થાન:* ${locationStr}
 🟢 *સ્થિતિ:* ${roll.status}
 ----------------------------------------
@@ -427,6 +428,7 @@ ${url}
 🧵 *कपड़ा:* ${roll.fabric}
 ✨ *गुणवत्ता:* ${roll.quality || 'A-Grade'}
 📏 *लंबाई:* ${metresStr}
+🏭 *लूम मशीन:* ${machineStr}
 📍 *स्थान:* ${locationStr}
 🟢 *स्थिति:* ${roll.status}
 ----------------------------------------
@@ -442,6 +444,7 @@ ${url}
 🧵 *कापड:* ${roll.fabric}
 ✨ *दर्जा:* ${roll.quality || 'A-Grade'}
 📏 *लांबी:* ${metresStr}
+🏭 *लूम मशीन:* ${machineStr}
 📍 *स्थान:* ${locationStr}
 🟢 *स्थिती:* ${roll.status}
 ----------------------------------------
@@ -456,6 +459,7 @@ ${url}
 🧵 *Fabric:* ${roll.fabric}
 ✨ *Quality:* ${roll.quality || 'A-Grade (Export)'}
 📏 *Length:* ${metresStr}
+🏭 *Loom:* ${machineStr}
 📍 *Location:* ${locationStr}
 🟢 *Status:* ${roll.status}
 ----------------------------------------
