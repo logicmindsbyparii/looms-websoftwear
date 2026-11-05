@@ -286,7 +286,7 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
                   <QRCodeSVG
                     value={qrValue}
                     size={115}
-                    level="M"
+                    level="L"
                     marginSize={2}
                     className="w-full h-auto"
                   />
