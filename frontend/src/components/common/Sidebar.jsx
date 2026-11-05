@@ -20,9 +20,7 @@ import {
   Plus,
   Database,
   UserCheck,
-  QrCode,
-  ChevronLeft,
-  ChevronRight
+  QrCode
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -293,7 +291,7 @@ export default function Sidebar() {
         } transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[width] bg-white border-r border-slate-200/90 flex-col shrink-0 h-full select-none overflow-hidden relative shadow-xs`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-3 border-b border-slate-200/90 bg-white flex items-center justify-between shrink-0 overflow-hidden">
+        <div className="h-16 px-3 border-b border-slate-200/90 bg-white flex items-center shrink-0 overflow-hidden">
           <div className="flex items-center min-w-0">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20 font-bold font-display text-base tracking-wider shrink-0">
               LM
@@ -313,18 +311,6 @@ export default function Sidebar() {
               </p>
             </div>
           </div>
-
-          {/* Sidebar internal toggle button */}
-          <button
-            onClick={toggleSidebar}
-            className={`hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all cursor-pointer items-center justify-center shrink-0 ${
-              isSidebarCollapsed ? 'rotate-180' : ''
-            }`}
-            title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            aria-label="Toggle Sidebar"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Role Banner Indicator (Smooth slide up/down) */}
