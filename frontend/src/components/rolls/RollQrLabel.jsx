@@ -7,53 +7,78 @@ import { useApp } from '../../context/AppContext';
 export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
   const barcodeRef = useRef(null);
   const labelRef = useRef(null);
-  const { networkUrl, publicScanBaseUrl, showToast } = useApp();
+  const { showToast } = useApp();
 
   const rollId = roll?.id || 'TK-2026-000001';
+  const fabricName = roll?.fabric || 'Cotton Grey';
+  const qualityGrade = roll?.quality || 'A-Grade (Export)';
+  const metresVal = `${Number(roll?.metres || 0).toFixed(2)} Metres`;
+  const machineInfo = roll?.machineName || roll?.machineId || 'M-01';
+  const locationInfo = roll?.locationId || 'Main Floor';
+  const prodDate = formatDate(roll?.producedAt) || new Date().toLocaleDateString();
 
-  // Determine the default base URL for phone QR scanning
-  const getDefaultBaseUrl = () => {
+  // Instant Offline Phone Card Text:
+  // When scanned with Google Lens, iPhone Camera, Samsung Camera, or WhatsApp,
+  // the phone IMMEDIATELY displays all roll details on screen without needing any web, IP, or internet!
+  const offlineCardText = [
+    `TEAM LMP TEXTILE SUITE`,
+    `==============================`,
+    `TAKA ROLL: ${rollId}`,
+    `FABRIC: ${fabricName}`,
+    `QUALITY: ${qualityGrade}`,
+    `LENGTH: ${metresVal}`,
+    `LOOM: ${machineInfo}`,
+    `LOCATION: ${locationInfo}`,
+    `STATUS: ${roll?.status || 'Ready'}`,
+    `DATE: ${prodDate}`,
+    `==============================`,
+    `AUTHENTIC MILL VERIFIED FABRIC`
+  ].join('\n');
+
+  // Format mode: 'text' (Direct Offline Card on Phone - NO Web/IP) vs 'url' (Web Link)
+  // Default is 'text' as explicitly requested: "web pe nahi http 192 esa kuchh nahi ye wala nikaldo"
+  const [qrFormat, setQrFormat] = useState(() => {
     try {
-      const saved = localStorage.getItem('loomus_qr_base_url');
-      if (saved && saved.trim()) return saved.trim();
+      return localStorage.getItem('loomus_qr_format') || 'text';
+    } catch (e) {
+      return 'text';
+    }
+  });
+
+  const [customWebUrl, setCustomWebUrl] = useState(() => {
+    try {
+      return localStorage.getItem('loomus_qr_web_url') || '';
+    } catch (e) {
+      return '';
+    }
+  });
+
+  const [showConfig, setShowConfig] = useState(false);
+
+  const qrValue = qrFormat === 'url' && customWebUrl.trim()
+    ? `${customWebUrl.replace(/\/+$/, '')}/?roll=${roll?.qrToken || rollId}`
+    : offlineCardText;
+
+  const handleFormatChange = (fmt) => {
+    setQrFormat(fmt);
+    try {
+      localStorage.setItem('loomus_qr_format', fmt);
     } catch (e) {}
-
-    if (publicScanBaseUrl && publicScanBaseUrl.trim()) {
-      return publicScanBaseUrl.trim();
+    if (showToast) {
+      showToast(
+        fmt === 'text'
+          ? 'Switched to Direct Offline Phone Card (No Web/IP needed)'
+          : 'Switched to Web URL Link',
+        'info'
+      );
     }
-
-    if (networkUrl && networkUrl.trim()) {
-      return networkUrl.trim();
-    }
-
-    if (typeof window !== 'undefined') {
-      const host = window.location.hostname;
-      if (host !== 'localhost' && host !== '127.0.0.1') {
-        return window.location.origin;
-      }
-    }
-
-    // Default to the computer's Wi-Fi network address so any phone on the Wi-Fi connects immediately
-    return 'http://192.168.1.7:5173';
   };
 
-  const [baseUrl, setBaseUrl] = useState(getDefaultBaseUrl);
-  const [showHostConfig, setShowHostConfig] = useState(false);
-
-  const cleanBase = (baseUrl || 'http://192.168.1.7:5173').replace(/\/+$/, '');
-  const rollParam = roll?.qrToken || roll?.id || 'TK-2026-000001';
-  const qrUrl = `${cleanBase}/?roll=${rollParam}`;
-
-  const handleBaseUrlChange = (newVal) => {
-    setBaseUrl(newVal);
+  const handleWebUrlChange = (val) => {
+    setCustomWebUrl(val);
     try {
-      localStorage.setItem('loomus_qr_base_url', newVal);
+      localStorage.setItem('loomus_qr_web_url', val);
     } catch (e) {}
-  };
-
-  const handleSetPreset = (presetUrl) => {
-    handleBaseUrlChange(presetUrl);
-    if (showToast) showToast('QR Target updated for phone scanning', 'success');
   };
 
   useEffect(() => {
@@ -76,10 +101,10 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     window.print();
   };
 
-  const handleCopyLink = () => {
+  const handleCopyText = () => {
     try {
-      navigator.clipboard.writeText(qrUrl);
-      if (showToast) showToast('QR Scan URL copied! You can test it on any phone.', 'success');
+      navigator.clipboard.writeText(qrValue);
+      if (showToast) showToast('QR Content copied to clipboard', 'success');
     } catch (e) {}
   };
 
@@ -114,10 +139,10 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
 
     // Fabric & Quality
     ctx.font = 'bold 12px sans-serif';
-    ctx.fillText(roll?.fabric || 'Cotton Grey', 18, 74);
+    ctx.fillText(fabricName, 18, 74);
     ctx.font = '11px sans-serif';
     ctx.fillStyle = '#475569';
-    ctx.fillText(`Quality: ${roll?.quality || 'A-Grade'}`, 18, 92);
+    ctx.fillText(`Quality: ${qualityGrade}`, 18, 92);
 
     // Metres (Big)
     ctx.fillStyle = '#0f172a';
@@ -127,9 +152,9 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     // Machine & Location
     ctx.font = '10px sans-serif';
     ctx.fillStyle = '#334155';
-    ctx.fillText(`Loom: ${roll?.machineName || roll?.machineId || 'M-01'}`, 18, 150);
-    ctx.fillText(`Location: ${roll?.locationId || 'Floor'}`, 18, 166);
-    ctx.fillText(`Date: ${formatDate(roll?.producedAt)}`, 18, 182);
+    ctx.fillText(`Loom: ${machineInfo}`, 18, 150);
+    ctx.fillText(`Location: ${locationInfo}`, 18, 166);
+    ctx.fillText(`Date: ${prodDate}`, 18, 182);
 
     // Barcode image if rendered
     if (barcodeRef.current) {
@@ -149,11 +174,11 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
       const image64 = b64Start + svg64;
       const img = new Image();
       img.onload = () => {
-        ctx.drawImage(img, 230, 20, 150, 150);
+        ctx.drawImage(img, 225, 20, 155, 155);
         ctx.font = '8px sans-serif';
         ctx.fillStyle = '#64748b';
         ctx.textAlign = 'center';
-        ctx.fillText('SCAN WITH ANY PHONE', 305, 184);
+        ctx.fillText('SCAN WITH ANY PHONE', 302, 184);
 
         // Download link
         const a = document.createElement('a');
@@ -174,7 +199,7 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
             <span className="text-xl">🏷️</span>
             <div>
               <h3 className="text-sm font-bold text-slate-900">Roll QR & Barcode Sticker Label</h3>
-              <p className="text-xs text-slate-700">100mm × 70mm Industrial Standard Format</p>
+              <p className="text-xs text-slate-700">Universal Direct Scan (Works on Any Phone Without Web)</p>
             </div>
           </div>
           <button
@@ -187,71 +212,78 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
 
         {/* Content Scrollable Body */}
         <div className="p-4 sm:p-6 overflow-y-auto flex flex-col items-center space-y-4">
-          {/* Universal Mobile Scanning Host Selector Bar */}
-          <div className="w-full max-w-[380px] p-3 bg-sky-50/70 border border-sky-200 rounded-2xl space-y-2">
+          {/* Universal Direct Scan Badge */}
+          <div className="w-full max-w-[380px] p-3.5 bg-emerald-50/90 border border-emerald-200 rounded-2xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <span>📱</span>
-                <span>Universal Phone QR Scan</span>
+              <span className="text-xs font-extrabold text-emerald-900 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Direct Offline Phone Scan Active</span>
               </span>
               <button
                 type="button"
-                onClick={() => setShowHostConfig(!showHostConfig)}
-                className="text-[11px] text-sky-700 hover:text-sky-900 font-bold underline"
+                onClick={() => setShowConfig(!showConfig)}
+                className="text-[11px] text-emerald-700 hover:text-emerald-900 font-bold underline"
               >
-                {showHostConfig ? 'Hide Config' : 'Change Target Host'}
+                {showConfig ? 'Hide' : 'Options'}
               </button>
             </div>
 
-            <p className="text-[11px] text-slate-600 leading-tight">
-              Koi bhi phone is sticker ko apne camera ya Google Lens se scan karega toh direct roll details bina kisi login ya software ke dikhegi.
+            <p className="text-[11.5px] text-emerald-800 leading-snug">
+              ✨ <strong>Web link ya IP ki koi zaroorat nahi:</strong> Kisi bhi phone (Camera, Google Lens, WhatsApp QR scanner) se scan karte hi poori roll details screen par turant bina internet ke dikhegi!
             </p>
 
-            {showHostConfig && (
-              <div className="space-y-2 pt-1 border-t border-sky-200/80">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
-                  Scan URL Host (Wi-Fi or Public Domain)
-                </div>
-                <div className="flex gap-1.5">
-                  <input
-                    type="text"
-                    value={baseUrl}
-                    onChange={(e) => handleBaseUrlChange(e.target.value)}
-                    placeholder="http://192.168.1.7:5173 or https://mill.example.com"
-                    className="flex-1 px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
-                <div className="flex flex-wrap gap-1.5 pt-0.5">
+            {showConfig && (
+              <div className="pt-2 border-t border-emerald-200/80 space-y-2">
+                <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => handleSetPreset(networkUrl || 'http://192.168.1.7:5173')}
-                    className="px-2.5 py-1 bg-white hover:bg-sky-100 text-sky-800 border border-sky-300 rounded-lg text-[10px] font-bold transition-all shadow-2xs"
+                    onClick={() => handleFormatChange('text')}
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
+                      qrFormat === 'text'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                    }`}
                   >
-                    Wi-Fi IP ({networkUrl || '192.168.1.7'})
+                    Direct Text Card (Recommended)
                   </button>
-                  {typeof window !== 'undefined' && window.location.hostname !== 'localhost' && (
-                    <button
-                      type="button"
-                      onClick={() => handleSetPreset(window.location.origin)}
-                      className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-[10px] font-bold transition-all"
-                    >
-                      Current URL ({window.location.host})
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleFormatChange('url')}
+                    className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all ${
+                      qrFormat === 'url'
+                        ? 'bg-sky-600 text-white shadow-xs'
+                        : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    Public Web Link
+                  </button>
                 </div>
+
+                {qrFormat === 'url' && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-600 uppercase">
+                      Enter Public Domain / Hosted Website URL:
+                    </label>
+                    <input
+                      type="text"
+                      value={customWebUrl}
+                      onChange={(e) => handleWebUrlChange(e.target.value)}
+                      placeholder="https://yourmilldomain.com"
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
+                    />
+                  </div>
+                )}
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-1 border-t border-sky-200/60 text-[10px] text-slate-500 font-mono">
-              <span className="truncate max-w-[260px]" title={qrUrl}>
-                {qrUrl}
-              </span>
+            <div className="flex items-center justify-between pt-1 border-t border-emerald-200/60 text-[10px] text-emerald-700">
+              <span className="font-semibold">Scanner Feedback: Instant On-Screen Card</span>
               <button
                 type="button"
-                onClick={handleCopyLink}
-                className="text-sky-700 hover:text-sky-900 font-bold underline shrink-0 ml-2"
+                onClick={handleCopyText}
+                className="text-emerald-800 hover:text-emerald-950 font-bold underline"
               >
-                Copy Link
+                Copy Content
               </button>
             </div>
           </div>
@@ -281,8 +313,8 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
 
                 <div className="pt-1">
                   <div className="text-[10px] font-bold text-slate-700 uppercase">Fabric</div>
-                  <div className="text-xs font-bold truncate text-slate-900">{roll?.fabric || 'Cambric'}</div>
-                  <div className="text-[10px] text-slate-700 font-medium">{roll?.quality || 'A-Grade'}</div>
+                  <div className="text-xs font-bold truncate text-slate-900">{fabricName}</div>
+                  <div className="text-[10px] text-slate-700 font-medium">{qualityGrade}</div>
                 </div>
 
                 <div className="pt-1">
@@ -293,18 +325,18 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
                 </div>
 
                 <div className="pt-1 text-[10px] space-y-0.5 text-slate-700">
-                  <div><span className="font-bold text-slate-900">Loom:</span> {roll?.machineName || roll?.machineId}</div>
-                  <div><span className="font-bold text-slate-900">Loc:</span> {roll?.locationId}</div>
-                  <div><span className="font-bold text-slate-900">Date:</span> {formatDate(roll?.producedAt)}</div>
+                  <div><span className="font-bold text-slate-900">Loom:</span> {machineInfo}</div>
+                  <div><span className="font-bold text-slate-900">Loc:</span> {locationInfo}</div>
+                  <div><span className="font-bold text-slate-900">Date:</span> {prodDate}</div>
                 </div>
               </div>
 
               {/* QR Code Container */}
               <div className="col-span-5 flex flex-col items-center justify-center p-2 bg-slate-50 border border-slate-200 rounded-lg">
                 <QRCodeSVG
-                  value={qrUrl}
+                  value={qrValue}
                   size={110}
-                  level="M"
+                  level="L"
                   includeMargin={false}
                   className="w-full h-auto"
                 />

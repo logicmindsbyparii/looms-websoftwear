@@ -21,7 +21,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     };
   }, []);
 
-  // Helper to extract clean roll code from URL or raw ID
+  // Helper to extract clean roll code from URL, raw text, or ID
   const parseScannedCode = (decodedText) => {
     try {
       if (decodedText.includes('roll=')) {
@@ -29,6 +29,13 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         return url.searchParams.get('roll') || decodedText;
       }
     } catch (e) {}
+
+    // Extract Roll ID (e.g. TK-2026-000001) from structured text if scanned from full card
+    const match = decodedText.match(/TK-\d{4}-\d{4,6}/i);
+    if (match) {
+      return match[0].toUpperCase();
+    }
+
     return decodedText.trim();
   };
 

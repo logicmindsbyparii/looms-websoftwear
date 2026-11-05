@@ -49,8 +49,11 @@ export function useHardwareScanner(onScan, options = {}) {
             e.preventDefault();
           }
 
+          const tkMatch = scannedText.match(/TK-\d{4}-\d{4,6}/i);
+          const finalCode = tkMatch ? tkMatch[0].toUpperCase() : scannedText;
+
           if (onScanRef.current) {
-            onScanRef.current(scannedText);
+            onScanRef.current(finalCode);
           }
         }
         return;
