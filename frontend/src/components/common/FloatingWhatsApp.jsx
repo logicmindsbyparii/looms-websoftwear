@@ -2,27 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { openWhatsApp } from '../../utils/whatsapp';
+import { WhatsAppBrandIcon } from './WhatsAppIcon';
 import {
   X,
   Send,
-  MessageSquare,
   ExternalLink,
   Sparkles,
-  PhoneCall,
   CheckCheck
 } from 'lucide-react';
 
-// Official Authentic WhatsApp Vector Icon
-export const WhatsAppBrandIcon = ({ className = "w-6 h-6", fill = "currentColor" }) => (
-  <svg
-    viewBox="0 0 32 32"
-    className={className}
-    fill={fill}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M16 2a13.9 13.9 0 0 0-12 21L2 30l7.3-1.9A13.9 13.9 0 1 0 16 2zm0 25.5a11.6 11.6 0 0 1-5.9-1.6l-.4-.3-4.4 1.1 1.2-4.3-.3-.5A11.6 11.6 0 1 1 16 27.5zm6.4-8.7c-.3-.2-2-.1-2.3-1.1-.3-.2-.5-.3-.7.1-.2.3-.8 1.1-1 1.3-.2.2-.4.2-.7.1a8.9 8.9 0 0 1-2.6-1.6 9.8 9.8 0 0 1-1.8-2.3c-.2-.3 0-.5.1-.7.2-.1.3-.4.5-.5.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6s-.7-1.7-1-2.4c-.3-.6-.6-.5-.8-.5h-.7c-.2 0-.7.1-1.1.5-.4.4-1.5 1.5-1.5 3.6s1.5 4.2 1.7 4.5c.2.3 3 4.6 7.4 6.4 1 .4 1.9.7 2.5.9 1.1.3 2 .3 2.8.2.9-.1 2.7-1.1 3.1-2.2.4-1 .4-2 .3-2.2-.1-.2-.4-.3-.7-.5z" />
-  </svg>
-);
+// Re-export for compatibility
+export { WhatsAppBrandIcon };
 
 export default function FloatingWhatsApp() {
   const {
@@ -87,7 +77,8 @@ export default function FloatingWhatsApp() {
   return (
     <div
       ref={containerRef}
-      className="fixed z-40 select-none bottom-20 right-4 md:bottom-6 md:right-6 font-sans"
+      className="fixed z-40 select-none bottom-20 right-4 md:bottom-6 md:right-6 font-sans will-change-transform"
+      style={{ transform: 'translateZ(0)' }}
     >
       {/* WhatsApp Chat Popup Box (Widget Card) */}
       {isOpen && (
@@ -126,7 +117,7 @@ export default function FloatingWhatsApp() {
           </div>
 
           {/* Chat Body with WhatsApp Pattern Wallpaper Background */}
-          <div className="p-4 bg-slate-100/80 space-y-3 max-h-[360px] overflow-y-auto">
+          <div className="p-4 bg-slate-100/80 space-y-3 max-h-[360px] overflow-y-auto overscroll-contain">
             {/* Timestamp Header */}
             <div className="text-center">
               <span className="px-2.5 py-0.5 text-[10px] font-mono font-medium text-slate-500 bg-white/70 rounded-full shadow-2xs">
@@ -218,7 +209,7 @@ export default function FloatingWhatsApp() {
       )}
 
       {/* Floating Tooltip Pill (Shows on hover or initial hint) */}
-      {(showTooltip || (!isOpen && false)) && (
+      {showTooltip && !isOpen && (
         <div className="absolute right-16 top-1/2 -translate-y-1/2 mr-2 whitespace-nowrap bg-slate-900 text-white text-xs font-bold py-1.5 px-3 rounded-xl shadow-xl flex items-center gap-1.5 animate-in fade-in zoom-in-95">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span>{t('whatsApp.chatWithUs')}</span>
@@ -235,31 +226,26 @@ export default function FloatingWhatsApp() {
         </div>
       )}
 
-      {/* Main Floating WhatsApp Circular Action Button */}
+      {/* Main Floating WhatsApp Action Button */}
       <button
         onClick={handleToggle}
         onMouseEnter={() => !hasInteracted && setShowTooltip(true)}
-        className="relative group w-14 h-14 sm:w-15 sm:h-15 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-lg hover:shadow-2xl shadow-emerald-500/40 hover:shadow-emerald-500/60 active:scale-95 hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-400/40"
+        className="relative group w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white flex items-center justify-center shadow-lg hover:shadow-2xl shadow-emerald-500/40 hover:shadow-emerald-500/60 active:scale-95 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-400/40 cursor-pointer"
         title={t('whatsApp.chatWithUs')}
         aria-label="WhatsApp Support and Inquiries"
       >
-        {/* Pulsing Outer Ping Ring */}
-        <span className="absolute -inset-1 rounded-full bg-[#25D366] opacity-30 group-hover:opacity-60 animate-ping"></span>
-
-        {/* Status Dot */}
-        <span className="absolute top-0 right-0 flex h-3.5 w-3.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-400 border-2 border-white shadow-xs"></span>
+        {/* Subtle Online Indicator Dot */}
+        <span className="absolute top-0 right-0 flex h-3 w-3">
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-300 border-2 border-white shadow-xs"></span>
         </span>
 
-        {/* WhatsApp Icon or Close Icon when opened */}
+        {/* Authentic WhatsApp Icon or Close Icon when opened */}
         {isOpen ? (
-          <X className="w-7 h-7 text-white stroke-[2.5] animate-in zoom-in-75 duration-200" />
+          <X className="w-6 h-6 text-white stroke-[2.5] animate-in zoom-in-75 duration-200" />
         ) : (
-          <WhatsAppBrandIcon className="w-8 h-8 fill-white drop-shadow-sm transition-transform duration-300 group-hover:rotate-6" />
+          <WhatsAppBrandIcon className="w-7 h-7 fill-white drop-shadow-sm transition-transform duration-200 group-hover:scale-110" />
         )}
       </button>
     </div>
   );
 }
-

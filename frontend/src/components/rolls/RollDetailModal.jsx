@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { formatDate } from '../../utils/formatters';
 import { buildRollMessage, openWhatsApp } from '../../utils/whatsapp';
 import RollQrLabel from './RollQrLabel';
+import { WhatsAppBrandIcon } from '../common/WhatsAppIcon';
 
 export default function RollDetailModal({ rollCode, onClose, onRefresh }) {
   const { userRole, showToast } = useApp();
@@ -228,7 +229,7 @@ export default function RollDetailModal({ rollCode, onClose, onRefresh }) {
               className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-all text-xs font-semibold flex items-center space-x-1"
               title="Share via WhatsApp"
             >
-              <span>💬</span>
+              <WhatsAppBrandIcon className="w-3.5 h-3.5 fill-[#25D366] shrink-0" />
               <span className="hidden sm:inline">WhatsApp</span>
             </button>
             <button

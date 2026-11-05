@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { WhatsAppBrandIcon } from './WhatsAppIcon';
 import { openWhatsApp } from '../../utils/whatsapp';
 import {
   X,

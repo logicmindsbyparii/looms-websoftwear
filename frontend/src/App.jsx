@@ -178,7 +178,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-slate-50 flex font-sans selection:bg-sky-500 selection:text-white">
+    <div className="h-screen h-[100dvh] max-h-screen overflow-hidden bg-slate-50 flex font-sans selection:bg-sky-500 selection:text-white">
       {/* Desktop Sidebar: Full height on left, flush with screen top */}
       <Sidebar />
 
@@ -186,7 +186,7 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden h-full">
         <Header />
 
-        <main className="flex-1 h-full overflow-y-auto p-3 sm:p-5 md:p-8 pb-24 md:pb-8 bg-slate-50/60 grid-mesh">
+        <main className="flex-1 h-full overflow-y-auto overscroll-contain p-3 sm:p-5 md:p-8 pb-28 md:pb-8 bg-slate-50/60 grid-mesh scroll-smooth">
           {renderActiveView()}
         </main>
       </div>

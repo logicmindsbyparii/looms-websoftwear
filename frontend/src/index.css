@@ -11,20 +11,44 @@
     --border-color: #e2e8f0;
   }
 
+  html {
+    height: 100%;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
     background-color: #f8fafc;
     color: #0f172a;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+    touch-action: manipulation;
   }
 
-  /* Custom subtle scrollbar */
+  /* Hardware-accelerated smooth scrolling on touch and desktop */
+  main,
+  .overflow-y-auto,
+  .overflow-x-auto,
+  .modern-scrollbar {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+    touch-action: pan-y;
+  }
+
+  /* Custom subtle, high-performance scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
@@ -35,12 +59,13 @@
   }
 }
 
-/* Glassmorphism & Heavy industrial light accents */
+/* Glassmorphism & Heavy industrial light accents with GPU acceleration */
 .heavy-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transform: translateZ(0);
 }
 
 .heavy-card:hover {
@@ -69,11 +94,12 @@
   box-shadow: 0 0 12px rgba(2, 132, 199, 0.35);
 }
 
-/* Precision technical pattern background */
+/* Precision technical pattern background with fixed attachment for lag-free 120fps scrolling */
 .grid-mesh {
   background-image: radial-gradient(#cbd5e1 0.75px, transparent 0.75px), radial-gradient(#cbd5e1 0.75px, #f8fafc 0.75px);
   background-size: 30px 30px;
   background-position: 0 0, 15px 15px;
+  background-attachment: fixed;
 }
 
 /* Modern elegant scrollbar for sidebar and scroll areas */
@@ -99,4 +125,3 @@
 .modern-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import { WhatsAppBrandIcon } from './WhatsAppIcon';
 import {
   Bell,
   Power,
@@ -210,7 +211,7 @@ export default function Header() {
             title={`Configure WhatsApp Alerts & Reports (Admin: ${adminWhatsAppPhone})`}
             aria-label="Configure WhatsApp"
           >
-            <MessageSquare className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600" />
+            <WhatsAppBrandIcon className="w-4 h-4 fill-[#25D366] shrink-0" />
             <span className="hidden sm:inline">WhatsApp</span>
           </button>
         </div>
