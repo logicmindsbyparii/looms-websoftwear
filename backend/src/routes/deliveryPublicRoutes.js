@@ -22,3 +22,4 @@ router.post('/:token/request-otp', otpRequestLimiter, requestReceiverOTP);
 router.post('/:token/confirm', otpVerifyLimiter, confirmReceiverDelivery);
 
 export default router;
+

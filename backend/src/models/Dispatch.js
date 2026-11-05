@@ -323,3 +323,4 @@ dispatchSchema.statics.isValidTransition = function (currentStatus, newStatus) {
 };
 
 export const Dispatch = mongoose.model('Dispatch', dispatchSchema);
+

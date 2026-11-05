@@ -27,3 +27,4 @@ router.patch('/:id/transit', requirePermission(PERMISSIONS.DISPATCH_TRANSIT_UPDA
 router.post('/:id/resolve-dispute', requireRole('Admin'), resolveDispute);
 
 export default router;
+

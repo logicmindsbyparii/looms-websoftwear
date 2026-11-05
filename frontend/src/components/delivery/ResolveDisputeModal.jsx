@@ -128,3 +128,4 @@ export default function ResolveDisputeModal({ dispatch, isOpen, onClose, onResol
     </div>
   );
 }
+

@@ -39,3 +39,4 @@ export const resolveDispute = asyncHandler(async (req, res) => {
   );
   res.status(200).json(new ApiResponse(200, result, `Dispute resolved with action: ${action}`));
 });
+

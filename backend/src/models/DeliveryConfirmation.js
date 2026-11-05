@@ -121,3 +121,4 @@ const deliveryConfirmationSchema = new mongoose.Schema(
 deliveryConfirmationSchema.index({ createdAt: -1 });
 
 export const DeliveryConfirmation = mongoose.model('DeliveryConfirmation', deliveryConfirmationSchema);
+

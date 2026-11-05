@@ -14,13 +14,10 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
   const fabricName = roll?.fabric || 'Cotton Grey';
   const qualityGrade = roll?.quality || 'A-Grade (Export)';
   const metresVal = `${Number(roll?.metres || 0).toFixed(2)} Metres`;
-  const machineInfo = roll?.machineName || roll?.machineId || 'M-01';
   const locationInfo = roll?.locationId || 'Main Floor';
   const prodDate = formatDate(roll?.producedAt) || new Date().toLocaleDateString();
 
-  // Instant Offline Phone Card Text:
-  // When scanned with Google Lens, iPhone Camera, Samsung Camera, or WhatsApp,
-  // the phone IMMEDIATELY displays all roll details on screen without needing any web, IP, or internet!
+  // Pure Product Details in QR (Loom/machine information removed):
   const offlineCardText = [
     `TEAM LMP TEXTILE SUITE`,
     `==============================`,
@@ -28,59 +25,12 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     `FABRIC: ${fabricName}`,
     `QUALITY: ${qualityGrade}`,
     `LENGTH: ${metresVal}`,
-    `LOOM: ${machineInfo}`,
-    `LOCATION: ${locationInfo}`,
-    `STATUS: ${roll?.status || 'Ready'}`,
     `DATE: ${prodDate}`,
     `==============================`,
     `AUTHENTIC MILL VERIFIED FABRIC`
   ].join('\n');
 
-  // Format mode: 'text' (Direct Offline Card on Phone - NO Web/IP) vs 'url' (Web Link)
-  // Default is 'text' as explicitly requested: "web pe nahi http 192 esa kuchh nahi ye wala nikaldo"
-  const [qrFormat, setQrFormat] = useState(() => {
-    try {
-      return localStorage.getItem('loomus_qr_format') || 'text';
-    } catch (e) {
-      return 'text';
-    }
-  });
-
-  const [customWebUrl, setCustomWebUrl] = useState(() => {
-    try {
-      return localStorage.getItem('loomus_qr_web_url') || '';
-    } catch (e) {
-      return '';
-    }
-  });
-
-  const [showConfig, setShowConfig] = useState(false);
-
-  const qrValue = qrFormat === 'url' && customWebUrl.trim()
-    ? `${customWebUrl.replace(/\/+$/, '')}/?roll=${roll?.qrToken || rollId}`
-    : offlineCardText;
-
-  const handleFormatChange = (fmt) => {
-    setQrFormat(fmt);
-    try {
-      localStorage.setItem('loomus_qr_format', fmt);
-    } catch (e) {}
-    if (showToast) {
-      showToast(
-        fmt === 'text'
-          ? 'Switched to Direct Offline Phone Card (No Web/IP needed)'
-          : 'Switched to Web URL Link',
-        'info'
-      );
-    }
-  };
-
-  const handleWebUrlChange = (val) => {
-    setCustomWebUrl(val);
-    try {
-      localStorage.setItem('loomus_qr_web_url', val);
-    } catch (e) {}
-  };
+  const qrValue = offlineCardText;
 
   useEffect(() => {
     if (barcodeRef.current && rollId) {
@@ -150,12 +100,11 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     ctx.font = 'bold 24px sans-serif';
     ctx.fillText(`${Number(roll?.metres || 0).toFixed(2)} m`, 18, 126);
 
-    // Machine & Location
+    // Product Details
     ctx.font = '10px sans-serif';
     ctx.fillStyle = '#334155';
-    ctx.fillText(`Loom: ${machineInfo}`, 18, 150);
-    ctx.fillText(`Location: ${locationInfo}`, 18, 166);
-    ctx.fillText(`Date: ${prodDate}`, 18, 182);
+    ctx.fillText(`Loc: ${locationInfo}`, 18, 154);
+    ctx.fillText(`Date: ${prodDate}`, 18, 170);
 
     // Barcode image if rendered
     if (barcodeRef.current) {
@@ -326,7 +275,6 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
                 </div>
 
                 <div className="pt-1 text-[10px] space-y-0.5 text-slate-700">
-                  <div><span className="font-bold text-slate-900">Loom:</span> {machineInfo}</div>
                   <div><span className="font-bold text-slate-900">Loc:</span> {locationInfo}</div>
                   <div><span className="font-bold text-slate-900">Date:</span> {prodDate}</div>
                 </div>

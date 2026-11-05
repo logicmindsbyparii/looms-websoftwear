@@ -568,16 +568,12 @@ export async function scanRollPublic(code) {
     }
   }
 
-  // Strict whitelist return
+  // Strict whitelist return: pure product details (machine/loom info removed)
   return {
     id: roll.id,
     fabric: roll.fabric,
     quality: roll.quality,
     metres: roll.metres,
-    machine: {
-      id: roll.machineId,
-      name: roll.machineName
-    },
     location: locationInfo,
     status: roll.status,
     producedAt: roll.producedAt

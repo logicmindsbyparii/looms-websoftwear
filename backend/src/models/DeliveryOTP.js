@@ -47,3 +47,4 @@ const deliveryOTPSchema = new mongoose.Schema(
 deliveryOTPSchema.index({ dispatchId: 1, isUsed: 1, expiresAt: 1 });
 
 export const DeliveryOTP = mongoose.model('DeliveryOTP', deliveryOTPSchema);
+

@@ -322,3 +322,4 @@ export default function DispatchDetailModal({ dispatchId, isOpen, onClose, onOpe
     </div>
   );
 }
+

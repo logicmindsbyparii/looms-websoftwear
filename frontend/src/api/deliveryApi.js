@@ -85,3 +85,4 @@ export async function confirmPartyDelivery(token, payload) {
   }
   return data.data;
 }
+

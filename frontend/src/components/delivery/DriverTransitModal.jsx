@@ -187,3 +187,4 @@ export default function DriverTransitModal({ dispatch, isOpen, onClose, onUpdate
     </div>
   );
 }
+
