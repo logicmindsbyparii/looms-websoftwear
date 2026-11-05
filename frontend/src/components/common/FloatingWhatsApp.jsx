@@ -88,7 +88,7 @@ export default function FloatingWhatsApp() {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-md">
-                  <WhatsAppBrandIcon className="w-6 h-6 fill-white" />
+                  <WhatsAppBrandIcon className="w-7 h-7 fill-white" />
                 </div>
                 <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-[#075E54] rounded-full"></span>
               </div>
@@ -241,9 +241,9 @@ export default function FloatingWhatsApp() {
 
         {/* Authentic WhatsApp Icon or Close Icon when opened */}
         {isOpen ? (
-          <X className="w-6 h-6 text-white stroke-[2.5] animate-in zoom-in-75 duration-200" />
+          <X className="w-7 h-7 text-white stroke-[2.5] animate-in zoom-in-75 duration-200" />
         ) : (
-          <WhatsAppBrandIcon className="w-7 h-7 fill-white drop-shadow-sm transition-transform duration-200 group-hover:scale-110" />
+          <WhatsAppBrandIcon className="w-9 h-9 sm:w-9.5 sm:h-9.5 fill-white drop-shadow-sm transition-transform duration-200 group-hover:scale-105" />
         )}
       </button>
     </div>
