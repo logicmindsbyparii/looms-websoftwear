@@ -20,7 +20,9 @@ import {
   Plus,
   Database,
   UserCheck,
-  QrCode
+  QrCode,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -36,7 +38,9 @@ export default function Sidebar() {
     isMobileMenuOpen,
     setIsMobileMenuOpen,
     setIsAddMachineOpen,
-    setIsDataManagerOpen
+    setIsDataManagerOpen,
+    isSidebarCollapsed,
+    toggleSidebar
   } = useApp();
   const { t } = useTranslation();
 
@@ -86,12 +90,32 @@ export default function Sidebar() {
     setIsMobileMenuOpen(false);
   };
 
-  const navLinksAndActions = (
-    <div className="flex-1 overflow-y-auto modern-scrollbar px-3 py-3 space-y-1 min-h-0">
+  const renderNavLinks = (collapsed = false) => (
+    <div className={`flex-1 overflow-y-auto modern-scrollbar ${collapsed ? 'px-1.5 py-2' : 'px-3 py-3'} space-y-1 min-h-0`}>
       <nav className="space-y-1">
         {currentNav.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
+
+          if (collapsed) {
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                title={item.label}
+                className={`relative group w-full flex items-center justify-center p-2.5 rounded-xl transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-sky-50 text-sky-700 shadow-2xs font-bold'
+                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/70'
+                }`}
+              >
+                <Icon className={`w-5 h-5 ${isActive ? 'text-sky-600' : 'text-slate-400 group-hover:text-slate-700'}`} />
+                {item.badge && (
+                  <span className="absolute top-1 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+                )}
+              </button>
+            );
+          }
 
           return (
             <button
@@ -123,125 +147,182 @@ export default function Sidebar() {
       {/* Quick Action Buttons (Restricted by Role) */}
       {(userRole === 'Admin' || userRole === 'Supervisor') && (
         <div className="pt-2 space-y-2">
-          <button
-            onClick={() => {
-              setIsAddMachineOpen(true);
-              setIsMobileMenuOpen(false);
-            }}
-            className="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-98"
-          >
-            <span className="text-base font-black leading-none text-sky-700">+</span>
-            <span>Loom</span>
-          </button>
-
-          {userRole === 'Admin' && (
+          {collapsed ? (
             <button
-              onClick={() => {
-                setIsDataManagerOpen(true);
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+              onClick={() => setIsAddMachineOpen(true)}
+              title={t('dashboard.addLoomBtn')}
+              className="w-full flex items-center justify-center p-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 transition-all cursor-pointer shadow-2xs"
             >
-              <Database className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Data Reset</span>
+              <Plus className="w-5 h-5 text-sky-600" />
             </button>
+          ) : (
+            <>
+              <button
+                onClick={() => {
+                  setIsAddMachineOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors active:scale-98 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 text-sky-600" />
+                <span>Loom</span>
+              </button>
+
+              {userRole === 'Admin' && (
+                <button
+                  onClick={() => {
+                    setIsDataManagerOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <Database className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Data Reset</span>
+                </button>
+              )}
+            </>
           )}
         </div>
       )}
     </div>
   );
 
-  const fleetTelemetryBox = (
-    <div className="shrink-0 p-3 border-t border-slate-100 bg-white">
-      <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5">
-        <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-          <div className="flex items-center gap-1.5">
-            <Gauge className="w-3.5 h-3.5 text-sky-600" />
-            <span>LOOM FLEET</span>
+  const renderFleetTelemetry = (collapsed = false) => {
+    if (collapsed) {
+      return (
+        <div className="shrink-0 p-2 border-t border-slate-100 bg-white flex flex-col items-center gap-1" title={`Looms: ${runningCount} Run, ${stoppedCount} Stop, ${idleCount} Idle`}>
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-mono font-bold text-xs">
+            {runningCount}
           </div>
-          <span className="text-[10px] font-mono text-slate-400">{machines.length} Total</span>
+          <span className="text-[9px] font-mono text-slate-400 font-bold">RUN</span>
         </div>
+      );
+    }
 
-        {/* 3 mini status badges */}
-        <div className="grid grid-cols-3 gap-1 text-center">
-          <div className="p-1 rounded-lg bg-emerald-50 border border-emerald-200/80">
-            <div className="text-[9px] font-semibold text-emerald-700">RUN</div>
-            <div className="text-xs font-extrabold text-emerald-800 font-mono">{runningCount}</div>
+    return (
+      <div className="shrink-0 p-3 border-t border-slate-100 bg-white">
+        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+            <div className="flex items-center gap-1.5">
+              <Gauge className="w-3.5 h-3.5 text-sky-600" />
+              <span>LOOM FLEET</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400">{machines.length} Total</span>
           </div>
-          <div className="p-1 rounded-lg bg-rose-50 border border-rose-200/80">
-            <div className="text-[9px] font-semibold text-rose-700">STOP</div>
-            <div className="text-xs font-extrabold text-rose-800 font-mono">{stoppedCount}</div>
-          </div>
-          <div className="p-1 rounded-lg bg-amber-50 border border-amber-200/80">
-            <div className="text-[9px] font-semibold text-amber-700">IDLE</div>
-            <div className="text-xs font-extrabold text-amber-800 font-mono">{idleCount}</div>
-          </div>
-        </div>
 
-        {/* Power Load Gauge */}
-        <div className="pt-0.5">
-          <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-            <span className="flex items-center gap-1 font-semibold">
-              <Zap className="w-3 h-3 text-amber-500" /> {t('app.powerLoad')}
-            </span>
-            <span className="font-mono font-bold text-slate-800">{powerLoadPercent}%</span>
+          {/* 3 mini status badges */}
+          <div className="grid grid-cols-3 gap-1 text-center">
+            <div className="p-1 rounded-lg bg-emerald-50 border border-emerald-200/80">
+              <div className="text-[9px] font-semibold text-emerald-700">RUN</div>
+              <div className="text-xs font-extrabold text-emerald-800 font-mono">{runningCount}</div>
+            </div>
+            <div className="p-1 rounded-lg bg-rose-50 border border-rose-200/80">
+              <div className="text-[9px] font-semibold text-rose-700">STOP</div>
+              <div className="text-xs font-extrabold text-rose-800 font-mono">{stoppedCount}</div>
+            </div>
+            <div className="p-1 rounded-lg bg-amber-50 border border-amber-200/80">
+              <div className="text-[9px] font-semibold text-amber-700">IDLE</div>
+              <div className="text-xs font-extrabold text-amber-800 font-mono">{idleCount}</div>
+            </div>
           </div>
-          <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-500 via-sky-500 to-amber-500 transition-all duration-700 rounded-full"
-              style={{ width: `${powerLoadPercent}%` }}
-            />
+
+          {/* Power Load Gauge */}
+          <div className="pt-0.5">
+            <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+              <span className="flex items-center gap-1 font-semibold">
+                <Zap className="w-3 h-3 text-amber-500" /> {t('app.powerLoad')}
+              </span>
+              <span className="font-mono font-bold text-slate-800">{powerLoadPercent}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 via-sky-500 to-amber-500 transition-all duration-700 rounded-full"
+                style={{ width: `${powerLoadPercent}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
-      {/* ─── DESKTOP SIDEBAR (Visible on md: and above) ─── */}
-      <aside className="hidden md:flex w-64 bg-white border-r border-slate-200/90 flex-col shrink-0 h-full select-none overflow-hidden">
-        {/* Brand Header: Logo & "TEAM LMP" (Aligned with Navbar h-16) */}
-        <div className="px-4 h-16 border-b border-slate-200/90 bg-white flex items-center gap-3 shrink-0">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20 font-bold font-display text-lg tracking-wider shrink-0">
-            LM
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="font-extrabold tracking-tight text-base font-display text-slate-900 truncate">
-                TEAM LMP
+      {/* ─── DESKTOP SIDEBAR (Collapsible with Arrow Button) ─── */}
+      <aside className={`hidden md:flex ${isSidebarCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ease-in-out bg-white border-r border-slate-200/90 flex-col shrink-0 h-full select-none overflow-hidden relative`}>
+        {/* Brand Header */}
+        <div className={`px-3 h-16 border-b border-slate-200/90 bg-white flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} shrink-0`}>
+          {!isSidebarCollapsed ? (
+            <>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20 font-bold font-display text-lg tracking-wider shrink-0">
+                  LM
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold tracking-tight text-base font-display text-slate-900 truncate">
+                      TEAM LMP
+                    </span>
+                    <span className="bg-sky-100 text-sky-800 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-sky-200 shrink-0">
+                      v2.0
+                    </span>
+                  </div>
+                  <p className="text-[9.5px] font-semibold text-slate-400 tracking-wider uppercase font-mono truncate">
+                    {t('app.tagline')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Sidebar Collapse Arrow Button */}
+              <button
+                onClick={toggleSidebar}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-all cursor-pointer shrink-0"
+                title="Collapse Sidebar"
+                aria-label="Collapse Sidebar"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center justify-center relative w-full">
+              <button
+                onClick={toggleSidebar}
+                className="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white shadow-xs font-bold font-display text-sm tracking-wider cursor-pointer hover:ring-2 hover:ring-sky-400 transition-all group relative"
+                title="Expand Sidebar (Click Arrow)"
+                aria-label="Expand Sidebar"
+              >
+                <span>LM</span>
+                <span className="absolute -right-2 top-2 w-4 h-4 rounded-full bg-white border border-slate-200 shadow-xs text-slate-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ChevronRight className="w-3 h-3" />
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Role Banner Indicator (When Expanded) */}
+        {!isSidebarCollapsed && (
+          <div className="px-4 py-2 border-b border-slate-100 bg-slate-50/70 shrink-0 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold tracking-wider uppercase font-mono text-slate-500">
+                Active Mode
               </span>
-              <span className="bg-sky-100 text-sky-800 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-sky-200 shrink-0">
-                v2.0
+              <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md font-mono ${
+                userRole === 'Admin' ? 'bg-sky-100 text-sky-800' :
+                userRole === 'Supervisor' ? 'bg-amber-100 text-amber-800' :
+                'bg-emerald-100 text-emerald-800'
+              }`}>
+                {t(`roles.${userRole}`)}
               </span>
             </div>
-            <p className="text-[9.5px] font-semibold text-slate-400 tracking-wider uppercase font-mono truncate">
-              {t('app.tagline')}
-            </p>
           </div>
-        </div>
+        )}
 
-        {/* Role Banner Indicator */}
-        <div className="px-4 py-2 border-b border-slate-100 bg-slate-50/70 shrink-0">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold tracking-wider uppercase font-mono text-slate-500">
-              Active Mode
-            </span>
-            <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md font-mono ${
-              userRole === 'Admin' ? 'bg-sky-100 text-sky-800' :
-              userRole === 'Supervisor' ? 'bg-amber-100 text-amber-800' :
-              'bg-emerald-100 text-emerald-800'
-            }`}>
-              {t(`roles.${userRole}`)}
-            </span>
-          </div>
-        </div>
-
-        {/* Scrollable Navigation Links (Modern Scrollbar) */}
-        {navLinksAndActions}
+        {/* Scrollable Navigation Links */}
+        {renderNavLinks(isSidebarCollapsed)}
 
         {/* Bottom Pinned Fleet Telemetry */}
-        {fleetTelemetryBox}
+        {renderFleetTelemetry(isSidebarCollapsed)}
       </aside>
 
       {/* ─── MOBILE SLIDE-OVER DRAWER ─── */}
@@ -313,10 +394,10 @@ export default function Sidebar() {
             </div>
 
             {/* Scrollable Navigation Links (Modern Scrollbar) */}
-            {navLinksAndActions}
+            {renderNavLinks(false)}
 
             {/* Bottom Pinned Fleet Telemetry in Drawer */}
-            {fleetTelemetryBox}
+            {renderFleetTelemetry(false)}
           </div>
         </div>,
         document.body

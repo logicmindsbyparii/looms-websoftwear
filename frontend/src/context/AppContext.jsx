@@ -46,6 +46,23 @@ export function AppProvider({ children }) {
   const [isDataManagerOpen, setIsDataManagerOpen] = useState(false);
   const [isAddMachineOpen, setIsAddMachineOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('loomus_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('loomus_sidebar_collapsed', String(next));
+      } catch (e) {}
+      return next;
+    });
+  }, []);
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -968,6 +985,9 @@ export function AppProvider({ children }) {
     isDataManagerOpen,
     isAddMachineOpen,
     isMobileMenuOpen,
+    isSidebarCollapsed,
+    setIsSidebarCollapsed,
+    toggleSidebar,
     isWhatsAppModalOpen,
     isUsersModalOpen,
     isScanModalOpen,

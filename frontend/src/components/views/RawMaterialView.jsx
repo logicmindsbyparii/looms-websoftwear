@@ -192,7 +192,7 @@ export default function RawMaterialView() {
       {/* Stock Levels Table */}
       <div className="heavy-card rounded-2xl bg-white border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[650px]">
             <thead className="bg-slate-50 border-b border-slate-200 font-mono text-[11px] text-slate-400 uppercase">
               <tr>
                 <th className="py-3 px-4">{t('stock.yarnName')}</th>

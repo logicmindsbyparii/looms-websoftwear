@@ -209,7 +209,7 @@ export default function UsersView() {
       {/* Users Table */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[650px]">
             <thead className="bg-slate-50 border-b border-slate-200/80 font-mono text-[11px] text-slate-400 uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-4">{t('common.name')}</th>
