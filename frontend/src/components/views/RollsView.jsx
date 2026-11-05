@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../../api/client';
 import { useApp } from '../../context/AppContext';
+import { useTranslation } from '../../i18n/LanguageContext';
 import { formatDate } from '../../utils/formatters';
 import { buildRollMessage, openWhatsApp } from '../../utils/whatsapp';
 import RollDetailModal from '../rolls/RollDetailModal';
@@ -10,6 +11,7 @@ import { WhatsAppBrandIcon } from '../common/WhatsAppIcon';
 
 export default function RollsView({ onOpenScan }) {
   const { userRole, showToast } = useApp();
+  const { t } = useTranslation();
   const [rolls, setRolls] = useState([]);
   const [summary, setSummary] = useState(null);
   const [locations, setLocations] = useState([]);
@@ -59,24 +61,28 @@ export default function RollsView({ onOpenScan }) {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, locationFilter, machineFilter, page]);
+  }, [search, statusFilter, locationFilter, machineFilter, page, showToast]);
 
   const fetchSummary = useCallback(async () => {
     try {
       const res = await api.get('/rolls/summary');
-      setSummary(res.data);
-    } catch (e) {}
+      setSummary(res.data || null);
+    } catch (err) {
+      // Non-critical background fetch
+    }
   }, []);
 
-  const fetchMasters = useCallback(async () => {
+  const fetchFilters = useCallback(async () => {
     try {
-      const [locRes, mRes] = await Promise.allSettled([
-        api.get('/locations?active=true'),
+      const [locRes, machRes] = await Promise.all([
+        api.get('/locations'),
         api.get('/machines')
       ]);
-      if (locRes.status === 'fulfilled') setLocations(locRes.value.data || []);
-      if (mRes.status === 'fulfilled') setMachines(mRes.value.data || []);
-    } catch (e) {}
+      setLocations(locRes.data || []);
+      setMachines(machRes.data || []);
+    } catch (err) {
+      // Non-critical background fetch
+    }
   }, []);
 
   useEffect(() => {
@@ -85,31 +91,38 @@ export default function RollsView({ onOpenScan }) {
 
   useEffect(() => {
     fetchSummary();
-    fetchMasters();
-  }, [fetchSummary, fetchMasters]);
+    fetchFilters();
+  }, [fetchSummary, fetchFilters]);
 
   const handleCreateRollSubmit = async (e) => {
     e.preventDefault();
     if (!createMachineId || !createMetres) {
-      showToast('Machine and Metres are required', 'error');
+      showToast('Please fill in required fields', 'error');
       return;
     }
+
     setCreateSubmitting(true);
     try {
-      const res = await api.post('/rolls', {
+      const payload = {
         machineId: createMachineId,
         metres: parseFloat(createMetres),
-        fabric: createFabric,
+        fabric: createFabric || undefined,
         quality: createQuality,
         locationId: createLocationId || undefined,
         shift: createShift
-      });
+      };
+
+      const res = await api.post('/rolls', payload);
       showToast(`Roll ${res.data.id} created successfully!`, 'success');
+
       setIsCreateRollOpen(false);
       setCreateMetres('');
+      setCreateFabric('');
+
       fetchRolls();
       fetchSummary();
-      // Offer immediate print
+
+      // Immediately open label print preview for convenience
       setActiveLabelRoll(res.data);
     } catch (err) {
       showToast(err.message || 'Failed to create roll', 'error');
@@ -120,13 +133,14 @@ export default function RollsView({ onOpenScan }) {
 
   const getStatusBadge = (status) => {
     const colors = {
-      Ready: 'bg-emerald-50 text-emerald-700 border-emerald-300',
-      Reserved: 'bg-amber-50 text-amber-700 border-amber-300',
-      Dispatched: 'bg-blue-50 text-blue-700 border-blue-300',
-      Hold: 'bg-orange-50 text-orange-700 border-orange-300',
-      Rejected: 'bg-rose-50 text-rose-700 border-rose-300',
-      Void: 'bg-slate-100 text-slate-700 border-slate-300 line-through'
+      Ready: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      Reserved: 'bg-amber-100 text-amber-800 border-amber-200',
+      Dispatched: 'bg-blue-100 text-blue-800 border-blue-200',
+      Hold: 'bg-orange-100 text-orange-800 border-orange-200',
+      Rejected: 'bg-rose-100 text-rose-800 border-rose-200',
+      Void: 'bg-slate-200 text-slate-700 border-slate-300'
     };
+
     return (
       <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${colors[status] || 'bg-slate-100 text-slate-700'}`}>
         {status}
@@ -141,14 +155,14 @@ export default function RollsView({ onOpenScan }) {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Roll QR & Barcode Tracking
+              {t('rollsPage.title')}
             </h1>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-              Live Fleet
+              {t('rollsPage.badge')}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-700">
-            Real-time fabric roll tracking, QR sticker labels, and immutable ledger movements.
+            {t('rollsPage.subtitle')}
           </p>
         </div>
 
@@ -165,7 +179,7 @@ export default function RollsView({ onOpenScan }) {
               className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4" />
-              <span>Cut & Log Roll</span>
+              <span>{t('rollsPage.cutRollBtn')}</span>
             </button>
           )}
         </div>
@@ -175,13 +189,13 @@ export default function RollsView({ onOpenScan }) {
       {summary && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
           <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-1">
-            <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Total Rolls</div>
+            <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">{t('rollsPage.totalRolls')}</div>
             <div className="text-2xl font-black text-slate-900 font-mono">{summary.totalRolls}</div>
-            <div className="text-[11px] text-blue-600 font-semibold">{summary.totalMetres.toFixed(1)} metres</div>
+            <div className="text-[11px] text-blue-600 font-semibold">{summary.totalMetres.toFixed(1)} {t('rollsPage.totalMetres')}</div>
           </div>
 
           <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-1">
-            <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Ready in Stock</div>
+            <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">{t('rollsPage.readyInStock')}</div>
             <div className="text-2xl font-black text-emerald-800 font-mono">
               {summary.byStatus?.Ready?.count || 0}
             </div>
@@ -191,7 +205,7 @@ export default function RollsView({ onOpenScan }) {
           </div>
 
           <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-1">
-            <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Reserved (Orders)</div>
+            <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wider">{t('rollsPage.reservedOrders')}</div>
             <div className="text-2xl font-black text-amber-800 font-mono">
               {summary.byStatus?.Reserved?.count || 0}
             </div>
@@ -201,7 +215,7 @@ export default function RollsView({ onOpenScan }) {
           </div>
 
           <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-1">
-            <div className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Dispatched</div>
+            <div className="text-[11px] font-bold text-blue-700 uppercase tracking-wider">{t('rollsPage.dispatched')}</div>
             <div className="text-2xl font-black text-blue-800 font-mono">
               {summary.byStatus?.Dispatched?.count || 0}
             </div>
@@ -211,7 +225,7 @@ export default function RollsView({ onOpenScan }) {
           </div>
 
           <div className="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-1 col-span-2 sm:col-span-1">
-            <div className="text-[11px] font-bold text-orange-700 uppercase tracking-wider">Hold / Reject</div>
+            <div className="text-[11px] font-bold text-orange-700 uppercase tracking-wider">{t('rollsPage.holdReject')}</div>
             <div className="text-2xl font-black text-orange-800 font-mono">
               {(summary.byStatus?.Hold?.count || 0) + (summary.byStatus?.Rejected?.count || 0)}
             </div>
@@ -227,7 +241,7 @@ export default function RollsView({ onOpenScan }) {
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           {/* Search */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Search Rolls</label>
+            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">{t('rollsPage.searchLabel')}</label>
             <input
               type="text"
               value={search}
@@ -235,14 +249,14 @@ export default function RollsView({ onOpenScan }) {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search by ID, fabric, or loom..."
+              placeholder={t('rollsPage.searchPlaceholder')}
               className="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
             />
           </div>
 
           {/* Status Filter */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Status</label>
+            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">{t('rollsPage.statusLabel')}</label>
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -251,7 +265,7 @@ export default function RollsView({ onOpenScan }) {
               }}
               className="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
             >
-              <option value="">All Statuses</option>
+              <option value="">{t('rollsPage.allStatuses')}</option>
               <option value="Ready">Ready</option>
               <option value="Reserved">Reserved</option>
               <option value="Dispatched">Dispatched</option>
@@ -263,7 +277,7 @@ export default function RollsView({ onOpenScan }) {
 
           {/* Location Filter */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location</label>
+            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">{t('rollsPage.locationLabel')}</label>
             <select
               value={locationFilter}
               onChange={(e) => {
@@ -272,7 +286,7 @@ export default function RollsView({ onOpenScan }) {
               }}
               className="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
             >
-              <option value="">All Locations</option>
+              <option value="">{t('rollsPage.allLocations')}</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name} ({l.shed})
@@ -283,7 +297,7 @@ export default function RollsView({ onOpenScan }) {
 
           {/* Machine Filter */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Loom</label>
+            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">{t('rollsPage.loomLabel')}</label>
             <select
               value={machineFilter}
               onChange={(e) => {
@@ -292,7 +306,7 @@ export default function RollsView({ onOpenScan }) {
               }}
               className="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
             >
-              <option value="">All Looms</option>
+              <option value="">{t('rollsPage.allLooms')}</option>
               {machines.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.id} - {m.name}
@@ -309,14 +323,14 @@ export default function RollsView({ onOpenScan }) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wider text-slate-700">
-                <th className="py-3 px-4">Roll ID</th>
-                <th className="py-3 px-4">Fabric & Quality</th>
-                <th className="py-3 px-4 text-right">Length</th>
-                <th className="py-3 px-4">Loom Unit</th>
-                <th className="py-3 px-4">Location</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Produced Date</th>
-                <th className="py-3 px-4 pr-16 md:pr-24 text-center">Actions</th>
+                <th className="py-3 px-4">{t('rollsPage.rollId')}</th>
+                <th className="py-3 px-4">{t('rollsPage.fabricQuality')}</th>
+                <th className="py-3 px-4 text-right">{t('rollsPage.length')}</th>
+                <th className="py-3 px-4">{t('rollsPage.loomUnit')}</th>
+                <th className="py-3 px-4">{t('rollsPage.location')}</th>
+                <th className="py-3 px-4">{t('rollsPage.statusLabel')}</th>
+                <th className="py-3 px-4">{t('rollsPage.producedDate')}</th>
+                <th className="py-3 px-4 pr-16 md:pr-24 text-center">{t('rollsPage.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
@@ -324,15 +338,15 @@ export default function RollsView({ onOpenScan }) {
                 <tr>
                   <td colSpan="8" className="py-12 text-center text-slate-700">
                     <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                    Loading fabric rolls...
+                    {t('rollsPage.loading')}
                   </td>
                 </tr>
               ) : rolls.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="py-12 text-center text-slate-700 space-y-2">
                     <div className="text-3xl">🧵</div>
-                    <p className="font-semibold text-slate-700">No fabric rolls found</p>
-                    <p className="text-[11px] text-slate-700">Try adjusting your filters or cut a new roll above.</p>
+                    <p className="font-semibold text-slate-700">{t('rollsPage.noRollsFound')}</p>
+                    <p className="text-[11px] text-slate-700">{t('rollsPage.noRollsDesc')}</p>
                   </td>
                 </tr>
               ) : (
@@ -381,15 +395,15 @@ export default function RollsView({ onOpenScan }) {
                       <div className="flex items-center justify-center space-x-1.5">
                         <button
                           onClick={() => setInspectRollCode(roll.id)}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center justify-center"
-                          title="View / Edit Roll"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center justify-center cursor-pointer"
+                          title={t('rollsPage.inspectAudit')}
                         >
                           <Eye className="w-4 h-4 text-slate-600" />
                         </button>
                         <button
                           onClick={() => setActiveLabelRoll(roll)}
-                          className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all flex items-center justify-center"
-                          title="Print QR Sticker"
+                          className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all flex items-center justify-center cursor-pointer"
+                          title={t('rollsPage.viewQr')}
                         >
                           <QrCode className="w-4 h-4 text-blue-600" />
                         </button>
@@ -398,8 +412,8 @@ export default function RollsView({ onOpenScan }) {
                             const msg = buildRollMessage(roll);
                             openWhatsApp({ message: msg });
                           }}
-                          className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all flex items-center justify-center"
-                          title="Share WhatsApp"
+                          className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all flex items-center justify-center cursor-pointer"
+                          title={t('rollsPage.whatsappShare')}
                         >
                           <WhatsAppBrandIcon className="w-4 h-4 fill-[#25D366]" />
                         </button>
@@ -416,22 +430,22 @@ export default function RollsView({ onOpenScan }) {
         {pagination.totalPages > 1 && (
           <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-700">
             <div>
-              Showing page <strong className="text-slate-800">{pagination.page}</strong> of <strong className="text-slate-800">{pagination.totalPages}</strong> ({pagination.total} total rolls)
+              {t('rollsPage.pageOf', { page: pagination.page, totalPages: pagination.totalPages, total: pagination.total })}
             </div>
             <div className="flex items-center space-x-1.5">
               <button
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 transition-all font-semibold"
+                className="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 transition-all font-semibold cursor-pointer"
               >
-                Previous
+                {t('rollsPage.prev')}
               </button>
               <button
                 disabled={page >= pagination.totalPages}
                 onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                className="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 transition-all font-semibold"
+                className="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 transition-all font-semibold cursor-pointer"
               >
-                Next
+                {t('rollsPage.next')}
               </button>
             </div>
           </div>
@@ -445,11 +459,11 @@ export default function RollsView({ onOpenScan }) {
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-xl">➕</span>
-                <h3 className="text-sm font-bold text-slate-900">Cut & Log Finished Roll (Taka)</h3>
+                <h3 className="text-sm font-bold text-slate-900">{t('rollsPage.createTitle')}</h3>
               </div>
               <button
                 onClick={() => setIsCreateRollOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center cursor-pointer"
               >
                 ✕
               </button>
@@ -458,7 +472,7 @@ export default function RollsView({ onOpenScan }) {
             <form onSubmit={handleCreateRollSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Loom Machine *</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.assignedLoom')} *</label>
                   <select
                     value={createMachineId}
                     onChange={(e) => {
@@ -480,21 +494,21 @@ export default function RollsView({ onOpenScan }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Roll Metres (Length) *</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.cutLength')} *</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0.1"
                     value={createMetres}
                     onChange={(e) => setCreateMetres(e.target.value)}
-                    placeholder="e.g. 102.50"
+                    placeholder={t('rollsPage.lengthPlaceholder')}
                     className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-mono"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Fabric Construction</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.fabricType')}</label>
                   <input
                     type="text"
                     value={createFabric}
@@ -505,7 +519,7 @@ export default function RollsView({ onOpenScan }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Quality Grade</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.qualityGrade')}</label>
                   <select
                     value={createQuality}
                     onChange={(e) => setCreateQuality(e.target.value)}
@@ -518,7 +532,7 @@ export default function RollsView({ onOpenScan }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Storage Location</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.storageLocation')}</label>
                   <select
                     value={createLocationId}
                     onChange={(e) => setCreateLocationId(e.target.value)}
@@ -534,15 +548,15 @@ export default function RollsView({ onOpenScan }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Shift</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.productionShift')}</label>
                   <select
                     value={createShift}
                     onChange={(e) => setCreateShift(e.target.value)}
                     className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
                   >
-                    <option value="Morning">Morning (8 AM - 4 PM)</option>
-                    <option value="Evening">Evening (4 PM - 12 AM)</option>
-                    <option value="Night">Night (12 AM - 8 AM)</option>
+                    <option value="Morning">{t('rollsPage.morningShift')}</option>
+                    <option value="Evening">{t('rollsPage.eveningShift')}</option>
+                    <option value="Night">{t('rollsPage.nightShift')}</option>
                   </select>
                 </div>
               </div>
@@ -551,16 +565,16 @@ export default function RollsView({ onOpenScan }) {
                 <button
                   type="button"
                   onClick={() => setIsCreateRollOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
                 >
-                  Cancel
+                  {t('rollsPage.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={createSubmitting}
-                  className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-500/20"
+                  className="px-5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-500/20 cursor-pointer"
                 >
-                  {createSubmitting ? 'Creating Roll...' : 'Generate Roll & QR Sticker'}
+                  {createSubmitting ? t('rollsPage.creating') : t('rollsPage.confirmCut')}
                 </button>
               </div>
             </form>
@@ -590,4 +604,3 @@ export default function RollsView({ onOpenScan }) {
     </div>
   );
 }
-

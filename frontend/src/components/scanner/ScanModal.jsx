@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import jsQR from 'jsqr';
 import { soundEffects } from '../../utils/soundEffects';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
+  const { t } = useTranslation();
   const [manualCode, setManualCode] = useState('');
   const [cameraError, setCameraError] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -329,12 +331,12 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
             <span className="text-xl">⚡</span>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="text-sm font-bold text-slate-900">Instant Universal Scanner</h3>
+                <h3 className="text-sm font-bold text-slate-900">{t('scanner.title')}</h3>
                 <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-emerald-200 animate-pulse">
-                  Ultra-Fast Instant
+                  {t('scanner.badge')}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Scans instantly the moment QR is in view</p>
+              <p className="text-xs text-slate-500 font-medium">{t('scanner.subtitle')}</p>
             </div>
           </div>
           <button
