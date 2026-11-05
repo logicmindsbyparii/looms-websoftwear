@@ -5,6 +5,8 @@ import { formatDate } from '../../utils/formatters';
 import { buildRollMessage, openWhatsApp } from '../../utils/whatsapp';
 import RollDetailModal from '../rolls/RollDetailModal';
 import RollQrLabel from '../rolls/RollQrLabel';
+import { Eye, QrCode } from 'lucide-react';
+import { WhatsAppBrandIcon } from '../common/WhatsAppIcon';
 
 export default function RollsView({ onOpenScan }) {
   const { userRole, showToast } = useApp();
@@ -387,27 +389,27 @@ export default function RollsView({ onOpenScan }) {
                       <div className="flex items-center justify-center space-x-1.5">
                         <button
                           onClick={() => setInspectRollCode(roll.id)}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center justify-center"
                           title="View / Edit Roll"
                         >
-                          👁️
+                          <Eye className="w-4 h-4 text-slate-600" />
                         </button>
                         <button
                           onClick={() => setActiveLabelRoll(roll)}
-                          className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all"
+                          className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all flex items-center justify-center"
                           title="Print QR Sticker"
                         >
-                          🏷️
+                          <QrCode className="w-4 h-4 text-blue-600" />
                         </button>
                         <button
                           onClick={() => {
                             const msg = buildRollMessage(roll);
                             openWhatsApp({ message: msg });
                           }}
-                          className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all"
+                          className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all flex items-center justify-center"
                           title="Share WhatsApp"
                         >
-                          💬
+                          <WhatsAppBrandIcon className="w-4 h-4 fill-[#25D366]" />
                         </button>
                       </div>
                     </td>

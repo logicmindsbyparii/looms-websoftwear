@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import JsBarcode from 'jsbarcode';
 import { formatDate } from '../../utils/formatters';
 import { useApp } from '../../context/AppContext';
+import { QrCode, X } from 'lucide-react';
 
 export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
   const barcodeRef = useRef(null);
@@ -196,7 +197,7 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
         {/* Modal Top Bar */}
         <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-2">
-            <span className="text-xl">🏷️</span>
+            <QrCode className="w-5 h-5 text-sky-600 shrink-0" />
             <div>
               <h3 className="text-sm font-bold text-slate-900">Roll QR & Barcode Sticker Label</h3>
               <p className="text-xs text-slate-700">Universal Direct Scan (Works on Any Phone Without Web)</p>
@@ -204,9 +205,9 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-all"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 

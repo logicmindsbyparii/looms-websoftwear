@@ -5,6 +5,7 @@ import { formatDate } from '../../utils/formatters';
 import { buildRollMessage, openWhatsApp } from '../../utils/whatsapp';
 import RollQrLabel from './RollQrLabel';
 import { WhatsAppBrandIcon } from '../common/WhatsAppIcon';
+import { QrCode, X } from 'lucide-react';
 
 export default function RollDetailModal({ rollCode, onClose, onRefresh }) {
   const { userRole, showToast } = useApp();
@@ -237,14 +238,14 @@ export default function RollDetailModal({ rollCode, onClose, onRefresh }) {
               className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-all text-xs font-semibold flex items-center space-x-1"
               title="Print QR Sticker"
             >
-              <span>🏷️</span>
+              <QrCode className="w-3.5 h-3.5 text-blue-700 shrink-0" />
               <span className="hidden sm:inline">Print Label</span>
             </button>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-all"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all"
             >
-              ✕
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
