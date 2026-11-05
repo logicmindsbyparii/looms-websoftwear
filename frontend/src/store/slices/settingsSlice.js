@@ -53,3 +53,4 @@ export const selectNetworkUrl = (state) => state.settings.networkUrl;
 export const selectPublicScanBaseUrl = (state) => state.settings.publicScanBaseUrl;
 
 export default settingsSlice.reducer;
+

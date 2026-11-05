@@ -157,3 +157,4 @@ export const selectSalesOrders = (state) => state.inventory.salesOrders;
 export const selectProductionLogs = (state) => state.inventory.productionLogs;
 
 export default inventorySlice.reducer;
+
