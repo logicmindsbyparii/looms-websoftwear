@@ -5,7 +5,6 @@ import { Stock } from '../models/Stock.js';
 import { ReadyGoods } from '../models/ReadyGoods.js';
 import { Broker } from '../models/Broker.js';
 import { SalesOrder } from '../models/SalesOrder.js';
-import { Camera } from '../models/Camera.js';
 import { ProductionLog } from '../models/ProductionLog.js';
 import { Location } from '../models/Location.js';
 import { Roll } from '../models/Roll.js';
@@ -49,7 +48,6 @@ export const exportData = asyncHandler(async (req, res) => {
     readyGoods,
     brokers,
     salesOrders,
-    cameras,
     productionLogs
   ] = await Promise.all([
     Machine.find(),
@@ -59,7 +57,6 @@ export const exportData = asyncHandler(async (req, res) => {
     ReadyGoods.find(),
     Broker.find(),
     SalesOrder.find(),
-    Camera.find(),
     ProductionLog.find(),
     Location.find(),
     Roll.find(),
@@ -74,7 +71,6 @@ export const exportData = asyncHandler(async (req, res) => {
     readyGoods,
     brokers,
     salesOrders,
-    cameras,
     productionLogs,
     locations,
     rolls,
@@ -124,10 +120,6 @@ export const importData = asyncHandler(async (req, res) => {
     await SalesOrder.deleteMany({});
     if (data.salesOrders.length > 0) await SalesOrder.insertMany(data.salesOrders);
   }
-  if (Array.isArray(data.cameras)) {
-    await Camera.deleteMany({});
-    if (data.cameras.length > 0) await Camera.insertMany(data.cameras);
-  }
   if (Array.isArray(data.productionLogs)) {
     await ProductionLog.deleteMany({});
     if (data.productionLogs.length > 0) await ProductionLog.insertMany(data.productionLogs);
@@ -165,7 +157,6 @@ export const loadDemoData = asyncHandler(async (req, res) => {
     ReadyGoods.deleteMany({}),
     Broker.deleteMany({}),
     SalesOrder.deleteMany({}),
-    Camera.deleteMany({}),
     ProductionLog.deleteMany({}),
     Location.deleteMany({}),
     Roll.deleteMany({}),
@@ -272,10 +263,6 @@ export const loadDemoData = asyncHandler(async (req, res) => {
     { id: 'ORD-8402', broker: 'Rajesh Brothers Exports', buyer: 'Dubai Tex FZE', fabric: 'Cotton 40s Combed', qty: 5000, rate: 64, total: 320000, date: '2026-10-30', deliveryDate: '2026-11-08', status: 'Dispatched', advance: 100000 }
   ];
 
-  const demoCameras = [
-    { id: 'cam-01', name: 'Floor 1 - Shed A (Airjet Bay 1-25)', sn: 'EV2026-AIRJET-01', user: 'admin', location: 'Shed A Overhead Cam', connected: true, ip: '192.168.1.101', fps: 30, channel: 'CH-01' },
-    { id: 'cam-02', name: 'Floor 1 - Shed B (Rapier Bay 26-50)', sn: 'EV2026-RAPIER-02', user: 'admin', location: 'Shed B North Wall', connected: true, ip: '192.168.1.102', fps: 30, channel: 'CH-02' }
-  ];
 
   const demoProductionLogs = [
     { id: 'PR-901', time: '11:15 AM', machine: 'M-07', fabric: '70*72 Plain Cambric', shift: 'Morning', output: 72, target: 75, quality: 'A-Grade (Export)', defects: 0.5, operator: 'Ramesh Patel' },
@@ -293,7 +280,6 @@ export const loadDemoData = asyncHandler(async (req, res) => {
     Broker.insertMany(demoBrokers),
     ReadyGoods.insertMany(demoReadyGoods),
     SalesOrder.insertMany(demoSalesOrders),
-    Camera.insertMany(demoCameras),
     ProductionLog.insertMany(demoProductionLogs),
     Location.insertMany(demoLocations),
     Roll.insertMany(demoRolls),
@@ -332,7 +318,6 @@ export const clearAllData = asyncHandler(async (req, res) => {
     ReadyGoods.deleteMany({}),
     Broker.deleteMany({}),
     SalesOrder.deleteMany({}),
-    Camera.deleteMany({}),
     ProductionLog.deleteMany({}),
     Location.deleteMany({}),
     Roll.deleteMany({}),

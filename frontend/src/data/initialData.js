@@ -28,7 +28,6 @@ export const INITIAL_STOCK = [];
 export const INITIAL_BROKERS = [];
 export const INITIAL_READY_GOODS = [];
 export const INITIAL_SALES_ORDERS = [];
-export const INITIAL_CAMERAS = [];
 export const INITIAL_PRODUCTION_LOGS = [];
 
 // Demo data available on-demand if the user ever clicks "Load Demo Data"
@@ -38,87 +37,58 @@ export const DEMO_MACHINES = Array.from({ length: 50 }, (_, i) => {
   const shed = num <= 25 ? 'Shed A (Air-Jet)' : 'Shed B (Rapier)';
   
   let status = 'running';
-  if (num === 4 || num === 17 || num === 38) status = 'stopped';
-  else if (num === 9 || num === 22 || num === 45) status = 'idle';
-  else if (num === 13) status = 'maintenance';
+  let rpm = 780 + Math.floor(Math.random() * 40);
+  let efficiency = 88 + Math.floor(Math.random() * 8);
 
-  const isRunning = status === 'running';
-  const fabric = FABRIC_TYPES[i % FABRIC_TYPES.length];
-  const targetOutput = 75;
-  const currentOutput = Math.floor(Math.random() * 35 + (isRunning ? 35 : 10));
-  const efficiency = Math.min(100, Math.round((currentOutput / (targetOutput * 0.7)) * 100));
+  if (i === 4 || i === 18) {
+    status = 'stopped';
+    rpm = 0;
+    efficiency = 45;
+  } else if (i === 11 || i === 31) {
+    status = 'maintenance';
+    rpm = 0;
+    efficiency = 60;
+  }
 
   return {
     id,
-    name: `Loom Unit ${num}`,
+    name: `Toyota JAT810 #${num}`,
     shed,
     model: LOOM_MODELS[i % LOOM_MODELS.length],
     status,
-    rpm: isRunning ? Math.floor(Math.random() * 180 + 780) : 0,
-    targetRpm: 850,
-    fabric,
-    output: currentOutput,
-    targetOutput,
+    rpm,
     efficiency,
-    temp: isRunning ? Math.floor(Math.random() * 8 + 36) : 28,
-    tension: isRunning ? Math.floor(Math.random() * 12 + 62) : 0,
-    pressure: isRunning ? parseFloat((Math.random() * 0.6 + 4.2).toFixed(1)) : 0,
-    picksPerMin: isRunning ? Math.floor(Math.random() * 120 + 720) : 0,
-    weftStops: Math.floor(Math.random() * 4),
-    warpStops: Math.floor(Math.random() * 3),
-    operator: `Operator ${((i % 12) + 1).toString().padStart(2, '0')}`,
-    lastMaintenance: '2026-10-24'
+    output: status === 'running' ? Math.floor(80 + Math.random() * 40) : 0,
+    warpStops: Math.floor(Math.random() * 4),
+    weftStops: Math.floor(Math.random() * 6),
+    fabric: i % 2 === 0 ? '70*72 Plain Cambric' : '70*68 Medium Grey',
+    operator: i % 3 === 0 ? 'Ramesh Patel' : i % 3 === 1 ? 'Prakash Rathod' : 'Mahesh Parmar',
+    shift: 'Morning'
   };
 });
 
 export const DEMO_WORKERS = [
-  { id: 'W-101', name: 'Ramesh Patel', role: 'Senior Loom Master', machine: 'M-01 to M-06', shift: 'Morning (6AM - 2PM)', phone: '+91 98251 44321', status: 'active', shed: 'Shed A' },
-  { id: 'W-102', name: 'Suresh Kumar', role: 'Chief Mechanic', machine: 'All Shed A', shift: 'Morning (6AM - 2PM)', phone: '+91 98790 12876', status: 'active', shed: 'Shed A' },
-  { id: 'W-103', name: 'Dinesh Shah', role: 'Quality Inspector', machine: 'Floor Audit', shift: 'Morning (6AM - 2PM)', phone: '+91 99245 99812', status: 'active', shed: 'Shed B' },
-  { id: 'W-104', name: 'Nilesh Joshi', role: 'Floor Supervisor', machine: 'Shed B', shift: 'Morning (6AM - 2PM)', phone: '+91 94280 33419', status: 'active', shed: 'Shed B' },
-  { id: 'W-105', name: 'Prakash Rathod', role: 'Loom Operator', machine: 'M-07 to M-12', shift: 'Morning (6AM - 2PM)', phone: '+91 97123 66540', status: 'break', shed: 'Shed A' }
+  { id: 'W-01', name: 'Ramesh Patel', role: 'Weaver Master', shift: 'Morning', assignedMachines: ['M-01', 'M-02', 'M-03', 'M-04'], efficiency: 94, attendance: 'present' },
+  { id: 'W-02', name: 'Prakash Rathod', role: 'Airjet Operator', shift: 'Morning', assignedMachines: ['M-05', 'M-06', 'M-07', 'M-08'], efficiency: 91, attendance: 'present' },
+  { id: 'W-03', name: 'Mahesh Parmar', role: 'Rapier Operator', shift: 'Evening', assignedMachines: ['M-26', 'M-27', 'M-28', 'M-29'], efficiency: 88, attendance: 'present' },
+  { id: 'W-04', name: 'Suresh Vankar', role: 'Beam Gaiter / Fitter', shift: 'Night', assignedMachines: ['M-10', 'M-11', 'M-12'], efficiency: 96, attendance: 'present' }
 ];
 
 export const DEMO_ALARMS = [
-  { id: 'AL-901', type: 'critical', title: 'M-04: Warp Thread Break Detected', machine: 'M-04', time: '10:42 AM', shed: 'Shed A', code: 'E-031' },
-  { id: 'AL-902', type: 'warning', title: 'M-08: Main Line Low Air Pressure (2.1 bar)', machine: 'M-08', time: '09:58 AM', shed: 'Shed A', code: 'W-014' },
-  { id: 'AL-903', type: 'info', title: 'M-13: Scheduled Greasing Due', machine: 'M-13', time: '08:15 AM', shed: 'Shed A', code: 'I-002' }
+  { id: 'ALM-101', machineId: 'M-05', type: 'warp', title: 'Warp Yarn Breakage - Dropper Sensor 4 Active', time: '11:42 AM', severity: 'critical', active: true },
+  { id: 'ALM-102', machineId: 'M-19', type: 'weft', title: 'Weft Insertion Failure (Feeder Sensor Error)', time: '11:28 AM', severity: 'warning', active: true },
+  { id: 'ALM-103', machineId: 'M-34', type: 'lube', title: 'Low Sump Oil Pressure Detected (Pump #2)', time: '10:55 AM', severity: 'warning', active: true }
 ];
 
 export const DEMO_STOCK = [
-  { id: 'ST-01', name: 'Cotton Yarn 40s Combed', current: 1850, max: 3000, unit: 'kg', rate: 285, minThreshold: 600, category: 'Spun Cotton', supplier: 'Vardhman Textiles' },
-  { id: 'ST-02', name: 'Cotton Yarn 60s Compact', current: 740, max: 2000, unit: 'kg', rate: 360, minThreshold: 500, category: 'Spun Cotton', supplier: 'Arvind Mills' },
-  { id: 'ST-03', name: 'Polyester Filament 75D/36F', current: 2400, max: 3500, unit: 'kg', rate: 145, minThreshold: 800, category: 'Synthetic', supplier: 'Reliance Industries' },
-  { id: 'ST-04', name: 'Heavy Denim Indigo Slub 14oz', current: 1200, max: 2500, unit: 'kg', rate: 215, minThreshold: 500, category: 'Denim', supplier: 'Mafatlal Industries' }
+  { id: 'STK-01', item: '40s Combed Cotton Yarn (Warp)', count: '40s Ne', supplier: 'Vardhman Textiles Ltd', stockKg: 4200, minKg: 1500, status: 'good' },
+  { id: 'STK-02', item: '60s Compact Cotton Yarn (Weft)', count: '60s Ne', supplier: 'Alok Industries', stockKg: 1100, minKg: 1200, status: 'low' },
+  { id: 'STK-03', item: '75D Polyester DTY Yarn', count: '75D/36F', supplier: 'Reliance Industries', stockKg: 6800, minKg: 2000, status: 'good' }
 ];
 
 export const DEMO_BROKERS = [
-  {
-    id: 'BR-01',
-    name: 'Mahesh Textile Agency',
-    contactPerson: 'Maheshbhai Patel',
-    company: 'Mahesh Fabrics Pvt Ltd',
-    phone: '+91 99999 12345',
-    city: 'Surat (Ring Road Market)',
-    type: 'Broker',
-    comm: 2.0,
-    totalDeals: 142,
-    activeOrders: 4,
-    rating: 4.9
-  },
-  {
-    id: 'BR-02',
-    name: 'Rajesh Brothers Exports',
-    contactPerson: 'Rajesh Singhania',
-    company: 'RB International LLC',
-    phone: '+91 98765 43210',
-    city: 'Mumbai (Kalbadevi)',
-    type: 'Export Buyer',
-    comm: 3.5,
-    totalDeals: 88,
-    activeOrders: 2,
-    rating: 4.8
-  }
+  { id: 'BRK-01', name: 'Mahesh Textile Agency', firm: 'M.K. Textiles Surat', phone: '+91 98251 12345', commPercent: 1.0, activeOrders: 4 },
+  { id: 'BRK-02', name: 'Rajesh Brothers Exports', firm: 'Rajesh Cotton Syndicate', phone: '+91 98795 67890', commPercent: 1.25, activeOrders: 2 }
 ];
 
 export const DEMO_READY_GOODS = [
@@ -129,11 +99,6 @@ export const DEMO_READY_GOODS = [
 export const DEMO_SALES_ORDERS = [
   { id: 'ORD-8401', broker: 'Mahesh Textile Agency', buyer: 'Sona Fashions', fabric: '70*72 Plain Cambric', qty: 2500, rate: 48, total: 120000, date: '2026-10-31', deliveryDate: '2026-11-04', status: 'In Production', advance: 35000 },
   { id: 'ORD-8402', broker: 'Rajesh Brothers Exports', buyer: 'Dubai Tex FZE', fabric: 'Cotton 40s Combed', qty: 5000, rate: 64, total: 320000, date: '2026-10-30', deliveryDate: '2026-11-08', status: 'Dispatched', advance: 100000 }
-];
-
-export const DEMO_CAMERAS = [
-  { id: 'cam-01', name: 'Floor 1 - Shed A (Airjet Bay 1-25)', sn: 'EV2026-AIRJET-01', user: 'admin', location: 'Shed A Overhead Cam', connected: true, ip: '192.168.1.101', fps: 30, channel: 'CH-01' },
-  { id: 'cam-02', name: 'Floor 1 - Shed B (Rapier Bay 26-50)', sn: 'EV2026-RAPIER-02', user: 'admin', location: 'Shed B North Wall', connected: true, ip: '192.168.1.102', fps: 30, channel: 'CH-02' }
 ];
 
 export const DEMO_PRODUCTION_LOGS = [

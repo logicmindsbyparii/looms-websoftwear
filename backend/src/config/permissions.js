@@ -35,10 +35,6 @@ export const PERMISSIONS = {
   BROKERS_READ: 'brokers.read',
   BROKERS_WRITE: 'brokers.write',
 
-  // Camera
-  CAMERA_VIEW: 'camera.view',
-  CAMERA_MANAGE: 'camera.manage',
-
   // Production Logs
   PRODUCTION_READ: 'production.read',
   PRODUCTION_WRITE: 'production.write',
@@ -83,7 +79,6 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.WORKERS_MANAGE,
     PERMISSIONS.STOCK_READ,
     PERMISSIONS.STOCK_WRITE,
-    PERMISSIONS.CAMERA_VIEW,
     PERMISSIONS.PRODUCTION_READ,
     PERMISSIONS.PRODUCTION_WRITE,
     PERMISSIONS.ROLLS_READ,
@@ -109,4 +104,3 @@ export const hasPermission = (userRole, permission) => {
   const permissions = ROLE_PERMISSIONS[userRole] || [];
   return permissions.includes(permission);
 };
-

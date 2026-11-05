@@ -20,3 +20,4 @@ export const WhatsAppBrandIcon = ({ className = "w-6 h-6", fill = "currentColor"
 );
 
 export default WhatsAppBrandIcon;
+

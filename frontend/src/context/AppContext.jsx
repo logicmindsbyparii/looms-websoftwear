@@ -36,7 +36,6 @@ export function AppProvider({ children }) {
   const [readyGoods, setReadyGoods] = useState([]);
   const [brokers, setBrokers] = useState([]);
   const [salesOrders, setSalesOrders] = useState([]);
-  const [cameras, setCameras] = useState([]);
   const [productionLogs, setProductionLogs] = useState([]);
 
   // Machine Inspection Selection & Active Operator Loom
@@ -120,7 +119,6 @@ export function AppProvider({ children }) {
         api.get('/ready-goods'),
         api.get('/brokers'),
         api.get('/sales-orders'),
-        api.get('/cameras'),
         api.get('/production-logs'),
         api.get('/settings')
       ]);
@@ -132,7 +130,6 @@ export function AppProvider({ children }) {
       if (rgRes.status === 'fulfilled') setReadyGoods(rgRes.value.data || []);
       if (bRes.status === 'fulfilled') setBrokers(bRes.value.data || []);
       if (soRes.status === 'fulfilled') setSalesOrders(soRes.value.data || []);
-      if (cRes.status === 'fulfilled') setCameras(cRes.value.data || []);
       if (plRes.status === 'fulfilled') setProductionLogs(plRes.value.data || []);
 
       if (settingsRes.status === 'fulfilled' && settingsRes.value.data) {
@@ -252,17 +249,6 @@ export function AppProvider({ children }) {
       setSalesOrders(prev => prev.filter(o => o.id !== id));
     });
 
-    socket.on('camera:created', (cam) => {
-      setCameras(prev => [...prev.filter(c => c.id !== cam.id), cam]);
-    });
-
-    socket.on('camera:updated', (cam) => {
-      setCameras(prev => prev.map(c => c.id === cam.id ? cam : c));
-    });
-
-    socket.on('camera:deleted', ({ id }) => {
-      setCameras(prev => prev.filter(c => c.id !== id));
-    });
 
     socket.on('production_log:created', (log) => {
       setProductionLogs(prev => [log, ...prev.filter(l => l.id !== log.id)]);
@@ -560,7 +546,6 @@ export function AppProvider({ children }) {
       setReadyGoods([]);
       setBrokers([]);
       setSalesOrders([]);
-      setCameras([]);
       setProductionLogs([]);
       setSelectedMachineId(null);
       setActiveOperatorLoom(null);
@@ -865,36 +850,6 @@ export function AppProvider({ children }) {
     }
   };
 
-  // ─── CAMERAS ───
-  const toggleCamera = async (camId) => {
-    try {
-      const res = await api.patch(`/cameras/${camId}/toggle`);
-      setCameras(prev => prev.map(c => c.id === camId ? res.data : c));
-      showToast(`${res.data.name}: ${res.data.connected ? 'Stream Connected' : 'Stream Disconnected'}`, res.data.connected ? 'success' : 'info');
-    } catch (err) {
-      showToast(err.message || 'Failed to toggle camera', 'error');
-    }
-  };
-
-  const addCamera = async (newCam) => {
-    try {
-      const res = await api.post('/cameras', newCam);
-      setCameras(prev => [...prev, res.data]);
-      showToast(`Camera ${res.data.name} connected to EasyViewer hub`, 'success');
-    } catch (err) {
-      showToast(err.message || 'Failed to add camera', 'error');
-    }
-  };
-
-  const deleteCamera = async (camId) => {
-    try {
-      await api.delete(`/cameras/${camId}`);
-      setCameras(prev => prev.filter(c => c.id !== camId));
-      showToast('Camera deleted', 'info');
-    } catch (err) {
-      showToast(err.message || 'Failed to delete camera', 'error');
-    }
-  };
 
   // ─── PRODUCTION LOG ───
   const addProductionLog = async (log) => {
@@ -986,7 +941,6 @@ export function AppProvider({ children }) {
     readyGoods,
     brokers,
     salesOrders,
-    cameras,
     productionLogs,
     selectedMachineId,
     activeOperatorLoom,
@@ -1056,9 +1010,6 @@ export function AppProvider({ children }) {
     addSalesOrder,
     deleteSalesOrder,
     updateOrderStatus,
-    toggleCamera,
-    addCamera,
-    deleteCamera,
     addProductionLog,
     deleteProductionLog,
     fetchFactoryData

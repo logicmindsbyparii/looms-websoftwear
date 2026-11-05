@@ -8,7 +8,6 @@ import stockRoutes from './stockRoutes.js';
 import readyGoodsRoutes from './readyGoodsRoutes.js';
 import brokerRoutes from './brokerRoutes.js';
 import salesOrderRoutes from './salesOrderRoutes.js';
-import cameraRoutes from './cameraRoutes.js';
 import productionLogRoutes from './productionLogRoutes.js';
 import settingsRoutes from './settingsRoutes.js';
 import auditRoutes from './auditRoutes.js';
@@ -31,7 +30,6 @@ router.use('/stock', stockRoutes);
 router.use('/ready-goods', readyGoodsRoutes);
 router.use('/brokers', brokerRoutes);
 router.use('/sales-orders', salesOrderRoutes);
-router.use('/cameras', cameraRoutes);
 router.use('/production-logs', productionLogRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/audit', auditRoutes);
@@ -40,4 +38,3 @@ router.use('/rolls', rollRoutes);
 router.use('/locations', locationRoutes);
 
 export default router;
-

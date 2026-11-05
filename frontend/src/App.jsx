@@ -21,7 +21,6 @@ import OperatorConsole from './components/operator/OperatorConsole';
 import MachinesView from './components/views/MachinesView';
 import ControlView from './components/views/ControlView';
 import ProductionView from './components/views/ProductionView';
-import CameraView from './components/views/CameraView';
 import AlarmsView from './components/views/AlarmsView';
 import WorkersView from './components/views/WorkersView';
 import RawMaterialView from './components/views/RawMaterialView';
@@ -38,8 +37,8 @@ import { Clock } from 'lucide-react';
 
 // Role-Based Access Control (RBAC) Tab Whitelists
 const ROLE_ALLOWED_TABS = {
-  Admin: ['dashboard', 'machines', 'control', 'production', 'camera', 'alarms', 'workers', 'rawmaterial', 'sales', 'analytics', 'users', 'rolls'],
-  Supervisor: ['supervisor-floor', 'machines', 'production', 'alarms', 'workers', 'camera', 'rawmaterial', 'rolls'],
+  Admin: ['dashboard', 'machines', 'control', 'production', 'alarms', 'workers', 'rawmaterial', 'sales', 'analytics', 'users', 'rolls'],
+  Supervisor: ['supervisor-floor', 'machines', 'production', 'alarms', 'workers', 'rawmaterial', 'rolls'],
   Operator: ['operator-console', 'machines', 'production', 'alarms']
 };
 
@@ -156,8 +155,6 @@ export default function App() {
         return userRole === 'Admin' ? <ControlView /> : <SupervisorFloor />;
       case 'production':
         return <ProductionView />;
-      case 'camera':
-        return (userRole === 'Admin' || userRole === 'Supervisor') ? <CameraView /> : <OperatorConsole />;
       case 'alarms':
         return <AlarmsView />;
       case 'workers':

@@ -21,7 +21,6 @@ export default function DataManagerModal() {
     stockLevels,
     readyGoods,
     brokers,
-    cameras,
     clearAllData,
     loadDemoData,
     exportDataJSON,
@@ -120,10 +119,6 @@ export default function DataManagerModal() {
               <div className="p-2 rounded-lg bg-white border border-slate-200">
                 <span className="text-[10px] text-slate-400 block font-mono">BROKERS</span>
                 <span className="font-extrabold text-slate-900 font-mono text-sm">{brokers.length}</span>
-              </div>
-              <div className="p-2 rounded-lg bg-white border border-slate-200">
-                <span className="text-[10px] text-slate-400 block font-mono">CAMERAS</span>
-                <span className="font-extrabold text-slate-900 font-mono text-sm">{cameras.length}</span>
               </div>
             </div>
           </div>

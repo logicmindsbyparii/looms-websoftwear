@@ -7,7 +7,6 @@ import {
   Cpu,
   Sliders,
   Boxes,
-  Camera,
   AlertTriangle,
   Users,
   Layers,
@@ -51,7 +50,6 @@ export default function Sidebar() {
     { id: 'machines', label: t('nav.machines'), icon: Cpu, badge: `${runningCount}/${machines.length}` },
     { id: 'control', label: t('nav.control'), icon: Sliders },
     { id: 'production', label: t('nav.production'), icon: Boxes },
-    { id: 'camera', label: t('nav.camera'), icon: Camera },
     { id: 'alarms', label: t('nav.alarms'), icon: AlertTriangle, badge: alarms.length > 0 ? alarms.length : null, badgeColor: 'bg-rose-500 text-white' },
     { id: 'workers', label: t('nav.workers'), icon: Users },
     { id: 'rawmaterial', label: t('nav.rawmaterial'), icon: Layers },
@@ -67,7 +65,6 @@ export default function Sidebar() {
     { id: 'production', label: t('nav.production'), icon: Boxes },
     { id: 'alarms', label: t('nav.alarms'), icon: AlertTriangle, badge: alarms.length > 0 ? alarms.length : null, badgeColor: 'bg-rose-500 text-white' },
     { id: 'workers', label: t('nav.workers'), icon: Users },
-    { id: 'camera', label: t('nav.camera'), icon: Camera },
     { id: 'rawmaterial', label: t('nav.rawmaterial'), icon: Layers },
     { id: 'rolls', label: t('nav.rolls') || 'Rolls & QR Tracking', icon: QrCode },
   ];
