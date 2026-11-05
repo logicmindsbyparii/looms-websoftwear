@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import jsQR from 'jsqr';
 import { soundEffects } from '../../utils/soundEffects';
 
@@ -10,18 +9,14 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   const [hasTorch, setHasTorch] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [facingMode, setFacingMode] = useState('environment'); // 'environment' | 'user'
-  const [availableCameras, setAvailableCameras] = useState([]);
-  const [currentCameraIndex, setCurrentCameraIndex] = useState(0);
 
-  const html5QrCodeRef = useRef(null);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
   const nativeDetectorRef = useRef(null);
   const isDetectedRef = useRef(false);
   const isMountedRef = useRef(true);
-  const isStartingRef = useRef(false);
   const animFrameRef = useRef(null);
-  const videoElemRef = useRef(null);
   const frameCountRef = useRef(0);
-  const scannerContainerId = 'loomus-qr-reader-container';
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -80,273 +75,11 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     }
   };
 
-  const startScanner = async () => {
-    if (isStartingRef.current) return;
-    isStartingRef.current = true;
-    setCameraError(null);
-    isDetectedRef.current = false;
-    frameCountRef.current = 0;
-
-    try {
-      if (typeof document === 'undefined') return;
-      const container = document.getElementById(scannerContainerId);
-      if (!container) return;
-
-      // Stop any existing instance cleanly
-      await stopScanner();
-      container.innerHTML = '';
-
-      // Check hardware-accelerated BarcodeDetector (GPU/NPU ML detection)
-      if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
-        try {
-          nativeDetectorRef.current = new window.BarcodeDetector({
-            formats: ['qr_code', 'code_128']
-          });
-        } catch (e) {
-          nativeDetectorRef.current = null;
-        }
-      }
-
-      // Restrict strictly to QR_CODE and CODE_128 for maximum frame-rate decoding
-      const html5QrCode = new Html5Qrcode(scannerContainerId, {
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.QR_CODE,
-          Html5QrcodeSupportedFormats.CODE_128
-        ],
-        verbose: false,
-        experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
-        }
-      });
-      html5QrCodeRef.current = html5QrCode;
-
-      // Extreme 120 FPS high-speed scan configuration:
-      const scanConfig = {
-        fps: 120,
-        disableFlip: true,
-        qrbox: (viewfinderWidth, viewfinderHeight) => {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          return { width: minEdge, height: minEdge };
-        }
-      };
-
-      // 1. Discover available camera hardware
-      let devices = availableCameras;
-      if (!devices || devices.length === 0) {
-        try {
-          const fetchedDevices = await Html5Qrcode.getCameras();
-          if (fetchedDevices && fetchedDevices.length > 0) {
-            devices = fetchedDevices;
-            if (isMountedRef.current) {
-              setAvailableCameras(fetchedDevices);
-            }
-          }
-        } catch (camErr) {
-          console.warn('Camera enumeration note:', camErr);
-        }
-      }
-
-      // 2. Select initial target camera with smart back/front resolution
-      let primaryTarget;
-      let secondaryFallback;
-
-      if (devices && devices.length > 0) {
-        const backCam = devices.find((d) => /back|rear|environment|outward|main/i.test(d.label));
-        const frontCam = devices.find((d) => /front|user|face/i.test(d.label));
-
-        if (facingMode === 'environment' && backCam) {
-          primaryTarget = backCam.id;
-          secondaryFallback = frontCam ? frontCam.id : devices[0].id;
-        } else if (facingMode === 'user' && frontCam) {
-          primaryTarget = frontCam.id;
-          secondaryFallback = backCam ? backCam.id : devices[0].id;
-        } else {
-          const validIdx = currentCameraIndex % devices.length;
-          primaryTarget = devices[validIdx].id;
-          secondaryFallback = devices[(validIdx + 1) % devices.length]?.id || { facingMode: 'user' };
-        }
-      } else {
-        primaryTarget = { facingMode };
-        secondaryFallback = { facingMode: facingMode === 'environment' ? 'user' : 'environment' };
-      }
-
-      // 3. Start camera stream with fallback resilience
-      try {
-        await html5QrCode.start(
-          primaryTarget,
-          scanConfig,
-          (decodedText) => handleDetectedCode(decodedText),
-          () => {} // Frame scan miss - ignore
-        );
-      } catch (firstErr) {
-        console.warn('Initial camera config rejected, attempting fallback:', firstErr);
-        await html5QrCode.start(
-          secondaryFallback,
-          scanConfig,
-          (decodedText) => handleDetectedCode(decodedText),
-          () => {}
-        );
-      }
-
-      if (isMountedRef.current) {
-        setIsScanning(true);
-      }
-
-      // 4. Universal Multi-Condition Optical Pipeline (Conquers Any Angle, Glare, Shadow, Distance & Inversion)
-      const videoElem = container.querySelector('video');
-      if (videoElem) {
-        videoElemRef.current = videoElem;
-        const offCanvas = document.createElement('canvas');
-        const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
-        offCtx.imageSmoothingEnabled = false;
-
-        const scanFrameLoop = async () => {
-          if (isDetectedRef.current || !isMountedRef.current) return;
-
-          try {
-            if (videoElem.readyState >= 2 && videoElem.videoWidth > 0) {
-              frameCountRef.current++;
-              const vw = videoElem.videoWidth;
-              const vh = videoElem.videoHeight;
-
-              // Pass 1: Hardware GPU/NPU BarcodeDetector (instant if supported)
-              if (nativeDetectorRef.current) {
-                try {
-                  const barcodes = await nativeDetectorRef.current.detect(videoElem);
-                  if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
-                    handleDetectedCode(barcodes[0].rawValue);
-                    return;
-                  }
-                } catch (e) {}
-              }
-
-              // Pass 2: Multi-Strategy Adaptive jsQR Engine:
-              // Cycles 4 optical enhancement strategies every 30ms:
-              // - 0: Standard crisp full frame (normal lighting & angles)
-              // - 1: Anti-glare contrast boost (conquers reflections, factory lighting, shadows)
-              // - 2: 1:1 Center optical zoom (conquers tiny, distant or partially blurred QR)
-              // - 3: Inverted / Dark-mode contrast (conquers white-on-black or phone screens)
-              const strategy = frameCountRef.current % 4;
-              let targetW, targetH;
-
-              if (strategy === 2) {
-                // 1:1 Center Optical Zoom (zero downscaling, maximum sensor sharpness for distant QR)
-                const cropSize = Math.min(vw, vh, 420);
-                const sx = Math.max(0, (vw - cropSize) / 2);
-                const sy = Math.max(0, (vh - cropSize) / 2);
-
-                if (offCanvas.width !== cropSize || offCanvas.height !== cropSize) {
-                  offCanvas.width = cropSize;
-                  offCanvas.height = cropSize;
-                }
-                offCtx.filter = 'none';
-                offCtx.imageSmoothingEnabled = false;
-                offCtx.drawImage(videoElem, sx, sy, cropSize, cropSize, 0, 0, cropSize, cropSize);
-                targetW = cropSize;
-                targetH = cropSize;
-              } else {
-                // Full field-of-view scanning
-                const maxDim = 400;
-                targetW = vw;
-                targetH = vh;
-                if (targetW > maxDim || targetH > maxDim) {
-                  const ratio = Math.min(maxDim / targetW, maxDim / targetH);
-                  targetW = Math.round(targetW * ratio);
-                  targetH = Math.round(targetH * ratio);
-                }
-
-                if (offCanvas.width !== targetW || offCanvas.height !== targetH) {
-                  offCanvas.width = targetW;
-                  offCanvas.height = targetH;
-                }
-
-                if (strategy === 1) {
-                  // High contrast anti-glare boost for reflections & shadows
-                  offCtx.filter = 'contrast(1.5) brightness(1.05) grayscale(1)';
-                } else if (strategy === 3) {
-                  // Inverted dark-mode contrast
-                  offCtx.filter = 'invert(1) contrast(1.3)';
-                } else {
-                  offCtx.filter = 'none';
-                }
-
-                offCtx.imageSmoothingEnabled = false;
-                offCtx.drawImage(videoElem, 0, 0, targetW, targetH);
-              }
-
-              const imgData = offCtx.getImageData(0, 0, targetW, targetH);
-              const qrResult = jsQR(imgData.data, targetW, targetH, {
-                inversionAttempts: strategy === 3 ? 'attemptBoth' : 'dontInvert'
-              });
-
-              if (qrResult && qrResult.data) {
-                handleDetectedCode(qrResult.data);
-                return;
-              }
-            }
-          } catch (loopErr) {
-            // Ignore frame error and continue loop
-          }
-
-          if (isMountedRef.current && !isDetectedRef.current) {
-            if ('requestVideoFrameCallback' in videoElem) {
-              animFrameRef.current = videoElem.requestVideoFrameCallback(scanFrameLoop);
-            } else {
-              animFrameRef.current = requestAnimationFrame(scanFrameLoop);
-            }
-          }
-        };
-
-        if ('requestVideoFrameCallback' in videoElem) {
-          animFrameRef.current = videoElem.requestVideoFrameCallback(scanFrameLoop);
-        } else {
-          animFrameRef.current = requestAnimationFrame(scanFrameLoop);
-        }
-      }
-
-      // 5. Hardware capability optimization: continuous autofocus, exposure, and high frameRate
-      try {
-        const stream = html5QrCode.getRunningTrackCapabilities?.() || html5QrCode.getRunningTrackCameraCapabilities?.();
-        if (stream && isMountedRef.current) {
-          if (stream.torch) {
-            setHasTorch(true);
-          }
-          const advanced = [];
-          if (stream.focusMode && Array.isArray(stream.focusMode) && stream.focusMode.includes('continuous')) {
-            advanced.push({ focusMode: 'continuous' });
-          }
-          if (stream.exposureMode && Array.isArray(stream.exposureMode) && stream.exposureMode.includes('continuous')) {
-            advanced.push({ exposureMode: 'continuous' });
-          }
-          if (stream.whiteBalanceMode && Array.isArray(stream.whiteBalanceMode) && stream.whiteBalanceMode.includes('continuous')) {
-            advanced.push({ whiteBalanceMode: 'continuous' });
-          }
-          if (stream.frameRate && stream.frameRate.max >= 60) {
-            advanced.push({ frameRate: Math.min(120, stream.frameRate.max) });
-          }
-          if (advanced.length > 0) {
-            await html5QrCode.applyVideoConstraints({ advanced });
-          }
-        }
-      } catch (e) {
-        if (isMountedRef.current) setHasTorch(false);
-      }
-    } catch (err) {
-      console.warn('Camera failed to initialize:', err);
-      if (isMountedRef.current) {
-        setCameraError('Camera access unavailable. You can type or paste the Roll ID below.');
-        setIsScanning(false);
-      }
-    } finally {
-      isStartingRef.current = false;
-    }
-  };
-
-  const stopScanner = async () => {
+  const stopScanner = () => {
     if (animFrameRef.current) {
-      if (videoElemRef.current && 'cancelVideoFrameCallback' in videoElemRef.current) {
+      if (videoRef.current && 'cancelVideoFrameCallback' in videoRef.current) {
         try {
-          videoElemRef.current.cancelVideoFrameCallback(animFrameRef.current);
+          videoRef.current.cancelVideoFrameCallback(animFrameRef.current);
         } catch (e) {}
       }
       if (typeof cancelAnimationFrame === 'function') {
@@ -354,23 +87,191 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       }
       animFrameRef.current = null;
     }
-    videoElemRef.current = null;
 
-    if (html5QrCodeRef.current) {
-      const qrCode = html5QrCodeRef.current;
-      html5QrCodeRef.current = null;
+    if (streamRef.current) {
       try {
-        if (qrCode.isScanning) {
-          await qrCode.stop();
-        }
-        await qrCode.clear();
-      } catch (e) {
-        // gracefully ignore stop race
-      }
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      } catch (e) {}
+      streamRef.current = null;
     }
+
+    if (videoRef.current) {
+      try {
+        videoRef.current.srcObject = null;
+      } catch (e) {}
+    }
+
     if (isMountedRef.current) {
       setIsScanning(false);
       setIsTorchOn(false);
+    }
+  };
+
+  const startScanner = async () => {
+    setCameraError(null);
+    isDetectedRef.current = false;
+    frameCountRef.current = 0;
+
+    stopScanner();
+
+    // Check hardware-accelerated BarcodeDetector (GPU/NPU ML detection)
+    if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+      try {
+        nativeDetectorRef.current = new window.BarcodeDetector({
+          formats: ['qr_code', 'code_128']
+        });
+      } catch (e) {
+        nativeDetectorRef.current = null;
+      }
+    }
+
+    try {
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        throw new Error('Camera API not supported in this browser.');
+      }
+
+      // Fast, unthrottled camera stream constraints:
+      const preferredConstraints = {
+        video: {
+          facingMode: facingMode === 'environment' ? { ideal: 'environment' } : { ideal: 'user' },
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
+          frameRate: { ideal: 60, min: 30 }
+        },
+        audio: false
+      };
+
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(preferredConstraints);
+      } catch (primaryErr) {
+        console.warn('Initial camera constraint negotiation, trying fallback:', primaryErr);
+        // Fallback for laptop webcams or restricted devices
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+      }
+
+      if (!isMountedRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      streamRef.current = stream;
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      video.srcObject = stream;
+      await video.play().catch(() => {});
+
+      if (isMountedRef.current) {
+        setIsScanning(true);
+      }
+
+      // Hardware capabilities: continuous autofocus and torch detection
+      try {
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          const caps = track.getCapabilities?.() || {};
+          if (caps.torch && isMountedRef.current) {
+            setHasTorch(true);
+          }
+          const advanced = [];
+          if (caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
+            advanced.push({ focusMode: 'continuous' });
+          }
+          if (caps.exposureMode && Array.isArray(caps.exposureMode) && caps.exposureMode.includes('continuous')) {
+            advanced.push({ exposureMode: 'continuous' });
+          }
+          if (advanced.length > 0) {
+            await track.applyConstraints({ advanced }).catch(() => {});
+          }
+        }
+      } catch (e) {
+        if (isMountedRef.current) setHasTorch(false);
+      }
+
+      // 60-120 FPS Direct Hardware Scanner Loop
+      const offCanvas = document.createElement('canvas');
+      const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
+      offCtx.imageSmoothingEnabled = false;
+
+      const scanLoop = async () => {
+        if (isDetectedRef.current || !isMountedRef.current) return;
+
+        try {
+          if (video && video.readyState >= 2 && video.videoWidth > 0) {
+            frameCountRef.current++;
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+
+            // 1. Hardware BarcodeDetector (instant GPU/NPU scan)
+            if (nativeDetectorRef.current) {
+              try {
+                const barcodes = await nativeDetectorRef.current.detect(video);
+                if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+                  handleDetectedCode(barcodes[0].rawValue);
+                  return;
+                }
+              } catch (e) {}
+            }
+
+            // 2. High-speed jsQR on full sensor frame (1-2ms per frame)
+            const maxDim = 640;
+            let targetW = vw;
+            let targetH = vh;
+            if (targetW > maxDim || targetH > maxDim) {
+              const ratio = Math.min(maxDim / targetW, maxDim / targetH);
+              targetW = Math.round(targetW * ratio);
+              targetH = Math.round(targetH * ratio);
+            }
+
+            if (offCanvas.width !== targetW || offCanvas.height !== targetH) {
+              offCanvas.width = targetW;
+              offCanvas.height = targetH;
+              offCtx.imageSmoothingEnabled = false;
+            }
+
+            offCtx.drawImage(video, 0, 0, targetW, targetH);
+            const imgData = offCtx.getImageData(0, 0, targetW, targetH);
+
+            // Instant unthrottled decode
+            const inversion = frameCountRef.current % 6 === 0 ? 'attemptBoth' : 'dontInvert';
+            const qrResult = jsQR(imgData.data, targetW, targetH, {
+              inversionAttempts: inversion
+            });
+
+            if (qrResult && qrResult.data) {
+              handleDetectedCode(qrResult.data);
+              return;
+            }
+          }
+        } catch (err) {
+          // ignore frame scan glitch
+        }
+
+        if (isMountedRef.current && !isDetectedRef.current) {
+          if ('requestVideoFrameCallback' in video) {
+            animFrameRef.current = video.requestVideoFrameCallback(scanLoop);
+          } else {
+            animFrameRef.current = requestAnimationFrame(scanLoop);
+          }
+        }
+      };
+
+      if ('requestVideoFrameCallback' in video) {
+        animFrameRef.current = video.requestVideoFrameCallback(scanLoop);
+      } else {
+        animFrameRef.current = requestAnimationFrame(scanLoop);
+      }
+    } catch (err) {
+      console.warn('Camera failed to start:', err);
+      if (isMountedRef.current) {
+        setCameraError('Camera access unavailable. You can type or paste the Roll ID below.');
+        setIsScanning(false);
+      }
     }
   };
 
@@ -378,7 +279,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     if (isOpen) {
       const timer = setTimeout(() => {
         startScanner();
-      }, 30);
+      }, 20);
       return () => clearTimeout(timer);
     } else {
       stopScanner();
@@ -386,13 +287,14 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     return () => {
       stopScanner();
     };
-  }, [isOpen, currentCameraIndex, facingMode]);
+  }, [isOpen, facingMode]);
 
   const toggleTorch = async () => {
-    if (!html5QrCodeRef.current) return;
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track) return;
     try {
       const nextTorch = !isTorchOn;
-      await html5QrCodeRef.current.applyVideoConstraints({
+      await track.applyConstraints({
         advanced: [{ torch: nextTorch }]
       });
       setIsTorchOn(nextTorch);
@@ -402,11 +304,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   };
 
   const toggleFacingMode = () => {
-    if (availableCameras && availableCameras.length > 1) {
-      setCurrentCameraIndex((prev) => (prev + 1) % availableCameras.length);
-    } else {
-      setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
-    }
+    setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
   };
 
   const handleManualSubmit = (e) => {
@@ -433,10 +331,10 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
               <div className="flex items-center gap-1.5">
                 <h3 className="text-sm font-bold text-slate-900">Instant Universal Scanner</h3>
                 <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-emerald-200 animate-pulse">
-                  Universal Adaptive 120 FPS
+                  Ultra-Fast Instant
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Scans in any angle, glare, shadow, or distance</p>
+              <p className="text-xs text-slate-500 font-medium">Scans instantly the moment QR is in view</p>
             </div>
           </div>
           <button
@@ -453,7 +351,14 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         {/* Viewfinder Area */}
         <div className="p-6 flex flex-col items-center">
           <div className="relative w-full aspect-square max-w-[340px] rounded-2xl overflow-hidden bg-slate-900 border-2 border-sky-500 shadow-xl flex items-center justify-center">
-            <div id={scannerContainerId} className="w-full h-full object-cover [&>video]:w-full [&>video]:h-full [&>video]:object-cover" />
+            {/* Native Hardware Video Element */}
+            <video
+              ref={videoRef}
+              playsInline
+              autoPlay
+              muted
+              className="w-full h-full object-cover"
+            />
 
             {/* Viewfinder Target Overlays */}
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
