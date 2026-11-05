@@ -13,6 +13,18 @@ dotenv.config();
 
 const app = express();
 
+// Disable ETags to prevent 304 Not Modified for real-time factory operations data
+app.set('etag', false);
+
+// Ensure no-cache headers for all real-time API requests so clients always receive fresh 200 OK data
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+});
+
 // Security HTTP headers
 app.use(
   helmet({
@@ -51,7 +63,7 @@ app.use(
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept-Language']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept-Language', 'Cache-Control', 'Pragma']
   })
 );
 
@@ -80,4 +92,3 @@ app.use('/api', routes);
 app.use(errorHandler);
 
 export default app;
-

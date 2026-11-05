@@ -40,6 +40,8 @@ export async function apiClient(endpoint, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
     'Accept-Language': getCurrentLang(),
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
     ...(options.headers || {})
   };
 
@@ -50,7 +52,8 @@ export async function apiClient(endpoint, options = {}) {
   const fetchOptions = {
     ...options,
     headers,
-    credentials: 'include'
+    credentials: 'include',
+    cache: 'no-store'
   };
 
   if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
@@ -78,9 +81,12 @@ export async function apiClient(endpoint, options = {}) {
         const refreshRes = await fetch('/api/auth/refresh', {
           method: 'POST',
           credentials: 'include',
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
-            'Accept-Language': getCurrentLang()
+            'Accept-Language': getCurrentLang(),
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           }
         });
 
@@ -142,4 +148,3 @@ export const api = {
   patch: (endpoint, body, options) => apiClient(endpoint, { method: 'PATCH', body, ...options }),
   delete: (endpoint, body, options) => apiClient(endpoint, { method: 'DELETE', body, ...options })
 };
-
