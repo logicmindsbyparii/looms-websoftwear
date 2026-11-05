@@ -11,11 +11,16 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   const [facingMode, setFacingMode] = useState('environment'); // 'environment' | 'user'
 
   const html5QrCodeRef = useRef(null);
+  const nativeDetectorRef = useRef(null);
+  const videoTrackRef = useRef(null);
+  const isDetectedRef = useRef(false);
   const isMountedRef = useRef(true);
+  const animFrameRef = useRef(null);
   const scannerContainerId = 'loomus-qr-reader-container';
 
   useEffect(() => {
     isMountedRef.current = true;
+    isDetectedRef.current = false;
     return () => {
       isMountedRef.current = false;
     };
@@ -24,21 +29,22 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   // Helper to extract clean roll code from URL, raw text, or ID
   const parseScannedCode = (decodedText) => {
     if (!decodedText) return '';
+    const text = String(decodedText).trim();
     try {
-      if (decodedText.includes('roll=')) {
-        const url = new URL(decodedText, window.location.origin);
+      if (text.includes('roll=')) {
+        const url = new URL(text, window.location.origin);
         const code = url.searchParams.get('roll');
         if (code) return code.trim();
       }
     } catch (e) {}
 
-    // Extract Roll ID (e.g. TK-2026-000001) from structured text if scanned from full card
-    const match = decodedText.match(/TK-\d{4}-\d{4,6}/i);
+    // Extract Roll ID (e.g. TK-2026-000001) from structured text
+    const match = text.match(/TK-\d{4}-\d{4,6}/i);
     if (match) {
       return match[0].toUpperCase();
     }
 
-    return decodedText.trim();
+    return text;
   };
 
   const triggerSuccessFeedback = () => {
@@ -47,13 +53,14 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     } catch (e) {}
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try {
-        navigator.vibrate([80, 40, 80]);
+        navigator.vibrate([70, 30, 70]);
       } catch (e) {}
     }
   };
 
   const handleDetectedCode = (decodedText) => {
-    if (!decodedText) return;
+    if (!decodedText || isDetectedRef.current) return;
+    isDetectedRef.current = true;
     const cleanCode = parseScannedCode(decodedText);
     triggerSuccessFeedback();
     stopScanner();
@@ -64,6 +71,8 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
   const startScanner = async () => {
     setCameraError(null);
+    isDetectedRef.current = false;
+
     try {
       if (typeof document === 'undefined') return;
       const container = document.getElementById(scannerContainerId);
@@ -73,7 +82,18 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         await stopScanner();
       }
 
-      // High-speed hardware-accelerated configuration (BarcodeDetector native ML)
+      // Check if native BarcodeDetector API is directly available on window for 60 FPS hardware detection
+      const hasNativeDetector = typeof window !== 'undefined' && 'BarcodeDetector' in window;
+      if (hasNativeDetector) {
+        try {
+          nativeDetectorRef.current = new window.BarcodeDetector({
+            formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'data_matrix']
+          });
+        } catch (e) {
+          nativeDetectorRef.current = null;
+        }
+      }
+
       const html5QrCode = new Html5Qrcode(scannerContainerId, {
         formatsToSupport: [
           Html5QrcodeSupportedFormats.QR_CODE,
@@ -89,24 +109,18 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       });
       html5QrCodeRef.current = html5QrCode;
 
-      // Ultra-sensitive scan parameters:
-      // - fps: 30 (continuous frame inspection)
-      // - qrbox: covers 95% of viewport so even if a partial or corner of QR is seen, it scans immediately
+      // Ultra-fast full-sensor scanning:
+      // Omit qrbox restriction so the camera decodes anywhere across 100% of the sensor
       const config = {
         fps: 30,
-        qrbox: (viewfinderWidth, viewfinderHeight) => {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          const size = Math.max(220, Math.floor(minEdge * 0.95));
-          return { width: size, height: size };
-        },
         aspectRatio: 1.0,
         disableFlip: false
       };
 
       const cameraConstraints = {
         facingMode: { ideal: facingMode },
-        width: { min: 640, ideal: 1280, max: 1920 },
-        height: { min: 480, ideal: 720, max: 1080 }
+        width: { ideal: 1280, min: 640 },
+        height: { ideal: 720, min: 480 }
       };
 
       await html5QrCode.start(
@@ -116,7 +130,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
           handleDetectedCode(decodedText);
         },
         () => {
-          // Frame failure ignored - keep scanning at 30 fps
+          // Frame fail - ignore
         }
       );
 
@@ -124,9 +138,40 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         setIsScanning(true);
       }
 
-      // Check capabilities for torch and continuous focus
+      // Additional 60 FPS direct video frame scanning hook via native BarcodeDetector
+      if (nativeDetectorRef.current) {
+        const videoElem = container.querySelector('video');
+        if (videoElem) {
+          const scanVideoFrame = async () => {
+            if (isDetectedRef.current || !isMountedRef.current) return;
+            try {
+              if (videoElem.readyState >= 2) {
+                const barcodes = await nativeDetectorRef.current.detect(videoElem);
+                if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+                  handleDetectedCode(barcodes[0].rawValue);
+                  return;
+                }
+              }
+            } catch (e) {}
+
+            if ('requestVideoFrameCallback' in videoElem) {
+              videoElem.requestVideoFrameCallback(scanVideoFrame);
+            } else {
+              animFrameRef.current = requestAnimationFrame(scanVideoFrame);
+            }
+          };
+
+          if ('requestVideoFrameCallback' in videoElem) {
+            videoElem.requestVideoFrameCallback(scanVideoFrame);
+          } else {
+            animFrameRef.current = requestAnimationFrame(scanVideoFrame);
+          }
+        }
+      }
+
+      // Check capabilities for continuous autofocus and torch
       try {
-        const stream = html5QrCode.getRunningTrackCapabilities();
+        const stream = html5QrCode.getRunningTrackCapabilities?.() || html5QrCode.getRunningTrackCameraCapabilities?.();
         if (stream && isMountedRef.current) {
           if (stream.torch) {
             setHasTorch(true);
@@ -150,6 +195,10 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   };
 
   const stopScanner = async () => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
     if (html5QrCodeRef.current) {
       try {
         if (html5QrCodeRef.current.isScanning) {
@@ -157,7 +206,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         }
         await html5QrCodeRef.current.clear();
       } catch (e) {
-        // scanner stopped
+        // stopped
       }
       html5QrCodeRef.current = null;
     }
@@ -171,7 +220,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     if (isOpen) {
       const timer = setTimeout(() => {
         startScanner();
-      }, 80);
+      }, 50);
       return () => clearTimeout(timer);
     } else {
       stopScanner();
@@ -213,7 +262,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
         {/* Top Header */}
         <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
@@ -222,10 +271,10 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
               <div className="flex items-center gap-1.5">
                 <h3 className="text-sm font-bold text-slate-900">Instant QR & Barcode Scanner</h3>
                 <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-emerald-200 animate-pulse">
-                  Ultra-Fast
+                  60 FPS Lightning
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Turant Scan • Camera & Hardware Gun Active</p>
+              <p className="text-xs text-slate-500 font-medium">Any part of QR triggers instant scan</p>
             </div>
           </div>
           <button
@@ -246,7 +295,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
             {/* Viewfinder Target Overlays */}
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-              <div className="w-56 h-56 border border-white/40 rounded-2xl relative shadow-2xl">
+              <div className="w-60 h-60 border border-white/30 rounded-2xl relative shadow-2xl">
                 {/* Glowing Corner markers */}
                 <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-sky-400 -mt-1 -ml-1 rounded-tl-lg shadow-sm" />
                 <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-sky-400 -mt-1 -mr-1 rounded-tr-lg shadow-sm" />

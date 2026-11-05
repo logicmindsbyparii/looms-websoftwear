@@ -20,16 +20,13 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
 
   // Offline Phone Card Text with Product Details and Origin Loom Machine:
   const offlineCardText = [
-    `TEAM LMP TEXTILE SUITE`,
-    `==============================`,
-    `TAKA ROLL: ${rollId}`,
+    `TEAM LMP TEXTILE`,
+    `ROLL: ${rollId}`,
     `FABRIC: ${fabricName}`,
-    `QUALITY: ${qualityGrade}`,
+    `GRADE: ${qualityGrade}`,
     `LENGTH: ${metresVal}`,
     `LOOM: ${machineInfo}`,
-    `DATE: ${prodDate}`,
-    `==============================`,
-    `AUTHENTIC MILL VERIFIED FABRIC`
+    `DATE: ${prodDate}`
   ].join('\n');
 
   const qrValue = offlineCardText;
