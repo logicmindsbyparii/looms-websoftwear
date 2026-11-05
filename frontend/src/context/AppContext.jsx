@@ -65,6 +65,10 @@ export function AppProvider({ children }) {
   const [godownWhatsAppPhone, setGodownWhatsAppPhoneState] = useState(DEFAULT_ADMIN_PHONE);
   const [salesWhatsAppPhone, setSalesWhatsAppPhoneState] = useState(DEFAULT_ADMIN_PHONE);
 
+  // Network & Public QR Scan Host Settings
+  const [networkUrl, setNetworkUrl] = useState('http://192.168.1.7:5173');
+  const [publicScanBaseUrl, setPublicScanBaseUrl] = useState('');
+
   // WhatsApp Share Modal Data
   const [whatsAppShareData, setWhatsAppShareData] = useState({
     isOpen: false,
@@ -137,6 +141,8 @@ export function AppProvider({ children }) {
         if (s.godownWhatsAppPhone) setGodownWhatsAppPhoneState(s.godownWhatsAppPhone);
         if (s.salesWhatsAppPhone) setSalesWhatsAppPhoneState(s.salesWhatsAppPhone);
         if (s.idleTimeoutMinutes) idleLimitMinutesRef.current = s.idleTimeoutMinutes;
+        if (s.networkUrl) setNetworkUrl(s.networkUrl);
+        if (s.publicScanBaseUrl) setPublicScanBaseUrl(s.publicScanBaseUrl);
       }
     } catch (err) {
       console.error('Failed to load initial factory data:', err);
@@ -1012,6 +1018,9 @@ export function AppProvider({ children }) {
     whatsAppShareData,
     openWhatsAppShare,
     closeWhatsAppShare,
+    networkUrl,
+    publicScanBaseUrl,
+    setPublicScanBaseUrl,
     setActiveTab,
     setTheme,
     setSoundEnabled,

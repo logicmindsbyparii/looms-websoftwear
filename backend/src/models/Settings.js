@@ -26,6 +26,10 @@ const settingsSchema = new mongoose.Schema(
       type: String,
       enum: ['en', 'gu', 'hi', 'mr'],
       default: 'en'
+    },
+    publicScanBaseUrl: {
+      type: String,
+      default: ''
     }
   },
   {

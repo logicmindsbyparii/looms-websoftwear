@@ -1,16 +1,60 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import JsBarcode from 'jsbarcode';
 import { formatDate } from '../../utils/formatters';
+import { useApp } from '../../context/AppContext';
 
 export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
   const barcodeRef = useRef(null);
   const labelRef = useRef(null);
+  const { networkUrl, publicScanBaseUrl, showToast } = useApp();
 
   const rollId = roll?.id || 'TK-2026-000001';
-  const qrUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?roll=${roll?.qrToken || roll?.id}`
-    : `http://localhost:5173/?roll=${roll?.qrToken || roll?.id}`;
+
+  // Determine the default base URL for phone QR scanning
+  const getDefaultBaseUrl = () => {
+    try {
+      const saved = localStorage.getItem('loomus_qr_base_url');
+      if (saved && saved.trim()) return saved.trim();
+    } catch (e) {}
+
+    if (publicScanBaseUrl && publicScanBaseUrl.trim()) {
+      return publicScanBaseUrl.trim();
+    }
+
+    if (networkUrl && networkUrl.trim()) {
+      return networkUrl.trim();
+    }
+
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      if (host !== 'localhost' && host !== '127.0.0.1') {
+        return window.location.origin;
+      }
+    }
+
+    // Default to the computer's Wi-Fi network address so any phone on the Wi-Fi connects immediately
+    return 'http://192.168.1.7:5173';
+  };
+
+  const [baseUrl, setBaseUrl] = useState(getDefaultBaseUrl);
+  const [showHostConfig, setShowHostConfig] = useState(false);
+
+  const cleanBase = (baseUrl || 'http://192.168.1.7:5173').replace(/\/+$/, '');
+  const rollParam = roll?.qrToken || roll?.id || 'TK-2026-000001';
+  const qrUrl = `${cleanBase}/?roll=${rollParam}`;
+
+  const handleBaseUrlChange = (newVal) => {
+    setBaseUrl(newVal);
+    try {
+      localStorage.setItem('loomus_qr_base_url', newVal);
+    } catch (e) {}
+  };
+
+  const handleSetPreset = (presetUrl) => {
+    handleBaseUrlChange(presetUrl);
+    if (showToast) showToast('QR Target updated for phone scanning', 'success');
+  };
 
   useEffect(() => {
     if (barcodeRef.current && rollId) {
@@ -30,6 +74,13 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleCopyLink = () => {
+    try {
+      navigator.clipboard.writeText(qrUrl);
+      if (showToast) showToast('QR Scan URL copied! You can test it on any phone.', 'success');
+    } catch (e) {}
   };
 
   const handleDownloadPng = () => {
@@ -115,10 +166,10 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[96vh] flex flex-col">
         {/* Modal Top Bar */}
-        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-2">
             <span className="text-xl">🏷️</span>
             <div>
@@ -134,12 +185,82 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
           </button>
         </div>
 
-        {/* Printable Label Area */}
-        <div className="p-6 flex flex-col items-center">
+        {/* Content Scrollable Body */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex flex-col items-center space-y-4">
+          {/* Universal Mobile Scanning Host Selector Bar */}
+          <div className="w-full max-w-[380px] p-3 bg-sky-50/70 border border-sky-200 rounded-2xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <span>📱</span>
+                <span>Universal Phone QR Scan</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowHostConfig(!showHostConfig)}
+                className="text-[11px] text-sky-700 hover:text-sky-900 font-bold underline"
+              >
+                {showHostConfig ? 'Hide Config' : 'Change Target Host'}
+              </button>
+            </div>
+
+            <p className="text-[11px] text-slate-600 leading-tight">
+              Koi bhi phone is sticker ko apne camera ya Google Lens se scan karega toh direct roll details bina kisi login ya software ke dikhegi.
+            </p>
+
+            {showHostConfig && (
+              <div className="space-y-2 pt-1 border-t border-sky-200/80">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                  Scan URL Host (Wi-Fi or Public Domain)
+                </div>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    value={baseUrl}
+                    onChange={(e) => handleBaseUrlChange(e.target.value)}
+                    placeholder="http://192.168.1.7:5173 or https://mill.example.com"
+                    className="flex-1 px-2.5 py-1.5 text-xs font-mono bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => handleSetPreset(networkUrl || 'http://192.168.1.7:5173')}
+                    className="px-2.5 py-1 bg-white hover:bg-sky-100 text-sky-800 border border-sky-300 rounded-lg text-[10px] font-bold transition-all shadow-2xs"
+                  >
+                    Wi-Fi IP ({networkUrl || '192.168.1.7'})
+                  </button>
+                  {typeof window !== 'undefined' && window.location.hostname !== 'localhost' && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetPreset(window.location.origin)}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-[10px] font-bold transition-all"
+                    >
+                      Current URL ({window.location.host})
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-1 border-t border-sky-200/60 text-[10px] text-slate-500 font-mono">
+              <span className="truncate max-w-[260px]" title={qrUrl}>
+                {qrUrl}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="text-sky-700 hover:text-sky-900 font-bold underline shrink-0 ml-2"
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+
+          {/* Printable Label Area (Exact 100mm x 70mm Industrial Ratio) */}
           <div
             ref={labelRef}
             id="printable-roll-label"
-            className="w-[380px] bg-white border-2 border-slate-900 rounded-xl p-4 text-slate-900 shadow-md font-sans select-none"
+            className="w-[380px] bg-white border-2 border-slate-900 rounded-xl p-4 text-slate-900 shadow-md font-sans select-none shrink-0"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b-2 border-slate-900 pb-2 mb-3">
@@ -204,18 +325,18 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
         </div>
 
         {/* Action Buttons */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center space-x-2">
             <button
               onClick={handlePrint}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-95"
             >
               <span>🖨️</span>
               <span>Print Sticker</span>
             </button>
             <button
               onClick={handleDownloadPng}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold transition-all shadow-sm"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold transition-all shadow-sm active:scale-95"
             >
               <span>💾</span>
               <span>Download PNG</span>
@@ -255,4 +376,3 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
     </div>
   );
 }
-

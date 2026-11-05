@@ -69,8 +69,25 @@ export default function App() {
   const { t } = useTranslation();
   const [forceLogin, setForceLogin] = React.useState(false);
 
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const urlRollCode = searchParams ? searchParams.get('roll') : null;
+  // Extract roll code from search query (?roll=...), hash (#roll=...), or path (/roll/...)
+  const getUrlRollCode = () => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('roll')) return params.get('roll');
+    if (window.location.hash) {
+      const hash = window.location.hash.replace(/^#\/?/, '');
+      const hashParams = new URLSearchParams(hash);
+      if (hashParams.get('roll')) return hashParams.get('roll');
+      if (hash.startsWith('roll=')) return hash.slice(5);
+    }
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    if (pathParts.length >= 2 && (pathParts[0] === 'roll' || pathParts[0] === 'rolls')) {
+      return pathParts[1];
+    }
+    return null;
+  };
+
+  const urlRollCode = getUrlRollCode();
 
   // Global hardware scanner listener
   useHardwareScanner((code) => {
@@ -95,6 +112,11 @@ export default function App() {
     }
   }, [isAuthenticated, activeTab, userRole, allowedTabs, setActiveTab]);
 
+  // Public unauthenticated QR roll scan page - renders instantly without waiting for session restore
+  if (urlRollCode && !isAuthenticated && !forceLogin) {
+    return <PublicRollPage rollCode={urlRollCode} onGoToLogin={() => setForceLogin(true)} />;
+  }
+
   if (isAuthLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-4">
@@ -105,11 +127,6 @@ export default function App() {
         <div className="text-xs text-slate-400 font-mono tracking-widest uppercase mt-1">{t('common.loading')}</div>
       </div>
     );
-  }
-
-  // Public unauthenticated QR roll scan page
-  if (urlRollCode && !isAuthenticated && !forceLogin) {
-    return <PublicRollPage rollCode={urlRollCode} onGoToLogin={() => setForceLogin(true)} />;
   }
 
   if (!isAuthenticated) {
