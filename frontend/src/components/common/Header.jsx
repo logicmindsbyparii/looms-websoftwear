@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { selectMachineMetrics } from '../../store/slices/machinesSlice';
+import { selectCriticalAlarms } from '../../store/slices/alarmsSlice';
 import LanguageSwitcher from './LanguageSwitcher';
 import { WhatsAppBrandIcon } from './WhatsAppIcon';
 import {
@@ -40,8 +43,9 @@ export default function Header() {
 
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const criticalAlarmsCount = (alarms || []).filter(a => a?.type === 'critical').length;
-  const runningCount = (machines || []).filter(m => m?.status === 'running').length;
+  const criticalAlarms = useSelector(selectCriticalAlarms);
+  const criticalAlarmsCount = criticalAlarms.length;
+  const { running: runningCount } = useSelector(selectMachineMetrics);
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3 md:pl-2 md:pr-6 h-16 flex items-center transition-all shrink-0">

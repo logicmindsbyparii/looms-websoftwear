@@ -22,21 +22,11 @@ export default function AlarmsView() {
 
   const [severityFilter, setSeverityFilter] = useState('all');
 
-  // Deduplicate alarms by ID / _id / code & time to avoid rendering duplicate alerts
-  const uniqueAlarms = (alarms || []).filter((a, index, self) =>
-    index === self.findIndex(o =>
-      (o.id && a.id && o.id === a.id) ||
-      (o._id && a._id && o._id === a._id) ||
-      (o.code === 'E-STOP' && a.code === 'E-STOP' && o.time === a.time) ||
-      (o.title === a.title && o.time === a.time && o.machine === a.machine)
-    )
-  );
+  const criticalCount = alarms.filter(a => a.type === 'critical').length;
+  const warningCount = alarms.filter(a => a.type === 'warning').length;
+  const infoCount = alarms.filter(a => a.type === 'info').length;
 
-  const criticalCount = uniqueAlarms.filter(a => a.type === 'critical').length;
-  const warningCount = uniqueAlarms.filter(a => a.type === 'warning').length;
-  const infoCount = uniqueAlarms.filter(a => a.type === 'info').length;
-
-  const filteredAlarms = uniqueAlarms.filter(a => {
+  const filteredAlarms = alarms.filter(a => {
     if (severityFilter === 'all') return true;
     return a.type === severityFilter;
   });

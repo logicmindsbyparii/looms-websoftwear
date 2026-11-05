@@ -1,6 +1,8 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { selectMachineMetrics } from '../../store/slices/machinesSlice';
 import StatCard from '../common/StatCard';
 import { formatMeters, formatRupees } from '../../utils/formatters';
 import {
@@ -37,14 +39,13 @@ export default function DashboardView() {
   } = useApp();
   const { t } = useTranslation();
 
-  const runningLooms = (machines || []).filter(m => m?.status === 'running').length;
-  const stoppedLooms = (machines || []).filter(m => m?.status === 'stopped').length;
-  const idleLooms = (machines || []).filter(m => m?.status === 'idle' || m?.status === 'maintenance').length;
-
-  const totalMetersToday = (machines || []).reduce((acc, m) => acc + (m?.output || 0), 0);
-  const avgEfficiency = runningLooms > 0
-    ? Math.round((machines || []).filter(m => m?.status === 'running').reduce((acc, m) => acc + (m?.efficiency || 0), 0) / runningLooms)
-    : 0;
+  const {
+    running: runningLooms,
+    stopped: stoppedLooms,
+    idle: idleLooms,
+    totalOutputMeters: totalMetersToday,
+    avgEfficiency
+  } = useSelector(selectMachineMetrics);
 
   const shedACount = (machines || []).filter(m => m?.shed?.toLowerCase().includes('shed a') && m?.status === 'running').length;
   const shedBCount = (machines || []).filter(m => m?.shed?.toLowerCase().includes('shed b') && m?.status === 'running').length;
@@ -341,22 +342,13 @@ export default function DashboardView() {
               </button>
             </div>
 
-            {(() => {
-              const uniqueDashboardAlarms = (alarms || []).filter((a, index, self) =>
-                index === self.findIndex(o =>
-                  (o.id && a.id && o.id === a.id) ||
-                  (o._id && a._id && o._id === a._id) ||
-                  (o.code === 'E-STOP' && a.code === 'E-STOP' && o.time === a.time) ||
-                  (o.title === a.title && o.time === a.time && o.machine === a.machine)
-                )
-              );
-              return uniqueDashboardAlarms.length === 0 ? (
-                <div className="p-6 text-center text-slate-400 text-xs">
-                  {t('alarms.noAlarms')}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {uniqueDashboardAlarms.slice(0, 4).map((a) => (
+            {alarms.length === 0 ? (
+              <div className="p-6 text-center text-slate-400 text-xs">
+                {t('alarms.noAlarms')}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {alarms.slice(0, 4).map((a) => (
                   <div
                     key={a.id}
                     className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs ${
@@ -384,8 +376,7 @@ export default function DashboardView() {
                   </div>
                 ))}
               </div>
-            );
-          })()}
+            )}
           </div>
         </div>
 

@@ -1,120 +1,199 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { api, setAccessToken, getAccessToken, setOnSessionExpired } from '../api/client';
+import React, { createContext, useContext, useEffect, useCallback, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { api, setAccessToken, setOnSessionExpired } from '../api/client';
 import { io } from 'socket.io-client';
 import { soundEffects } from '../utils/soundEffects';
+
+// Redux Actions & Selectors
+import {
+  setAuthState,
+  setCurrentUser,
+  setUserRole,
+  setPreviewMode,
+  setAuthLoading,
+  logoutSuccess,
+  selectIsAuthenticated,
+  selectIsAuthLoading,
+  selectUserRole,
+  selectCurrentUser,
+  selectUserPermissions,
+  selectIsPreviewMode
+} from '../store/slices/authSlice';
+
+import {
+  setMachines,
+  machineCreated,
+  machineUpdated,
+  machineDeleted,
+  massMachinesUpdated,
+  setSelectedMachineId,
+  setActiveOperatorLoom,
+  selectMachines,
+  selectSelectedMachineId,
+  selectActiveOperatorLoom
+} from '../store/slices/machinesSlice';
+
+import {
+  setAlarms,
+  alarmCreated,
+  alarmCleared,
+  allAlarmsCleared,
+  selectAllAlarms
+} from '../store/slices/alarmsSlice';
+
+import {
+  setAllInventory,
+  workerCreated,
+  workerUpdated,
+  workerDeleted,
+  stockCreated,
+  stockUpdated,
+  stockDeleted,
+  readyGoodsCreated,
+  readyGoodsDeleted,
+  brokerCreated,
+  brokerDeleted,
+  salesOrderCreated,
+  salesOrderUpdated,
+  salesOrderDeleted,
+  productionLogCreated,
+  productionLogDeleted,
+  selectWorkers,
+  selectStockLevels,
+  selectReadyGoods,
+  selectBrokers,
+  selectSalesOrders,
+  selectProductionLogs
+} from '../store/slices/inventorySlice';
+
+import {
+  setActiveTab,
+  setTheme,
+  setSoundEnabled,
+  setPowerLoadPercent,
+  toggleSidebar,
+  setIsSidebarCollapsed,
+  setIsMobileMenuOpen,
+  setIsDataManagerOpen,
+  setIsAddMachineOpen,
+  setIsWhatsAppModalOpen,
+  setIsUsersModalOpen,
+  setIsScanModalOpen,
+  setInspectRollCode,
+  setActiveLabelRoll,
+  setIdleWarning,
+  showToastNotification,
+  hideToastNotification,
+  openWhatsAppShareModal,
+  closeWhatsAppShareModal,
+  selectActiveTab,
+  selectTheme,
+  selectSoundEnabled,
+  selectPowerLoadPercent,
+  selectIsSidebarCollapsed,
+  selectIsMobileMenuOpen,
+  selectIsDataManagerOpen,
+  selectIsAddMachineOpen,
+  selectIsWhatsAppModalOpen,
+  selectIsUsersModalOpen,
+  selectIsScanModalOpen,
+  selectInspectRollCode,
+  selectActiveLabelRoll,
+  selectIdleWarning,
+  selectToast,
+  selectWhatsAppShareData
+} from '../store/slices/uiSlice';
+
+import {
+  setAllSettings,
+  setAdminWhatsAppPhone as setAdminPhoneAction,
+  setGodownWhatsAppPhone as setGodownPhoneAction,
+  setSalesWhatsAppPhone as setSalesPhoneAction,
+  setPublicScanBaseUrl as setPublicScanBaseUrlAction,
+  selectAdminWhatsAppPhone,
+  selectGodownWhatsAppPhone,
+  selectSalesWhatsAppPhone,
+  selectNetworkUrl,
+  selectPublicScanBaseUrl
+} from '../store/slices/settingsSlice';
 
 const AppContext = createContext();
 
 const BROADCAST_CHANNEL_NAME = 'loomus_auth_sync_channel';
 
 export function AppProvider({ children }) {
-  // Session & Authentication
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [userRole, setUserRole] = useState('Admin'); // 'Admin' | 'Supervisor' | 'Operator'
-  const [currentUser, setCurrentUser] = useState({
-    username: 'Admin',
-    displayName: 'Mill Administrator',
-    avatar: 'A'
-  });
-  const [userPermissions, setUserPermissions] = useState([]);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const dispatch = useDispatch();
 
-  // Navigation
-  const [activeTab, setActiveTab] = useState('dashboard');
+  // Redux Auth State
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isAuthLoading = useSelector(selectIsAuthLoading);
+  const userRole = useSelector(selectUserRole);
+  const currentUser = useSelector(selectCurrentUser);
+  const userPermissions = useSelector(selectUserPermissions);
+  const isPreviewMode = useSelector(selectIsPreviewMode);
 
-  // Theme & Preferences
-  const [theme, setTheme] = useState('light');
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [powerLoadPercent, setPowerLoadPercent] = useState(0);
+  // Redux Machines State
+  const machines = useSelector(selectMachines);
+  const selectedMachineId = useSelector(selectSelectedMachineId);
+  const activeOperatorLoom = useSelector(selectActiveOperatorLoom);
 
-  // Core Data States
-  const [machines, setMachines] = useState([]);
-  const [workers, setWorkers] = useState([]);
-  const [alarms, setAlarms] = useState([]);
-  const [stockLevels, setStockLevels] = useState([]);
-  const [readyGoods, setReadyGoods] = useState([]);
-  const [brokers, setBrokers] = useState([]);
-  const [salesOrders, setSalesOrders] = useState([]);
-  const [productionLogs, setProductionLogs] = useState([]);
+  // Redux Alarms State (Deduplicated automatically)
+  const alarms = useSelector(selectAllAlarms);
 
-  // Machine Inspection Selection & Active Operator Loom
-  const [selectedMachineId, setSelectedMachineId] = useState(null);
-  const [activeOperatorLoom, setActiveOperatorLoom] = useState(null);
+  // Redux Inventory State
+  const workers = useSelector(selectWorkers);
+  const stockLevels = useSelector(selectStockLevels);
+  const readyGoods = useSelector(selectReadyGoods);
+  const brokers = useSelector(selectBrokers);
+  const salesOrders = useSelector(selectSalesOrders);
+  const productionLogs = useSelector(selectProductionLogs);
 
-  // Modals & Navigation Drawers
-  const [isDataManagerOpen, setIsDataManagerOpen] = useState(false);
-  const [isAddMachineOpen, setIsAddMachineOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem('loomus_sidebar_collapsed') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  // Redux UI State
+  const activeTab = useSelector(selectActiveTab);
+  const theme = useSelector(selectTheme);
+  const soundEnabled = useSelector(selectSoundEnabled);
+  const powerLoadPercent = useSelector(selectPowerLoadPercent);
+  const isSidebarCollapsed = useSelector(selectIsSidebarCollapsed);
+  const isMobileMenuOpen = useSelector(selectIsMobileMenuOpen);
+  const isDataManagerOpen = useSelector(selectIsDataManagerOpen);
+  const isAddMachineOpen = useSelector(selectIsAddMachineOpen);
+  const isWhatsAppModalOpen = useSelector(selectIsWhatsAppModalOpen);
+  const isUsersModalOpen = useSelector(selectIsUsersModalOpen);
+  const isScanModalOpen = useSelector(selectIsScanModalOpen);
+  const inspectRollCode = useSelector(selectInspectRollCode);
+  const activeLabelRoll = useSelector(selectActiveLabelRoll);
+  const idleWarning = useSelector(selectIdleWarning);
+  const toast = useSelector(selectToast);
+  const whatsAppShareData = useSelector(selectWhatsAppShareData);
 
-  const toggleSidebar = useCallback(() => {
-    setIsSidebarCollapsed(prev => {
-      const next = !prev;
-      try {
-        localStorage.setItem('loomus_sidebar_collapsed', String(next));
-      } catch (e) {}
-      return next;
-    });
-  }, []);
-  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
-  const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
-  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
-  const [inspectRollCode, setInspectRollCode] = useState(null);
-  const [activeLabelRoll, setActiveLabelRoll] = useState(null);
+  // Redux Settings State
+  const adminWhatsAppPhone = useSelector(selectAdminWhatsAppPhone);
+  const godownWhatsAppPhone = useSelector(selectGodownWhatsAppPhone);
+  const salesWhatsAppPhone = useSelector(selectSalesWhatsAppPhone);
+  const networkUrl = useSelector(selectNetworkUrl);
+  const publicScanBaseUrl = useSelector(selectPublicScanBaseUrl);
 
-  // Idle Timeout Warning Modal State
-  const [idleWarning, setIdleWarning] = useState({ show: false, countdown: 60 });
+  // Refs
+  const socketRef = useRef(null);
+  const broadcastChannelRef = useRef(null);
   const idleTimerRef = useRef(null);
   const countdownIntervalRef = useRef(null);
   const idleLimitMinutesRef = useRef(30);
 
-  // WhatsApp Phone Numbers
-  const DEFAULT_ADMIN_PHONE = '+91 75675 74107';
-  const [adminWhatsAppPhone, setAdminWhatsAppPhoneState] = useState(DEFAULT_ADMIN_PHONE);
-  const [godownWhatsAppPhone, setGodownWhatsAppPhoneState] = useState(DEFAULT_ADMIN_PHONE);
-  const [salesWhatsAppPhone, setSalesWhatsAppPhoneState] = useState(DEFAULT_ADMIN_PHONE);
-
-  // Network & Public QR Scan Host Settings
-  const [networkUrl, setNetworkUrl] = useState('http://192.168.1.7:5173');
-  const [publicScanBaseUrl, setPublicScanBaseUrl] = useState('');
-
-  // WhatsApp Share Modal Data
-  const [whatsAppShareData, setWhatsAppShareData] = useState({
-    isOpen: false,
-    title: '',
-    message: '',
-    category: 'general',
-    defaultPhone: DEFAULT_ADMIN_PHONE,
-    entityName: ''
-  });
-
-  // Floating Toast State
-  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
-
-  // Socket reference
-  const socketRef = useRef(null);
-  const broadcastChannelRef = useRef(null);
-
+  // Toast Dispatcher with Audio
   const showToast = useCallback((message, type = 'info') => {
-    setToast({ show: true, message, type });
+    dispatch(showToastNotification({ message, type }));
     if (soundEnabled) {
       if (type === 'error') soundEffects.alarm();
       else if (type === 'success') soundEffects.success();
       else soundEffects.click();
     }
     setTimeout(() => {
-      setToast(prev => ({ ...prev, show: false }));
+      dispatch(hideToastNotification());
     }, 3500);
-  }, [soundEnabled]);
+  }, [dispatch, soundEnabled]);
 
-  // Load all factory data from backend
+  // Load all factory data from backend into Redux Store
   const fetchFactoryData = useCallback(async () => {
     try {
       const [
@@ -140,30 +219,30 @@ export function AppProvider({ children }) {
         api.get('/settings')
       ]);
 
-      if (mRes.status === 'fulfilled') setMachines(mRes.value.data || []);
-      if (wRes.status === 'fulfilled') setWorkers(wRes.value.data || []);
-      if (aRes.status === 'fulfilled') setAlarms(aRes.value.data || []);
-      if (sRes.status === 'fulfilled') setStockLevels(sRes.value.data || []);
-      if (rgRes.status === 'fulfilled') setReadyGoods(rgRes.value.data || []);
-      if (bRes.status === 'fulfilled') setBrokers(bRes.value.data || []);
-      if (soRes.status === 'fulfilled') setSalesOrders(soRes.value.data || []);
-      if (plRes.status === 'fulfilled') setProductionLogs(Array.isArray(plRes.value?.data) ? plRes.value.data : []);
+      if (mRes.status === 'fulfilled') dispatch(setMachines(mRes.value.data || []));
+      if (aRes.status === 'fulfilled') dispatch(setAlarms(aRes.value.data || []));
+
+      dispatch(setAllInventory({
+        workers: wRes.status === 'fulfilled' ? wRes.value.data : undefined,
+        stockLevels: sRes.status === 'fulfilled' ? sRes.value.data : undefined,
+        readyGoods: rgRes.status === 'fulfilled' ? rgRes.value.data : undefined,
+        brokers: bRes.status === 'fulfilled' ? bRes.value.data : undefined,
+        salesOrders: soRes.status === 'fulfilled' ? soRes.value.data : undefined,
+        productionLogs: plRes.status === 'fulfilled' ? (Array.isArray(plRes.value?.data) ? plRes.value.data : []) : undefined
+      }));
 
       if (settingsRes.status === 'fulfilled' && settingsRes.value.data) {
-        const s = settingsRes.value.data;
-        if (s.adminWhatsAppPhone) setAdminWhatsAppPhoneState(s.adminWhatsAppPhone);
-        if (s.godownWhatsAppPhone) setGodownWhatsAppPhoneState(s.godownWhatsAppPhone);
-        if (s.salesWhatsAppPhone) setSalesWhatsAppPhoneState(s.salesWhatsAppPhone);
-        if (s.idleTimeoutMinutes) idleLimitMinutesRef.current = s.idleTimeoutMinutes;
-        if (s.networkUrl) setNetworkUrl(s.networkUrl);
-        if (s.publicScanBaseUrl) setPublicScanBaseUrl(s.publicScanBaseUrl);
+        dispatch(setAllSettings(settingsRes.value.data));
+        if (settingsRes.value.data.idleTimeoutMinutes) {
+          idleLimitMinutesRef.current = settingsRes.value.data.idleTimeoutMinutes;
+        }
       }
     } catch (err) {
-      console.error('Failed to load initial factory data:', err);
+      console.error('Failed to load initial factory data into Redux:', err);
     }
-  }, []);
+  }, [dispatch]);
 
-  // Connect WebSockets
+  // Connect WebSockets and dispatch directly to Redux
   const setupWebSocket = useCallback((token) => {
     if (socketRef.current) {
       socketRef.current.disconnect();
@@ -174,124 +253,106 @@ export function AppProvider({ children }) {
       transports: ['websocket', 'polling']
     });
 
-    socket.on('connect', () => {
-      // connected to socket
-    });
-
     socket.on('machine:created', (newMachine) => {
-      setMachines(prev => prev.some(m => m.id === newMachine.id) ? prev : [...prev, newMachine]);
+      dispatch(machineCreated(newMachine));
     });
 
     socket.on('machine:updated', (updatedMachine) => {
-      setMachines(prev => prev.map(m => m.id === updatedMachine.id ? { ...m, ...updatedMachine } : m));
+      dispatch(machineUpdated(updatedMachine));
     });
 
     socket.on('machine:deleted', ({ id }) => {
-      setMachines(prev => prev.filter(m => m.id !== id));
+      dispatch(machineDeleted(id));
     });
 
     socket.on('machines:mass_updated', ({ machines: updatedList }) => {
-      if (updatedList) setMachines(updatedList);
+      if (updatedList) dispatch(massMachinesUpdated(updatedList));
     });
 
     socket.on('emergency:stop', ({ alarm, machines: stoppedMachines, triggeredBy }) => {
-      if (stoppedMachines) setMachines(stoppedMachines);
-      if (alarm) {
-        setAlarms(prev => [
-          alarm,
-          ...prev.filter(a =>
-            a.id !== alarm.id &&
-            (!a._id || !alarm._id || a._id !== alarm._id) &&
-            !(a.code === 'E-STOP' && a.title === alarm.title && a.time === alarm.time)
-          )
-        ]);
-      }
+      if (stoppedMachines) dispatch(setMachines(stoppedMachines));
+      if (alarm) dispatch(alarmCreated(alarm));
       if (soundEnabled) soundEffects.emergency();
       showToast(`🚨 FACTORY EMERGENCY STOP ACTIVATED BY ${triggeredBy || 'USER'}!`, 'error');
     });
 
     socket.on('alarm:created', (newAlarm) => {
-      setAlarms(prev => [newAlarm, ...prev.filter(a => a.id !== newAlarm.id)]);
+      dispatch(alarmCreated(newAlarm));
       if (soundEnabled) soundEffects.alarm();
     });
 
     socket.on('alarm:cleared', ({ id }) => {
-      setAlarms(prev => prev.filter(a => a.id !== id));
+      dispatch(alarmCleared(id));
     });
 
     socket.on('alarm:cleared_all', () => {
-      setAlarms([]);
+      dispatch(allAlarmsCleared());
     });
 
     socket.on('worker:created', (worker) => {
-      setWorkers(prev => [worker, ...prev.filter(w => w.id !== worker.id)]);
+      dispatch(workerCreated(worker));
     });
 
     socket.on('worker:updated', (worker) => {
-      setWorkers(prev => prev.map(w => w.id === worker.id ? worker : w));
+      dispatch(workerUpdated(worker));
     });
 
     socket.on('worker:deleted', ({ id }) => {
-      setWorkers(prev => prev.filter(w => w.id !== id));
+      dispatch(workerDeleted(id));
     });
 
     socket.on('stock:created', (stock) => {
-      setStockLevels(prev => [stock, ...prev.filter(s => s.id !== stock.id)]);
+      dispatch(stockCreated(stock));
     });
 
     socket.on('stock:updated', (stock) => {
-      setStockLevels(prev => prev.map(s => s.id === stock.id ? stock : s));
+      dispatch(stockUpdated(stock));
     });
 
     socket.on('stock:deleted', ({ id }) => {
-      setStockLevels(prev => prev.filter(s => s.id !== id));
+      dispatch(stockDeleted(id));
     });
 
     socket.on('ready_goods:created', (item) => {
-      setReadyGoods(prev => [item, ...prev.filter(g => g.id !== item.id)]);
+      dispatch(readyGoodsCreated(item));
     });
 
     socket.on('ready_goods:deleted', ({ id }) => {
-      setReadyGoods(prev => prev.filter(g => g.id !== id));
+      dispatch(readyGoodsDeleted(id));
     });
 
     socket.on('broker:created', (broker) => {
-      setBrokers(prev => [broker, ...prev.filter(b => b.id !== broker.id)]);
+      dispatch(brokerCreated(broker));
     });
 
     socket.on('broker:deleted', ({ id }) => {
-      setBrokers(prev => prev.filter(b => b.id !== id));
+      dispatch(brokerDeleted(id));
     });
 
     socket.on('sales_order:created', (order) => {
-      setSalesOrders(prev => [order, ...prev.filter(o => o.id !== order.id)]);
+      dispatch(salesOrderCreated(order));
     });
 
     socket.on('sales_order:updated', (order) => {
-      setSalesOrders(prev => prev.map(o => o.id === order.id ? order : o));
+      dispatch(salesOrderUpdated(order));
     });
 
     socket.on('sales_order:deleted', ({ id }) => {
-      setSalesOrders(prev => prev.filter(o => o.id !== id));
+      dispatch(salesOrderDeleted(id));
     });
-
 
     socket.on('production_log:created', (log) => {
       if (!log) return;
-      setProductionLogs(prev => [log, ...(Array.isArray(prev) ? prev.filter(l => l?.id !== log.id) : [])]);
+      dispatch(productionLogCreated(log));
     });
 
     socket.on('production_log:deleted', ({ id } = {}) => {
       if (!id) return;
-      setProductionLogs(prev => Array.isArray(prev) ? prev.filter(l => l?.id !== id) : []);
+      dispatch(productionLogDeleted(id));
     });
 
     socket.on('roll:created', (roll) => {
       showToast(`Roll ${roll.id} (${roll.fabric}) created`, 'info');
-    });
-
-    socket.on('roll:updated', (roll) => {
-      // Roll status or location updated
     });
 
     socket.on('factory:data_reloaded', () => {
@@ -299,31 +360,24 @@ export function AppProvider({ children }) {
     });
 
     socket.on('telemetry:batch', (batchUpdates) => {
-      setMachines(prev => {
-        const updateMap = new Map(batchUpdates.map(u => [u.id, u]));
-        return prev.map(m => {
-          if (updateMap.has(m.id)) {
-            return { ...m, ...updateMap.get(m.id) };
-          }
-          return m;
-        });
-      });
+      if (Array.isArray(batchUpdates)) {
+        batchUpdates.forEach(u => dispatch(machineUpdated(u)));
+      }
     });
 
     socketRef.current = socket;
-  }, [fetchFactoryData, soundEnabled, showToast]);
+  }, [dispatch, fetchFactoryData, soundEnabled, showToast]);
 
   // Session Restore on Initial App Mount
   useEffect(() => {
     let isMounted = true;
 
-    // Multi-tab logout sync
     try {
       broadcastChannelRef.current = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
       broadcastChannelRef.current.onmessage = (event) => {
         if (event.data?.type === 'LOGOUT') {
           setAccessToken(null);
-          setIsAuthenticated(false);
+          dispatch(logoutSuccess());
           if (socketRef.current) socketRef.current.disconnect();
           showToast('Session ended from another tab', 'info');
         }
@@ -332,7 +386,7 @@ export function AppProvider({ children }) {
 
     setOnSessionExpired(() => {
       if (isMounted) {
-        setIsAuthenticated(false);
+        dispatch(logoutSuccess());
         showToast('Your session has expired. Please sign in again.', 'warning');
       }
     });
@@ -353,13 +407,13 @@ export function AppProvider({ children }) {
 
             const meRes = await api.get('/auth/me');
             const user = meRes.data.user;
-            setCurrentUser(user);
-            setUserRole(user.role);
-            setUserPermissions(meRes.data.permissions || []);
-            setIsAuthenticated(true);
+            dispatch(setAuthState({
+              user,
+              permissions: meRes.data.permissions || []
+            }));
 
             const defaultTab = user.role === 'Operator' ? 'operator-console' : user.role === 'Supervisor' ? 'supervisor-floor' : 'dashboard';
-            setActiveTab(defaultTab);
+            dispatch(setActiveTab(defaultTab));
 
             setupWebSocket(token);
             await fetchFactoryData();
@@ -368,7 +422,7 @@ export function AppProvider({ children }) {
       } catch (err) {
         // No session restored
       } finally {
-        if (isMounted) setIsAuthLoading(false);
+        if (isMounted) dispatch(setAuthLoading(false));
       }
     }
 
@@ -379,29 +433,29 @@ export function AppProvider({ children }) {
       if (socketRef.current) socketRef.current.disconnect();
       if (broadcastChannelRef.current) broadcastChannelRef.current.close();
     };
-  }, [setupWebSocket, fetchFactoryData, showToast]);
+  }, [dispatch, setupWebSocket, fetchFactoryData, showToast]);
 
   // Idle Timeout Inactivity Tracker
   const resetIdleTimer = useCallback(() => {
     if (!isAuthenticated) return;
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-    setIdleWarning({ show: false, countdown: 60 });
+    dispatch(setIdleWarning({ show: false, countdown: 60 }));
 
-    const timeoutMs = (idleLimitMinutesRef.current || 30) * 60 * 1000 - 60000; // show warning 60s before
+    const timeoutMs = (idleLimitMinutesRef.current || 30) * 60 * 1000 - 60000;
     idleTimerRef.current = setTimeout(() => {
-      setIdleWarning({ show: true, countdown: 60 });
+      dispatch(setIdleWarning({ show: true, countdown: 60 }));
       let remaining = 60;
       countdownIntervalRef.current = setInterval(() => {
         remaining -= 1;
-        setIdleWarning({ show: true, countdown: remaining });
+        dispatch(setIdleWarning({ show: true, countdown: remaining }));
         if (remaining <= 0) {
           clearInterval(countdownIntervalRef.current);
           logout();
         }
       }, 1000);
     }, Math.max(10000, timeoutMs));
-  }, [isAuthenticated]);
+  }, [isAuthenticated, dispatch]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -421,25 +475,25 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (machines.length > 0) {
       if (!activeOperatorLoom || !machines.some(m => m.id === activeOperatorLoom)) {
-        setActiveOperatorLoom(machines[0].id);
+        dispatch(setActiveOperatorLoom(machines[0].id));
       }
     } else {
-      setActiveOperatorLoom(null);
+      dispatch(setActiveOperatorLoom(null));
     }
-  }, [machines, activeOperatorLoom]);
+  }, [machines, activeOperatorLoom, dispatch]);
 
   // Compute power load percent dynamically based on running count
   useEffect(() => {
     const runningCount = machines.filter(m => m.status === 'running').length;
     if (runningCount === 0 || machines.length === 0) {
-      setPowerLoadPercent(0);
+      dispatch(setPowerLoadPercent(0));
     } else {
       const computedLoad = Math.min(95, Math.round((runningCount / machines.length) * 80 + 10));
-      setPowerLoadPercent(computedLoad);
+      dispatch(setPowerLoadPercent(computedLoad));
     }
-  }, [machines]);
+  }, [machines, dispatch]);
 
-  // Real Login
+  // ─── AUTHENTICATION ACTIONS ───
   const login = async (roleOrUsername, usernameOrPassword, maybePassword) => {
     let portalRole, username, password;
     if (maybePassword !== undefined) {
@@ -469,14 +523,10 @@ export function AppProvider({ children }) {
 
       const { accessToken, user, permissions } = res.data;
       setAccessToken(accessToken);
-      setCurrentUser(user);
-      setUserRole(user.role);
-      setUserPermissions(permissions || []);
-      setIsAuthenticated(true);
-      setIsPreviewMode(false);
+      dispatch(setAuthState({ user, permissions: permissions || [] }));
 
       const defaultTab = user.role === 'Operator' ? 'operator-console' : user.role === 'Supervisor' ? 'supervisor-floor' : 'dashboard';
-      setActiveTab(defaultTab);
+      dispatch(setActiveTab(defaultTab));
 
       setupWebSocket(accessToken);
       await fetchFactoryData();
@@ -491,19 +541,15 @@ export function AppProvider({ children }) {
     }
   };
 
-  // Complete 2FA Login
   const login2FA = async (tempToken, code) => {
     try {
       const res = await api.post('/auth/2fa/login', { tempToken, code });
       const { accessToken, user, permissions } = res.data;
       setAccessToken(accessToken);
-      setCurrentUser(user);
-      setUserRole(user.role);
-      setUserPermissions(permissions || []);
-      setIsAuthenticated(true);
+      dispatch(setAuthState({ user, permissions: permissions || [] }));
 
       const defaultTab = user.role === 'Operator' ? 'operator-console' : user.role === 'Supervisor' ? 'supervisor-floor' : 'dashboard';
-      setActiveTab(defaultTab);
+      dispatch(setActiveTab(defaultTab));
 
       setupWebSocket(accessToken);
       await fetchFactoryData();
@@ -518,15 +564,13 @@ export function AppProvider({ children }) {
     }
   };
 
-  // Logout
   const logout = async () => {
     try {
       await api.post('/auth/logout');
     } catch (e) {}
 
     setAccessToken(null);
-    setIsAuthenticated(false);
-    setIsPreviewMode(false);
+    dispatch(logoutSuccess());
     if (socketRef.current) socketRef.current.disconnect();
 
     try {
@@ -539,7 +583,6 @@ export function AppProvider({ children }) {
     showToast('Logged out of session', 'info');
   };
 
-  // Switch Role / View-As (Admin exclusive)
   const switchRole = async (targetRole) => {
     if (userRole !== 'Admin' && !isPreviewMode) {
       showToast('Permission Denied: Only Admin can preview other roles.', 'error');
@@ -550,11 +593,11 @@ export function AppProvider({ children }) {
       const res = await api.post('/auth/view-as', { role: targetRole });
       const previewToken = res.data.previewToken;
       setAccessToken(previewToken);
-      setUserRole(targetRole);
-      setIsPreviewMode(targetRole !== 'Admin');
+      dispatch(setUserRole(targetRole));
+      dispatch(setPreviewMode(targetRole !== 'Admin'));
 
       const defaultTab = targetRole === 'Operator' ? 'operator-console' : targetRole === 'Supervisor' ? 'supervisor-floor' : 'dashboard';
-      setActiveTab(defaultTab);
+      dispatch(setActiveTab(defaultTab));
 
       if (soundEnabled) soundEffects.click();
       showToast(`Previewing as ${targetRole}`, 'info');
@@ -567,17 +610,19 @@ export function AppProvider({ children }) {
   const clearAllData = async (passwordConfirm) => {
     try {
       await api.delete('/data/clear', { passwordConfirm });
-      setMachines([]);
-      setWorkers([]);
-      setAlarms([]);
-      setStockLevels([]);
-      setReadyGoods([]);
-      setBrokers([]);
-      setSalesOrders([]);
-      setProductionLogs([]);
-      setSelectedMachineId(null);
-      setActiveOperatorLoom(null);
-      setPowerLoadPercent(0);
+      dispatch(setMachines([]));
+      dispatch(setAlarms([]));
+      dispatch(setAllInventory({
+        workers: [],
+        stockLevels: [],
+        readyGoods: [],
+        brokers: [],
+        salesOrders: [],
+        productionLogs: []
+      }));
+      dispatch(setSelectedMachineId(null));
+      dispatch(setActiveOperatorLoom(null));
+      dispatch(setPowerLoadPercent(0));
 
       if (soundEnabled) soundEffects.alarm();
       showToast('Pura data delete ho gaya hai! Sab kuch fresh 0 se ready hai.', 'warning');
@@ -630,11 +675,10 @@ export function AppProvider({ children }) {
   const addMachine = async (machineData) => {
     try {
       const res = await api.post('/machines', machineData);
-      const newMachine = res.data;
-      setMachines(prev => [...prev.filter(m => m.id !== newMachine.id), newMachine]);
-      if (!activeOperatorLoom) setActiveOperatorLoom(newMachine.id);
+      dispatch(machineCreated(res.data));
+      if (!activeOperatorLoom) dispatch(setActiveOperatorLoom(res.data.id));
       if (soundEnabled) soundEffects.success();
-      showToast(`Machine ${newMachine.id} added!`, 'success');
+      showToast(`Machine ${res.data.id} added!`, 'success');
       return true;
     } catch (err) {
       showToast(err.message || 'Failed to add machine', 'error');
@@ -645,12 +689,7 @@ export function AppProvider({ children }) {
   const deleteMachine = async (machineId) => {
     try {
       await api.delete(`/machines/${machineId}`);
-      setMachines(prev => prev.filter(m => m.id !== machineId));
-      if (selectedMachineId === machineId) setSelectedMachineId(null);
-      if (activeOperatorLoom === machineId) {
-        const remaining = machines.filter(m => m.id !== machineId);
-        setActiveOperatorLoom(remaining[0]?.id || null);
-      }
+      dispatch(machineDeleted(machineId));
       showToast(`Machine ${machineId} deleted`, 'info');
     } catch (err) {
       showToast(err.message || 'Failed to delete machine', 'error');
@@ -661,10 +700,9 @@ export function AppProvider({ children }) {
     try {
       const res = await api.patch(`/machines/${machineId}/status`, { status });
       if (machineId === 'all') {
-        setMachines(res.data || []);
+        dispatch(setMachines(res.data || []));
       } else {
-        const updated = res.data;
-        setMachines(prev => prev.map(m => m.id === updated.id ? updated : m));
+        dispatch(machineUpdated(res.data));
       }
       if (soundEnabled) {
         if (status === 'running') soundEffects.machineStart();
@@ -680,17 +718,8 @@ export function AppProvider({ children }) {
   const emergencyStopAll = async () => {
     try {
       const res = await api.post('/machines/emergency-stop');
-      if (res.data?.machines) setMachines(res.data.machines);
-      if (res.data?.alarm) {
-        setAlarms(prev => [
-          res.data.alarm,
-          ...prev.filter(a =>
-            a.id !== res.data.alarm.id &&
-            (!a._id || !res.data.alarm._id || a._id !== res.data.alarm._id) &&
-            !(a.code === 'E-STOP' && a.title === res.data.alarm.title && a.time === res.data.alarm.time)
-          )
-        ]);
-      }
+      if (res.data?.machines) dispatch(setMachines(res.data.machines));
+      if (res.data?.alarm) dispatch(alarmCreated(res.data.alarm));
       if (soundEnabled) soundEffects.emergency();
       showToast('🚨 FACTORY EMERGENCY STOP ACTIVATED!', 'error');
     } catch (err) {
@@ -701,7 +730,7 @@ export function AppProvider({ children }) {
   const startAllMachines = async () => {
     try {
       const res = await api.post('/machines/start-all');
-      setMachines(res.data || []);
+      dispatch(setMachines(res.data || []));
       showToast(`All loom units activated`, 'success');
     } catch (err) {
       showToast(err.message || 'Failed to start all looms', 'error');
@@ -711,7 +740,7 @@ export function AppProvider({ children }) {
   const stopAllMachines = async () => {
     try {
       const res = await api.post('/machines/stop-all');
-      setMachines(res.data || []);
+      dispatch(setMachines(res.data || []));
       showToast('All Loom units halted safely', 'warning');
     } catch (err) {
       showToast(err.message || 'Failed to stop all looms', 'error');
@@ -722,7 +751,7 @@ export function AppProvider({ children }) {
   const ackAlarm = async (alarmId) => {
     try {
       await api.post(`/alarms/${alarmId}/ack`);
-      setAlarms(prev => prev.filter(a => a.id !== alarmId));
+      dispatch(alarmCleared(alarmId));
       if (soundEnabled) soundEffects.click();
       showToast('Alarm acknowledged & cleared', 'info');
     } catch (err) {
@@ -733,7 +762,7 @@ export function AppProvider({ children }) {
   const ackAllAlarms = async () => {
     try {
       await api.post('/alarms/ack-all');
-      setAlarms([]);
+      dispatch(allAlarmsCleared());
       if (soundEnabled) soundEffects.success();
       showToast('All alarms acknowledged', 'success');
     } catch (err) {
@@ -744,10 +773,9 @@ export function AppProvider({ children }) {
   const addTestAlarm = async () => {
     try {
       const res = await api.post('/alarms/test');
-      const newAlarm = res.data;
-      setAlarms(prev => [newAlarm, ...prev.filter(a => a.id !== newAlarm.id)]);
+      dispatch(alarmCreated(res.data));
       if (soundEnabled) soundEffects.alarm();
-      showToast(`New ${newAlarm.type.toUpperCase()} Alarm: ${newAlarm.title}`, 'warning');
+      showToast(`New ${res.data.type.toUpperCase()} Alarm: ${res.data.title}`, 'warning');
     } catch (err) {
       showToast(err.message || 'Failed to create test alarm', 'error');
     }
@@ -757,7 +785,7 @@ export function AppProvider({ children }) {
   const addWorker = async (workerData) => {
     try {
       const res = await api.post('/workers', workerData);
-      setWorkers(prev => [res.data, ...prev]);
+      dispatch(workerCreated(res.data));
       showToast(`Worker ${res.data.name} registered`, 'success');
     } catch (err) {
       showToast(err.message || 'Failed to register worker', 'error');
@@ -767,7 +795,7 @@ export function AppProvider({ children }) {
   const deleteWorker = async (workerId) => {
     try {
       await api.delete(`/workers/${workerId}`);
-      setWorkers(prev => prev.filter(w => w.id !== workerId));
+      dispatch(workerDeleted(workerId));
       showToast('Worker removed', 'info');
     } catch (err) {
       showToast(err.message || 'Failed to remove worker', 'error');
@@ -777,7 +805,7 @@ export function AppProvider({ children }) {
   const updateWorkerStatus = async (workerId, newStatus) => {
     try {
       const res = await api.patch(`/workers/${workerId}/status`, { status: newStatus });
-      setWorkers(prev => prev.map(w => w.id === workerId ? res.data : w));
+      dispatch(workerUpdated(res.data));
       showToast(`Worker status updated to ${newStatus}`, 'info');
     } catch (err) {
       showToast(err.message || 'Failed to update worker status', 'error');
@@ -788,16 +816,7 @@ export function AppProvider({ children }) {
   const addRawMaterial = async (entry) => {
     try {
       const res = await api.post('/stock', entry);
-      const item = res.data;
-      setStockLevels(prev => {
-        const idx = prev.findIndex(s => s.id === item.id);
-        if (idx >= 0) {
-          const updated = [...prev];
-          updated[idx] = item;
-          return updated;
-        }
-        return [item, ...prev];
-      });
+      dispatch(stockCreated(res.data));
       showToast(`Added ${entry.qty} kg of ${entry.material}`, 'success');
     } catch (err) {
       showToast(err.message || 'Failed to add stock', 'error');
@@ -807,7 +826,7 @@ export function AppProvider({ children }) {
   const deleteStock = async (stockId) => {
     try {
       await api.delete(`/stock/${stockId}`);
-      setStockLevels(prev => prev.filter(s => s.id !== stockId));
+      dispatch(stockDeleted(stockId));
       showToast('Material stock deleted', 'info');
     } catch (err) {
       showToast(err.message || 'Failed to delete stock', 'error');
@@ -818,7 +837,7 @@ export function AppProvider({ children }) {
   const addReadyGoods = async (goods) => {
     try {
       const res = await api.post('/ready-goods', goods);
-      setReadyGoods(prev => [res.data, ...prev]);
+      dispatch(readyGoodsCreated(res.data));
       showToast(`Ready goods roll lot logged (${goods.qty}m)`, 'success');
     } catch (err) {
       showToast(err.message || 'Failed to log ready goods', 'error');
@@ -828,7 +847,7 @@ export function AppProvider({ children }) {
   const deleteReadyGoods = async (goodsId) => {
     try {
       await api.delete(`/ready-goods/${goodsId}`);
-      setReadyGoods(prev => prev.filter(g => g.id !== goodsId));
+      dispatch(readyGoodsDeleted(goodsId));
       showToast('Ready goods entry deleted', 'info');
     } catch (err) {
       showToast(err.message || 'Failed to delete ready goods', 'error');
@@ -839,7 +858,7 @@ export function AppProvider({ children }) {
   const addBroker = async (broker) => {
     try {
       const res = await api.post('/brokers', broker);
-      setBrokers(prev => [res.data, ...prev]);
+      dispatch(brokerCreated(res.data));
       showToast(`Broker ${broker.name} registered successfully`, 'success');
     } catch (err) {
       showToast(err.message || 'Failed to register broker', 'error');
@@ -849,7 +868,7 @@ export function AppProvider({ children }) {
   const deleteBroker = async (brokerId) => {
     try {
       await api.delete(`/brokers/${brokerId}`);
-      setBrokers(prev => prev.filter(b => b.id !== brokerId));
+      dispatch(brokerDeleted(brokerId));
       showToast('Broker removed', 'info');
     } catch (err) {
       showToast(err.message || 'Failed to delete broker', 'error');
@@ -860,7 +879,7 @@ export function AppProvider({ children }) {
   const addSalesOrder = async (order) => {
     try {
       const res = await api.post('/sales-orders', order);
-      setSalesOrders(prev => [res.data, ...prev]);
+      dispatch(salesOrderCreated(res.data));
       showToast(`Sales order created: ${res.data.id}`, 'success');
     } catch (err) {
       showToast(err.message || 'Failed to create sales order', 'error');
@@ -870,7 +889,7 @@ export function AppProvider({ children }) {
   const deleteSalesOrder = async (orderId) => {
     try {
       await api.delete(`/sales-orders/${orderId}`);
-      setSalesOrders(prev => prev.filter(o => o.id !== orderId));
+      dispatch(salesOrderDeleted(orderId));
       showToast('Order removed', 'info');
     } catch (err) {
       showToast(err.message || 'Failed to delete sales order', 'error');
@@ -880,29 +899,26 @@ export function AppProvider({ children }) {
   const updateOrderStatus = async (orderId, status) => {
     try {
       const res = await api.patch(`/sales-orders/${orderId}/status`, { status });
-      setSalesOrders(prev => prev.map(o => o.id === orderId ? res.data : o));
+      dispatch(salesOrderUpdated(res.data));
       showToast(`Order ${orderId} updated to ${status}`, 'info');
     } catch (err) {
       showToast(err.message || 'Failed to update order status', 'error');
     }
   };
 
-
   // ─── PRODUCTION LOG ───
   const addProductionLog = async (log) => {
     try {
       const res = await api.post('/production-logs', log);
-      setProductionLogs(prev => [res.data, ...(Array.isArray(prev) ? prev : [])]);
+      dispatch(productionLogCreated(res.data));
 
       // Optimistic update machine output
-      setMachines(prev => prev.map(m => {
-        if (m.id === log.machine) {
-          const newOutput = m.output + parseFloat(log.output);
-          const newEff = Math.min(100, Math.round((newOutput / (m.targetOutput || 75)) * 100));
-          return { ...m, output: newOutput, efficiency: newEff };
-        }
-        return m;
-      }));
+      const machine = machines.find(m => m.id === log.machine);
+      if (machine) {
+        const newOutput = (machine.output || 0) + parseFloat(log.output || 0);
+        const newEff = Math.min(100, Math.round((newOutput / (machine.targetOutput || 75)) * 100));
+        dispatch(machineUpdated({ id: machine.id, output: newOutput, efficiency: newEff }));
+      }
       showToast(`Production logged: ${log.output}m from ${log.machine}`, 'success');
     } catch (err) {
       showToast(err.message || 'Failed to log production', 'error');
@@ -912,7 +928,7 @@ export function AppProvider({ children }) {
   const deleteProductionLog = async (logId) => {
     try {
       await api.delete(`/production-logs/${logId}`);
-      setProductionLogs(prev => Array.isArray(prev) ? prev.filter(l => l?.id !== logId) : []);
+      dispatch(productionLogDeleted(logId));
       showToast('Production entry deleted', 'info');
     } catch (err) {
       showToast(err.message || 'Failed to delete production entry', 'error');
@@ -921,39 +937,38 @@ export function AppProvider({ children }) {
 
   // WhatsApp Config Handlers
   const setAdminWhatsAppPhone = async (phone) => {
-    setAdminWhatsAppPhoneState(phone);
+    dispatch(setAdminPhoneAction(phone));
     try {
       await api.patch('/settings', { adminWhatsAppPhone: phone });
     } catch (e) {}
   };
 
   const setGodownWhatsAppPhone = async (phone) => {
-    setGodownWhatsAppPhoneState(phone);
+    dispatch(setGodownPhoneAction(phone));
     try {
       await api.patch('/settings', { godownWhatsAppPhone: phone });
     } catch (e) {}
   };
 
   const setSalesWhatsAppPhone = async (phone) => {
-    setSalesWhatsAppPhoneState(phone);
+    dispatch(setSalesPhoneAction(phone));
     try {
       await api.patch('/settings', { salesWhatsAppPhone: phone });
     } catch (e) {}
   };
 
   const openWhatsAppShare = ({ title, message, category = 'general', defaultPhone = '', entityName = '' }) => {
-    setWhatsAppShareData({
-      isOpen: true,
+    dispatch(openWhatsAppShareModal({
       title: title || 'Send WhatsApp Report',
       message: message || '',
       category,
-      defaultPhone: defaultPhone || adminWhatsAppPhone || DEFAULT_ADMIN_PHONE,
+      defaultPhone: defaultPhone || adminWhatsAppPhone,
       entityName
-    });
+    }));
   };
 
   const closeWhatsAppShare = () => {
-    setWhatsAppShareData(prev => ({ ...prev, isOpen: false }));
+    dispatch(closeWhatsAppShareModal());
   };
 
   const stayLoggedIn = () => {
@@ -986,23 +1001,23 @@ export function AppProvider({ children }) {
     isAddMachineOpen,
     isMobileMenuOpen,
     isSidebarCollapsed,
-    setIsSidebarCollapsed,
-    toggleSidebar,
+    setIsSidebarCollapsed: (v) => dispatch(setIsSidebarCollapsed(v)),
+    toggleSidebar: () => dispatch(toggleSidebar()),
     isWhatsAppModalOpen,
     isUsersModalOpen,
     isScanModalOpen,
-    setIsScanModalOpen,
+    setIsScanModalOpen: (v) => dispatch(setIsScanModalOpen(v)),
     inspectRollCode,
-    setInspectRollCode,
+    setInspectRollCode: (v) => dispatch(setInspectRollCode(v)),
     activeLabelRoll,
-    setActiveLabelRoll,
+    setActiveLabelRoll: (v) => dispatch(setActiveLabelRoll(v)),
     idleWarning,
     stayLoggedIn,
-    setIsDataManagerOpen,
-    setIsAddMachineOpen,
-    setIsMobileMenuOpen,
-    setIsWhatsAppModalOpen,
-    setIsUsersModalOpen,
+    setIsDataManagerOpen: (v) => dispatch(setIsDataManagerOpen(v)),
+    setIsAddMachineOpen: (v) => dispatch(setIsAddMachineOpen(v)),
+    setIsMobileMenuOpen: (v) => dispatch(setIsMobileMenuOpen(v)),
+    setIsWhatsAppModalOpen: (v) => dispatch(setIsWhatsAppModalOpen(v)),
+    setIsUsersModalOpen: (v) => dispatch(setIsUsersModalOpen(v)),
     adminWhatsAppPhone,
     setAdminWhatsAppPhone,
     godownWhatsAppPhone,
@@ -1014,12 +1029,12 @@ export function AppProvider({ children }) {
     closeWhatsAppShare,
     networkUrl,
     publicScanBaseUrl,
-    setPublicScanBaseUrl,
-    setActiveTab,
-    setTheme,
-    setSoundEnabled,
-    setSelectedMachineId,
-    setActiveOperatorLoom,
+    setPublicScanBaseUrl: (v) => dispatch(setPublicScanBaseUrlAction(v)),
+    setActiveTab: (v) => dispatch(setActiveTab(v)),
+    setTheme: (v) => dispatch(setTheme(v)),
+    setSoundEnabled: (v) => dispatch(setSoundEnabled(v)),
+    setSelectedMachineId: (v) => dispatch(setSelectedMachineId(v)),
+    setActiveOperatorLoom: (v) => dispatch(setActiveOperatorLoom(v)),
     switchRole,
     login,
     login2FA,

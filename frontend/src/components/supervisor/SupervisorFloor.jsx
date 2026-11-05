@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
+import { selectMachineMetrics } from '../../store/slices/machinesSlice';
+import { selectCriticalAlarms } from '../../store/slices/alarmsSlice';
+import { selectActiveWorkers } from '../../store/slices/inventorySlice';
 import LoomVisual from '../common/LoomVisual';
 import { openWhatsApp } from '../../utils/whatsapp';
 import {
@@ -46,8 +50,10 @@ export default function SupervisorFloor() {
     return matchesShed && matchesSearch;
   });
 
-  const activeWorkers = workers.filter(w => w.status === 'active').length;
-  const criticalAlarms = alarms.filter(a => a.type === 'critical');
+  const activeWorkersList = useSelector(selectActiveWorkers);
+  const activeWorkers = activeWorkersList.length;
+  const criticalAlarms = useSelector(selectCriticalAlarms);
+  const { running: runningCount, stopped: stoppedCount, totalOutputMeters } = useSelector(selectMachineMetrics);
 
   return (
     <div className="space-y-6">
@@ -72,17 +78,14 @@ export default function SupervisorFloor() {
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={() => {
-              const running = machines.filter(m => m.status === 'running').length;
-              const stopped = machines.filter(m => m.status === 'stopped' || m.status === 'error').length;
-              const totalMeters = machines.reduce((acc, m) => acc + (m.output || 0), 0);
               const msg = `🏭 *LOOMUS TEXTILE — SUPERVISOR SHIFT HANDOVER REPORT*
 📅 *Date:* ${new Date().toLocaleDateString('en-IN')}
 ----------------------------------------
-🟢 *${t('supervisor.runningLooms')}:* ${running} / ${machines.length}
-🔴 *${t('supervisor.stoppedLooms')}:* ${stopped}
+🟢 *${t('supervisor.runningLooms')}:* ${runningCount} / ${machines.length}
+🔴 *${t('supervisor.stoppedLooms')}:* ${stoppedCount}
 👥 *${t('supervisor.workersActive')}:* ${activeWorkers} active
 🚨 *${t('supervisor.criticalAlarms')}:* ${criticalAlarms.length}
-📏 *${t('supervisor.shiftOutput')}:* ${totalMeters.toLocaleString()} meters
+📏 *${t('supervisor.shiftOutput')}:* ${totalOutputMeters.toLocaleString()} meters
 ----------------------------------------
 ✅ Reported by Floor Supervisor`;
               openWhatsAppShare({

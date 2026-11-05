@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { store } from './store';
 import App from './App';
 import { AppProvider } from './context/AppContext';
 import { LanguageProvider } from './i18n/LanguageContext';
@@ -9,11 +11,13 @@ import './index.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <LanguageProvider>
-        <AppProvider>
-          <App />
-        </AppProvider>
-      </LanguageProvider>
+      <Provider store={store}>
+        <LanguageProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </LanguageProvider>
+      </Provider>
     </ErrorBoundary>
   </React.StrictMode>
 );
