@@ -130,7 +130,7 @@ export function AppProvider({ children }) {
       if (rgRes.status === 'fulfilled') setReadyGoods(rgRes.value.data || []);
       if (bRes.status === 'fulfilled') setBrokers(bRes.value.data || []);
       if (soRes.status === 'fulfilled') setSalesOrders(soRes.value.data || []);
-      if (plRes.status === 'fulfilled') setProductionLogs(plRes.value.data || []);
+      if (plRes.status === 'fulfilled') setProductionLogs(Array.isArray(plRes.value?.data) ? plRes.value.data : []);
 
       if (settingsRes.status === 'fulfilled' && settingsRes.value.data) {
         const s = settingsRes.value.data;
@@ -251,11 +251,13 @@ export function AppProvider({ children }) {
 
 
     socket.on('production_log:created', (log) => {
-      setProductionLogs(prev => [log, ...prev.filter(l => l.id !== log.id)]);
+      if (!log) return;
+      setProductionLogs(prev => [log, ...(Array.isArray(prev) ? prev.filter(l => l?.id !== log.id) : [])]);
     });
 
-    socket.on('production_log:deleted', ({ id }) => {
-      setProductionLogs(prev => prev.filter(l => l.id !== id));
+    socket.on('production_log:deleted', ({ id } = {}) => {
+      if (!id) return;
+      setProductionLogs(prev => Array.isArray(prev) ? prev.filter(l => l?.id !== id) : []);
     });
 
     socket.on('roll:created', (roll) => {
@@ -855,7 +857,7 @@ export function AppProvider({ children }) {
   const addProductionLog = async (log) => {
     try {
       const res = await api.post('/production-logs', log);
-      setProductionLogs(prev => [res.data, ...prev]);
+      setProductionLogs(prev => [res.data, ...(Array.isArray(prev) ? prev : [])]);
 
       // Optimistic update machine output
       setMachines(prev => prev.map(m => {
@@ -875,7 +877,7 @@ export function AppProvider({ children }) {
   const deleteProductionLog = async (logId) => {
     try {
       await api.delete(`/production-logs/${logId}`);
-      setProductionLogs(prev => prev.filter(l => l.id !== logId));
+      setProductionLogs(prev => Array.isArray(prev) ? prev.filter(l => l?.id !== logId) : []);
       showToast('Production entry deleted', 'info');
     } catch (err) {
       showToast(err.message || 'Failed to delete production entry', 'error');

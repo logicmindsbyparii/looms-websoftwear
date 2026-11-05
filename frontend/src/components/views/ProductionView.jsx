@@ -35,9 +35,10 @@ export default function ProductionView() {
   const [defectsMeters, setDefectsMeters] = useState('0.2');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const totalOutput = productionLogs.reduce((acc, log) => acc + log.output, 0);
-  const aGradeCount = productionLogs.filter(l => l.quality.includes('A-Grade')).length;
-  const aGradePercent = productionLogs.length > 0 ? Math.round((aGradeCount / productionLogs.length) * 100) : 0;
+  const logs = Array.isArray(productionLogs) ? productionLogs : [];
+  const totalOutput = logs.reduce((acc, log) => acc + (Number(log?.output) || 0), 0);
+  const aGradeCount = logs.filter(l => String(l?.quality || '').includes('A-Grade')).length;
+  const aGradePercent = logs.length > 0 ? Math.round((aGradeCount / logs.length) * 100) : 0;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -66,11 +67,15 @@ export default function ProductionView() {
     setCustomMachineId('');
   };
 
-  const filteredLogs = productionLogs.filter(log =>
-    log.machine.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    log.fabric.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    log.operator.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredLogs = logs.filter(log => {
+    const q = (searchQuery || '').toLowerCase();
+    return (
+      String(log?.machine || '').toLowerCase().includes(q) ||
+      String(log?.fabric || '').toLowerCase().includes(q) ||
+      String(log?.operator || '').toLowerCase().includes(q) ||
+      String(log?.id || '').toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="space-y-6">
@@ -123,7 +128,7 @@ export default function ProductionView() {
         <StatCard
           title={t('production.grading')}
           value={`${aGradePercent}%`}
-          subtitle={`${aGradeCount} of ${productionLogs.length}`}
+          subtitle={`${aGradeCount} of ${logs.length}`}
           icon={Award}
           variant="indigo"
         />
@@ -295,9 +300,9 @@ export default function ProductionView() {
                   <td className="py-3 font-mono text-slate-600">{log.shift}</td>
                   <td className="py-3">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      log.quality.includes('A-Grade')
+                      String(log?.quality || '').includes('A-Grade')
                         ? 'bg-emerald-100 text-emerald-800'
-                        : log.quality.includes('B-Grade')
+                        : String(log?.quality || '').includes('B-Grade')
                         ? 'bg-sky-100 text-sky-800'
                         : 'bg-amber-100 text-amber-800'
                     }`}>
