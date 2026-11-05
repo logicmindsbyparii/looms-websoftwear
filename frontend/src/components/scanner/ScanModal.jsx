@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import jsQR from 'jsqr';
 import { soundEffects } from '../../utils/soundEffects';
 
 export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
@@ -18,6 +19,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
   const isMountedRef = useRef(true);
   const isStartingRef = useRef(false);
   const animFrameRef = useRef(null);
+  const videoElemRef = useRef(null);
   const scannerContainerId = 'loomus-qr-reader-container';
 
   useEffect(() => {
@@ -110,8 +112,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       });
       html5QrCodeRef.current = html5QrCode;
 
-      // High-speed scan configuration:
-      // disableFlip: true avoids 2x CPU waste on failed frames
+      // Full-sensor high-speed scan configuration:
       const scanConfig = {
         fps: 30,
         disableFlip: true,
@@ -161,7 +162,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         secondaryFallback = { facingMode: facingMode === 'environment' ? 'user' : 'environment' };
       }
 
-      // 3. Start scanning with fallback resilience
+      // 3. Start camera stream with fallback resilience
       try {
         await html5QrCode.start(
           primaryTarget,
@@ -183,34 +184,74 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         setIsScanning(true);
       }
 
-      // 4. Hook 60 FPS direct video frame scanning via native BarcodeDetector if available
-      if (nativeDetectorRef.current) {
-        const videoElem = container.querySelector('video');
-        if (videoElem) {
-          const scanVideoFrame = async () => {
-            if (isDetectedRef.current || !isMountedRef.current) return;
-            try {
-              if (videoElem.readyState >= 2 && videoElem.videoWidth > 0) {
-                const barcodes = await nativeDetectorRef.current.detect(videoElem);
-                if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
-                  handleDetectedCode(barcodes[0].rawValue);
-                  return;
-                }
+      // 4. Ultra-responsive 60 FPS Direct Frame Scanning via Hardware BarcodeDetector + jsQR
+      const videoElem = container.querySelector('video');
+      if (videoElem) {
+        videoElemRef.current = videoElem;
+        const offCanvas = document.createElement('canvas');
+        const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
+
+        const scanFrameLoop = async () => {
+          if (isDetectedRef.current || !isMountedRef.current) return;
+
+          try {
+            if (videoElem.readyState >= 2 && videoElem.videoWidth > 0) {
+              // Engine 1: Native hardware BarcodeDetector (instant GPU/NPU detection)
+              if (nativeDetectorRef.current) {
+                try {
+                  const barcodes = await nativeDetectorRef.current.detect(videoElem);
+                  if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+                    handleDetectedCode(barcodes[0].rawValue);
+                    return;
+                  }
+                } catch (e) {}
               }
-            } catch (e) {}
 
-            if ('requestVideoFrameCallback' in videoElem) {
-              videoElem.requestVideoFrameCallback(scanVideoFrame);
-            } else {
-              animFrameRef.current = requestAnimationFrame(scanVideoFrame);
+              // Engine 2: Ultra-sensitive jsQR on 100% full camera sensor frame
+              const vw = videoElem.videoWidth;
+              const vh = videoElem.videoHeight;
+              const maxDim = 640;
+              let targetW = vw;
+              let targetH = vh;
+              if (targetW > maxDim || targetH > maxDim) {
+                const ratio = Math.min(maxDim / targetW, maxDim / targetH);
+                targetW = Math.round(targetW * ratio);
+                targetH = Math.round(targetH * ratio);
+              }
+
+              if (offCanvas.width !== targetW || offCanvas.height !== targetH) {
+                offCanvas.width = targetW;
+                offCanvas.height = targetH;
+              }
+
+              offCtx.drawImage(videoElem, 0, 0, targetW, targetH);
+              const imgData = offCtx.getImageData(0, 0, targetW, targetH);
+              const qrResult = jsQR(imgData.data, targetW, targetH, {
+                inversionAttempts: 'attemptBoth'
+              });
+
+              if (qrResult && qrResult.data) {
+                handleDetectedCode(qrResult.data);
+                return;
+              }
             }
-          };
-
-          if ('requestVideoFrameCallback' in videoElem) {
-            videoElem.requestVideoFrameCallback(scanVideoFrame);
-          } else {
-            animFrameRef.current = requestAnimationFrame(scanVideoFrame);
+          } catch (loopErr) {
+            // Ignore temporary frame decoding error, continue loop
           }
+
+          if (isMountedRef.current && !isDetectedRef.current) {
+            if ('requestVideoFrameCallback' in videoElem) {
+              animFrameRef.current = videoElem.requestVideoFrameCallback(scanFrameLoop);
+            } else {
+              animFrameRef.current = requestAnimationFrame(scanFrameLoop);
+            }
+          }
+        };
+
+        if ('requestVideoFrameCallback' in videoElem) {
+          animFrameRef.current = videoElem.requestVideoFrameCallback(scanFrameLoop);
+        } else {
+          animFrameRef.current = requestAnimationFrame(scanFrameLoop);
         }
       }
 
@@ -245,9 +286,18 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
   const stopScanner = async () => {
     if (animFrameRef.current) {
-      cancelAnimationFrame(animFrameRef.current);
+      if (videoElemRef.current && 'cancelVideoFrameCallback' in videoElemRef.current) {
+        try {
+          videoElemRef.current.cancelVideoFrameCallback(animFrameRef.current);
+        } catch (e) {}
+      }
+      if (typeof cancelAnimationFrame === 'function') {
+        cancelAnimationFrame(animFrameRef.current);
+      }
       animFrameRef.current = null;
     }
+    videoElemRef.current = null;
+
     if (html5QrCodeRef.current) {
       const qrCode = html5QrCodeRef.current;
       html5QrCodeRef.current = null;
@@ -270,7 +320,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     if (isOpen) {
       const timer = setTimeout(() => {
         startScanner();
-      }, 60);
+      }, 50);
       return () => clearTimeout(timer);
     } else {
       stopScanner();
