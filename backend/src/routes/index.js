@@ -15,11 +15,14 @@ import dataRoutes from './dataRoutes.js';
 import rollRoutes from './rollRoutes.js';
 import locationRoutes from './locationRoutes.js';
 import publicRollRoutes from './publicRollRoutes.js';
+import dispatchRoutes from './dispatchRoutes.js';
+import deliveryPublicRoutes from './deliveryPublicRoutes.js';
 
 const router = Router();
 
 // Public routes (no auth required)
 router.use('/public/rolls', publicRollRoutes);
+router.use('/public/delivery', deliveryPublicRoutes);
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
@@ -36,5 +39,6 @@ router.use('/audit', auditRoutes);
 router.use('/data', dataRoutes);
 router.use('/rolls', rollRoutes);
 router.use('/locations', locationRoutes);
+router.use('/dispatches', dispatchRoutes);
 
 export default router;

@@ -2,7 +2,8 @@
 export const ROLES = {
   ADMIN: 'Admin',
   SUPERVISOR: 'Supervisor',
-  OPERATOR: 'Operator'
+  OPERATOR: 'Operator',
+  DRIVER: 'Driver'
 };
 
 export const PERMISSIONS = {
@@ -55,6 +56,12 @@ export const PERMISSIONS = {
   LOCATIONS_READ: 'locations.read',
   LOCATIONS_MANAGE: 'locations.manage',
 
+  // Delivery & Dispatch
+  DISPATCH_READ: 'dispatch.read',
+  DISPATCH_CREATE: 'dispatch.create',
+  DISPATCH_TRANSIT_UPDATE: 'dispatch.transit_update',
+  DISPATCH_RESOLVE_DISPUTE: 'dispatch.resolve_dispute',
+
   // Data & Settings
   DATA_EXPORT: 'data.export',
   DATA_IMPORT: 'data.import',
@@ -85,7 +92,10 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.ROLLS_CREATE,
     PERMISSIONS.ROLLS_MOVE,
     PERMISSIONS.ROLLS_STATUS,
-    PERMISSIONS.LOCATIONS_READ
+    PERMISSIONS.LOCATIONS_READ,
+    PERMISSIONS.DISPATCH_READ,
+    PERMISSIONS.DISPATCH_CREATE,
+    PERMISSIONS.DISPATCH_TRANSIT_UPDATE
   ],
   [ROLES.OPERATOR]: [
     PERMISSIONS.MACHINES_READ,
@@ -97,6 +107,10 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.ROLLS_READ,
     PERMISSIONS.ROLLS_CREATE,
     PERMISSIONS.LOCATIONS_READ
+  ],
+  [ROLES.DRIVER]: [
+    PERMISSIONS.DISPATCH_READ,
+    PERMISSIONS.DISPATCH_TRANSIT_UPDATE
   ]
 };
 

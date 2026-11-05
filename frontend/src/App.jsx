@@ -28,7 +28,9 @@ import SalesView from './components/views/SalesView';
 import AnalyticsView from './components/views/AnalyticsView';
 import UsersView from './components/views/UsersView';
 import RollsView from './components/views/RollsView';
+import DeliveriesView from './components/views/DeliveriesView';
 import PublicRollPage from './components/rolls/PublicRollPage';
+import PublicDeliveryConfirmPage from './components/delivery/PublicDeliveryConfirmPage';
 import ScanModal from './components/scanner/ScanModal';
 import RollDetailModal from './components/rolls/RollDetailModal';
 import RollQrLabel from './components/rolls/RollQrLabel';
@@ -37,15 +39,17 @@ import { Clock } from 'lucide-react';
 
 // Role-Based Access Control (RBAC) Tab Whitelists
 const ROLE_ALLOWED_TABS = {
-  Admin: ['dashboard', 'machines', 'control', 'production', 'alarms', 'workers', 'rawmaterial', 'sales', 'analytics', 'users', 'rolls'],
-  Supervisor: ['supervisor-floor', 'machines', 'production', 'alarms', 'workers', 'rawmaterial', 'rolls'],
-  Operator: ['operator-console', 'machines', 'production', 'alarms']
+  Admin: ['dashboard', 'machines', 'control', 'production', 'alarms', 'workers', 'rawmaterial', 'sales', 'analytics', 'users', 'rolls', 'deliveries'],
+  Supervisor: ['supervisor-floor', 'machines', 'production', 'alarms', 'workers', 'rawmaterial', 'rolls', 'deliveries'],
+  Operator: ['operator-console', 'machines', 'production', 'alarms'],
+  Driver: ['deliveries']
 };
 
 const ROLE_DEFAULT_TAB = {
   Admin: 'dashboard',
   Supervisor: 'supervisor-floor',
-  Operator: 'operator-console'
+  Operator: 'operator-console',
+  Driver: 'deliveries'
 };
 
 export default function App() {
@@ -88,6 +92,27 @@ export default function App() {
 
   const urlRollCode = getUrlRollCode();
 
+  // Extract secure delivery verification token (?delivery=..., #delivery=..., /delivery/...)
+  const getUrlDeliveryToken = () => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('delivery')) return params.get('delivery');
+    if (params.get('dispatch')) return params.get('dispatch');
+    if (window.location.hash) {
+      const hash = window.location.hash.replace(/^#\/?/, '');
+      const hashParams = new URLSearchParams(hash);
+      if (hashParams.get('delivery')) return hashParams.get('delivery');
+      if (hash.startsWith('delivery=')) return hash.slice(9);
+    }
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    if (pathParts.length >= 2 && (pathParts[0] === 'delivery' || pathParts[0] === 'delivery-confirm')) {
+      return pathParts[1];
+    }
+    return null;
+  };
+
+  const urlDeliveryToken = getUrlDeliveryToken();
+
   // Global hardware scanner listener
   useHardwareScanner((code) => {
     setInspectRollCode(code);
@@ -114,6 +139,11 @@ export default function App() {
   // Public unauthenticated QR roll scan page - renders instantly without waiting for session restore
   if (urlRollCode && !isAuthenticated && !forceLogin) {
     return <PublicRollPage rollCode={urlRollCode} onGoToLogin={() => setForceLogin(true)} />;
+  }
+
+  // Public unauthenticated Party Delivery Confirmation page
+  if (urlDeliveryToken && !isAuthenticated && !forceLogin) {
+    return <PublicDeliveryConfirmPage token={urlDeliveryToken} onGoToLogin={() => setForceLogin(true)} />;
   }
 
   if (isAuthLoading) {
@@ -169,6 +199,8 @@ export default function App() {
         return userRole === 'Admin' ? <UsersView /> : <DashboardView />;
       case 'rolls':
         return <RollsView onOpenScan={() => setIsScanModalOpen(true)} />;
+      case 'deliveries':
+        return <DeliveriesView />;
       default:
         return userRole === 'Admin' ? <DashboardView /> : userRole === 'Supervisor' ? <SupervisorFloor /> : <OperatorConsole />;
     }

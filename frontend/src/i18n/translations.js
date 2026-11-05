@@ -28,6 +28,7 @@ export const TRANSLATIONS = {
       "sales": "Sales & Ready Goods",
       "analytics": "Analytics & Reports",
       "rolls": "Rolls & QR Tracking",
+      "deliveries": "Deliveries & Dispatch",
       "scanQr": "Scan QR",
       "users": "User Accounts",
       "activeLooms": "ACTIVE LOOMS",

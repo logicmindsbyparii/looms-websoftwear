@@ -469,3 +469,59 @@ ${url}
 ✅ LOOMUS 2.0 Roll QR Tracking`;
 }
 
+export function buildDeliveryConfirmationLinkMessage(dispatch) {
+  const lang = getCurrentLang();
+  const url = `${window.location.origin}/?delivery=${dispatch.confirmationToken || ''}`;
+  const metresStr = formatMeters(dispatch.totalMetresDispatched || 0);
+
+  if (lang === 'gu') {
+    return `🚚 *LOOMUS ટેક્સટાઇલ મિલ — સુરક્ષિત ડિલિવરી પુષ્ટિકરણ લિંક*
+----------------------------------------
+🏢 *ગ્રાહક પાર્ટી:* ${dispatch.partyName}
+📦 *ચલાણ / ડિસ્પેચ ID:* ${dispatch.dispatchId}
+🧵 *કાપડ ક્વોલિટી:* ${dispatch.fabric}
+📏 *કુલ મીટર:* ${metresStr} (${dispatch.totalRollsDispatched || 1} તાકા)
+🚛 *ટેમ્પો નંબર:* ${dispatch.driver?.vehicleNumber || '-'}
+👨‍✈️ *ડ્રાઇવર:* ${dispatch.driver?.name || '-'} (${dispatch.driver?.phone || '-'})
+----------------------------------------
+🔒 *ડિલિવરી ચકાસણી અને OTP પુષ્ટિ:*
+કૃપા કરીને માલ મેળવતી વખતે નીચે આપેલી લિંક પર ક્લિક કરી મીટર ચકાસો અને તમારા મોબાઈલ પર આવેલ OTP દાખલ કરી ડિલિવરી પુષ્ટિ કરો:
+${url}
+----------------------------------------
+⚠️ *સૂચના:* ડ્રાઇવરને ક્યારેય OTP આપવો નહીં.`;
+  }
+
+  if (lang === 'hi') {
+    return `🚚 *LOOMUS टेक्सटाइल मिल — सुरक्षित डिलीवरी सत्यापन लिंक*
+----------------------------------------
+🏢 *ग्राहक पार्टी:* ${dispatch.partyName}
+📦 *डिस्पैच ID:* ${dispatch.dispatchId}
+🧵 *कपड़ा क्वालिटी:* ${dispatch.fabric}
+📏 *कुल मीटर:* ${metresStr} (${dispatch.totalRollsDispatched || 1} रोल)
+🚛 *टेम्पो वाहन:* ${dispatch.driver?.vehicleNumber || '-'}
+👨‍✈️ *ड्राइवर:* ${dispatch.driver?.name || '-'} (${dispatch.driver?.phone || '-'})
+----------------------------------------
+🔒 *डिलीवरी सत्यापन और OTP कन्फर्मेशन:*
+कृपया माल प्राप्त करते समय नीचे दी गई लिंक खोलें, प्राप्त मीटर जांचें और अपने मोबाइल पर आया OTP दर्ज कर डिलीवरी कन्फर्म करें:
+${url}
+----------------------------------------
+⚠️ *सूचना:* ड्राइवर को कभी भी OTP न दें। केवल स्वयं जांच कर पुष्टि करें।`;
+  }
+
+  return `🚚 *LOOMUS TEXTILE MILL — SECURE DELIVERY VERIFICATION LINK*
+----------------------------------------
+🏢 *Party / Customer:* ${dispatch.partyName}
+📦 *Dispatch ID:* ${dispatch.dispatchId}
+🧵 *Fabric:* ${dispatch.fabric}
+📏 *Quantity Dispatched:* ${metresStr} (${dispatch.totalRollsDispatched || 1} Rolls)
+🚛 *Vehicle / Tempo:* ${dispatch.driver?.vehicleNumber || '-'}
+👨‍✈️ *Driver:* ${dispatch.driver?.name || '-'} (${dispatch.driver?.phone || '-'})
+----------------------------------------
+🔒 *Receiver Delivery Verification & OTP Link:*
+When vehicle arrives, inspect the goods, verify meters received, and confirm delivery using your secure OTP:
+${url}
+----------------------------------------
+⚠️ *Security Notice:* Never share your OTP with the tempo driver. Only the receiver must confirm delivery.`;
+}
+
+

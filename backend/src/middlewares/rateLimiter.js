@@ -31,4 +31,41 @@ export const publicRollLimiter = rateLimit({
   legacyHeaders: false
 });
 
+export const publicDeliveryLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 60,
+  message: {
+    success: false,
+    errorCode: 'PUBLIC_DELIVERY_RATE_LIMIT_EXCEEDED',
+    message: 'Too many delivery requests from this IP, please try again shortly'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+export const otpRequestLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 10, // Max 10 requests per 10 minutes
+  message: {
+    success: false,
+    errorCode: 'OTP_REQUEST_RATE_LIMIT_EXCEEDED',
+    message: 'Too many OTP requests from this IP address. Please wait before requesting another OTP.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+export const otpVerifyLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 20, // Max 20 verification attempts per 10 minutes
+  message: {
+    success: false,
+    errorCode: 'OTP_VERIFY_RATE_LIMIT_EXCEEDED',
+    message: 'Too many OTP verification attempts. Please wait before trying again.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+
 
