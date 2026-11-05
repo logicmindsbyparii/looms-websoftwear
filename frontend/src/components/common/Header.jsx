@@ -12,7 +12,8 @@ import {
   MessageSquare,
   Users,
   Eye,
-  QrCode
+  QrCode,
+  RotateCcw
 } from 'lucide-react';
 
 export default function Header() {
@@ -93,6 +94,19 @@ export default function Header() {
             )}
           </button>
 
+          {/* Quick Return to Admin Button in Header when in preview mode */}
+          {isPreviewMode && (
+            <button
+              onClick={() => switchRole('Admin')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold transition-all shadow-2xs hover:shadow-xs cursor-pointer animate-in fade-in"
+              title="Return to Admin Mode"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-sky-600" />
+              <span className="hidden sm:inline">{t('roles.exitPreview') || 'Return to Admin'}</span>
+              <span className="sm:hidden">Return to Admin</span>
+            </button>
+          )}
+
           {/* User Profile Pill Menu */}
           <div className="relative">
             <button
@@ -157,10 +171,10 @@ export default function Header() {
                         switchRole('Admin');
                         setShowUserMenu(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-lg flex items-center gap-2"
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
                     >
-                      <SlidersHorizontal className="w-3.5 h-3.5" />
-                      <span>{t('roles.exitPreview')}</span>
+                      <RotateCcw className="w-3.5 h-3.5 text-sky-600" />
+                      <span>{t('roles.exitPreview') || 'Return to Admin'}</span>
                     </button>
                   </div>
                 )}

@@ -39,7 +39,8 @@ export const TRANSLATIONS = {
       "Operator": "Operator",
       "FullAccess": "Full Access",
       "FloorLevel": "Floor Level",
-      "HMIConsole": "HMI Console"
+      "HMIConsole": "HMI Console",
+      "exitPreview": "Return to Admin"
     },
     "status": {
       "running": "Running",
@@ -475,7 +476,8 @@ export const TRANSLATIONS = {
       "Operator": "ઓપરેટર",
       "FullAccess": "સંપૂર્ણ અધિકાર",
       "FloorLevel": "ફ્લોર સ્તર",
-      "HMIConsole": "HMI કન્સોલ"
+      "HMIConsole": "HMI કન્સોલ",
+      "exitPreview": "Return to Admin"
     },
     "status": {
       "running": "ચાલુ",
@@ -911,7 +913,8 @@ export const TRANSLATIONS = {
       "Operator": "ऑपरेटर",
       "FullAccess": "पूर्ण अधिकार",
       "FloorLevel": "तल स्तर",
-      "HMIConsole": "HMI कंसोल"
+      "HMIConsole": "HMI कंसोल",
+      "exitPreview": "Return to Admin"
     },
     "status": {
       "running": "चालू",
@@ -1347,7 +1350,8 @@ export const TRANSLATIONS = {
       "Operator": "ऑपरेटर",
       "FullAccess": "पूर्ण अधिकार",
       "FloorLevel": "तळ पातळी",
-      "HMIConsole": "HMI कन्सोल"
+      "HMIConsole": "HMI कन्सोल",
+      "exitPreview": "Return to Admin"
     },
     "status": {
       "running": "सुरू",

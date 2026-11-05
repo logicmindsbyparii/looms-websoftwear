@@ -52,18 +52,18 @@ export default function SupervisorFloor() {
   return (
     <div className="space-y-6">
       {/* Supervisor Header Banner */}
-      <div className="heavy-card rounded-2xl p-4 sm:p-6 bg-gradient-to-r from-amber-950 via-slate-900 to-slate-900 text-white border-none shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] sm:text-[11px] font-bold font-mono border border-amber-500/30 flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5" />
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] sm:text-[11px] font-bold font-mono border border-amber-200 flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-amber-600" />
               {t('supervisor.consoleTag')}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black font-display tracking-tight text-white">
+          <h2 className="text-xl sm:text-2xl font-black font-display tracking-tight text-slate-900">
             {t('supervisor.title')}
           </h2>
-          <p className="text-xs text-slate-300 mt-1 max-w-xl">
+          <p className="text-xs text-slate-500 mt-1 max-w-xl font-medium">
             {t('supervisor.subtitle')}
           </p>
         </div>
@@ -92,19 +92,19 @@ export default function SupervisorFloor() {
                 defaultPhone: adminWhatsAppPhone
               });
             }}
-            className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+            className="px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center gap-1.5"
           >
-            <MessageSquare className="w-3.5 h-3.5" />
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
             <span>{t('supervisor.whatsAppHandover')}</span>
           </button>
 
-          <div className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-center">
-            <span className="text-[10px] text-slate-400 block font-mono">{t('supervisor.staffOnFloor')}</span>
-            <span className="text-base sm:text-lg font-bold text-emerald-400 font-mono">{activeWorkers} {t('status.active')}</span>
+          <div className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+            <span className="text-[10px] text-slate-500 block font-mono font-medium">{t('supervisor.staffOnFloor')}</span>
+            <span className="text-base sm:text-lg font-bold text-emerald-700 font-mono">{activeWorkers} {t('status.active')}</span>
           </div>
-          <div className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-center">
-            <span className="text-[10px] text-slate-400 block font-mono">{t('dashboard.activeAlarmsCount')}</span>
-            <span className={`text-base sm:text-lg font-bold font-mono ${criticalAlarms.length > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+          <div className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
+            <span className="text-[10px] text-slate-500 block font-mono font-medium">{t('dashboard.activeAlarmsCount')}</span>
+            <span className={`text-base sm:text-lg font-bold font-mono ${criticalAlarms.length > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
               {criticalAlarms.length} Alerts
             </span>
           </div>

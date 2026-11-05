@@ -119,18 +119,18 @@ export default function OperatorConsole() {
   return (
     <div className="space-y-6">
       {/* Operator Top Control Bar */}
-      <div className="heavy-card rounded-2xl p-4 sm:p-6 bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 text-white border-none shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] sm:text-[11px] font-bold font-mono border border-emerald-500/30 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] sm:text-[11px] font-bold font-mono border border-emerald-200 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               {t('operator.consoleTag')}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black font-display tracking-tight text-white">
+          <h2 className="text-xl sm:text-2xl font-black font-display tracking-tight text-slate-800">
             {t('operator.title')}
           </h2>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-xs text-slate-500 mt-1 font-medium">
             {currentMachine.id} • {currentMachine.name} ({currentMachine.fabric})
           </p>
         </div>
@@ -151,15 +151,15 @@ export default function OperatorConsole() {
               openWhatsApp({ phone: adminWhatsAppPhone, message: msg });
               showToast('Emergency alert sent to Admin WhatsApp!', 'success');
             }}
-            className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+            className="px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5"
             title="Send Emergency Alert via WhatsApp"
           >
-            <MessageSquare className="w-3.5 h-3.5" />
+            <MessageSquare className="w-3.5 h-3.5 text-rose-600" />
             <span>WhatsApp Admin</span>
           </button>
 
-          <div className="flex items-center gap-2 sm:gap-3 bg-slate-800/90 p-2 rounded-2xl border border-slate-700 flex-1 sm:flex-none justify-between sm:justify-start">
-            <label className="text-xs font-bold text-slate-300 font-mono pl-1 sm:pl-2 shrink-0">{t('control.target')}</label>
+          <div className="flex items-center gap-2 sm:gap-3 bg-slate-50 p-1.5 sm:p-2 rounded-2xl border border-slate-200 flex-1 sm:flex-none justify-between sm:justify-start">
+            <label className="text-xs font-bold text-slate-600 font-mono pl-1 sm:pl-2 shrink-0">{t('control.target')}</label>
             <select
               value={activeOperatorLoom || currentMachine.id}
               onChange={e => {
@@ -171,10 +171,10 @@ export default function OperatorConsole() {
                   setPressureInput(m.pressure || 4.2);
                 }
               }}
-              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-slate-900 text-white font-mono font-extrabold text-xs sm:text-sm rounded-xl border border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white text-slate-800 font-mono font-bold text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-2xs cursor-pointer"
             >
               {machines.map(m => (
-                <option key={m.id} value={m.id}>
+                <option key={m.id} value={m.id} className="bg-white text-slate-800 py-1">
                   {m.id} ({m.fabric}) — {t(`status.${m.status}`) || m.status.toUpperCase()}
                 </option>
               ))}
@@ -250,7 +250,7 @@ export default function OperatorConsole() {
                 onClick={() => {
                   showToast(`Inching / Jogging loom ${currentMachine.id} (Slow Turn)`, 'info');
                 }}
-                className="py-4 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-sm flex flex-col items-center justify-center gap-2 transition-all active:scale-95"
+                className="py-4 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm flex flex-col items-center justify-center gap-2 transition-all shadow-md shadow-indigo-600/20 active:scale-95"
               >
                 <RotateCcw className="w-6 h-6" />
                 <span>INCH / JOG</span>
