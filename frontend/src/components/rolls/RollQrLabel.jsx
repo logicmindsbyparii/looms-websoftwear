@@ -18,15 +18,14 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
   const locationInfo = roll?.locationId || 'Main Floor';
   const prodDate = formatDate(roll?.producedAt) || new Date().toLocaleDateString();
 
-  // Offline Phone Card Text with Product Details and Origin Loom Machine:
+  // Compact high-contrast offline card text (Roll ID, Loom Machine, Fabric, Length, Grade)
+  // Fewer characters = much larger QR modules = instantaneous 0-latency scanning from any distance
   const offlineCardText = [
-    `TEAM LMP TEXTILE`,
     `ROLL: ${rollId}`,
+    `LOOM: ${machineInfo}`,
     `FABRIC: ${fabricName}`,
     `GRADE: ${qualityGrade}`,
-    `LENGTH: ${metresVal}`,
-    `LOOM: ${machineInfo}`,
-    `DATE: ${prodDate}`
+    `METRES: ${metresVal}`
   ].join('\n');
 
   const qrValue = offlineCardText;
@@ -283,13 +282,15 @@ export default function RollQrLabel({ roll, onClose, mode = 'single' }) {
 
               {/* QR Code Container */}
               <div className="col-span-5 flex flex-col items-center justify-center p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                <QRCodeSVG
-                  value={qrValue}
-                  size={110}
-                  level="L"
-                  includeMargin={false}
-                  className="w-full h-auto"
-                />
+                <div className="bg-white p-1 rounded-md shadow-xs w-full flex items-center justify-center">
+                  <QRCodeSVG
+                    value={qrValue}
+                    size={115}
+                    level="M"
+                    marginSize={2}
+                    className="w-full h-auto"
+                  />
+                </div>
                 <span className="text-[8px] font-bold text-slate-700 mt-1 tracking-tight text-center">
                   SCAN ANY PHONE
                 </span>

@@ -40,7 +40,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       }
     } catch (e) {}
 
-    // Extract Roll ID (e.g. TK-2026-000001) from structured text
+    // Extract Roll ID (e.g. TK-2026-000001) from structured multi-line card text
     const match = text.match(/TK-\d{4}-\d{4,6}/i);
     if (match) {
       return match[0].toUpperCase();
@@ -86,24 +86,22 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       await stopScanner();
       container.innerHTML = '';
 
-      // Initialize hardware-accelerated BarcodeDetector if natively supported in browser
+      // Check hardware-accelerated BarcodeDetector (GPU/NPU ML detection)
       if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
         try {
           nativeDetectorRef.current = new window.BarcodeDetector({
-            formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'data_matrix']
+            formats: ['qr_code', 'code_128']
           });
         } catch (e) {
           nativeDetectorRef.current = null;
         }
       }
 
+      // Restrict strictly to QR_CODE and CODE_128 for maximum frame-rate decoding
       const html5QrCode = new Html5Qrcode(scannerContainerId, {
         formatsToSupport: [
           Html5QrcodeSupportedFormats.QR_CODE,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.DATA_MATRIX
+          Html5QrcodeSupportedFormats.CODE_128
         ],
         verbose: false,
         experimentalFeatures: {
@@ -112,12 +110,15 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
       });
       html5QrCodeRef.current = html5QrCode;
 
-      // Ultra-fast full-sensor configuration:
-      // Omit qrbox restriction so the camera decodes anywhere across 100% of the sensor
+      // High-speed scan configuration:
+      // disableFlip: true avoids 2x CPU waste on failed frames
       const scanConfig = {
         fps: 30,
-        aspectRatio: 1.0,
-        disableFlip: false
+        disableFlip: true,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          return { width: minEdge, height: minEdge };
+        }
       };
 
       // 1. Discover available camera hardware
@@ -136,23 +137,31 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
         }
       }
 
-      // 2. Select initial target camera
+      // 2. Select initial target camera with smart back/front resolution
       let primaryTarget;
       let secondaryFallback;
 
       if (devices && devices.length > 0) {
-        const validIdx = currentCameraIndex % devices.length;
-        primaryTarget = devices[validIdx].id;
-        // Fallback to first available camera if targeted camera fails
-        secondaryFallback = devices[0].id;
+        const backCam = devices.find((d) => /back|rear|environment|outward|main/i.test(d.label));
+        const frontCam = devices.find((d) => /front|user|face/i.test(d.label));
+
+        if (facingMode === 'environment' && backCam) {
+          primaryTarget = backCam.id;
+          secondaryFallback = frontCam ? frontCam.id : devices[0].id;
+        } else if (facingMode === 'user' && frontCam) {
+          primaryTarget = frontCam.id;
+          secondaryFallback = backCam ? backCam.id : devices[0].id;
+        } else {
+          const validIdx = currentCameraIndex % devices.length;
+          primaryTarget = devices[validIdx].id;
+          secondaryFallback = devices[(validIdx + 1) % devices.length]?.id || { facingMode: 'user' };
+        }
       } else {
-        // html5-qrcode strictly expects exactly 1 key in cameraIdOrConfig if passed as object:
-        // { facingMode: 'environment' } or { facingMode: 'user' }
         primaryTarget = { facingMode };
         secondaryFallback = { facingMode: facingMode === 'environment' ? 'user' : 'environment' };
       }
 
-      // 3. Start scanning with fallback resilience for PC webcams and phones
+      // 3. Start scanning with fallback resilience
       try {
         await html5QrCode.start(
           primaryTarget,
@@ -181,7 +190,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
           const scanVideoFrame = async () => {
             if (isDetectedRef.current || !isMountedRef.current) return;
             try {
-              if (videoElem.readyState >= 2) {
+              if (videoElem.readyState >= 2 && videoElem.videoWidth > 0) {
                 const barcodes = await nativeDetectorRef.current.detect(videoElem);
                 if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
                   handleDetectedCode(barcodes[0].rawValue);
@@ -212,10 +221,12 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
           if (stream.torch) {
             setHasTorch(true);
           }
+          const advanced = [];
           if (stream.focusMode && Array.isArray(stream.focusMode) && stream.focusMode.includes('continuous')) {
-            await html5QrCode.applyVideoConstraints({
-              advanced: [{ focusMode: 'continuous' }]
-            });
+            advanced.push({ focusMode: 'continuous' });
+          }
+          if (advanced.length > 0) {
+            await html5QrCode.applyVideoConstraints({ advanced });
           }
         }
       } catch (e) {
@@ -259,7 +270,7 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
     if (isOpen) {
       const timer = setTimeout(() => {
         startScanner();
-      }, 80);
+      }, 60);
       return () => clearTimeout(timer);
     } else {
       stopScanner();
@@ -314,10 +325,10 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
               <div className="flex items-center gap-1.5">
                 <h3 className="text-sm font-bold text-slate-900">Instant QR & Barcode Scanner</h3>
                 <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-emerald-200 animate-pulse">
-                  60 FPS Lightning
+                  Lightning Fast
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Any part of QR triggers instant scan</p>
+              <p className="text-xs text-slate-500 font-medium">Instant scan on point</p>
             </div>
           </div>
           <button
@@ -333,17 +344,17 @@ export default function ScanModal({ isOpen, onClose, onScanSuccess }) {
 
         {/* Viewfinder Area */}
         <div className="p-6 flex flex-col items-center">
-          <div className="relative w-full aspect-square max-w-[290px] rounded-2xl overflow-hidden bg-slate-900 border-2 border-sky-500 shadow-xl flex items-center justify-center">
+          <div className="relative w-full aspect-square max-w-[340px] rounded-2xl overflow-hidden bg-slate-900 border-2 border-sky-500 shadow-xl flex items-center justify-center">
             <div id={scannerContainerId} className="w-full h-full object-cover [&>video]:w-full [&>video]:h-full [&>video]:object-cover" />
 
             {/* Viewfinder Target Overlays */}
             <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-              <div className="w-60 h-60 border border-white/30 rounded-2xl relative shadow-2xl">
+              <div className="w-64 h-64 border border-white/30 rounded-2xl relative shadow-2xl">
                 {/* Glowing Corner markers */}
-                <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-sky-400 -mt-1 -ml-1 rounded-tl-lg shadow-sm" />
-                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-sky-400 -mt-1 -mr-1 rounded-tr-lg shadow-sm" />
-                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-sky-400 -mb-1 -ml-1 rounded-bl-lg shadow-sm" />
-                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-sky-400 -mb-1 -mr-1 rounded-br-lg shadow-sm" />
+                <div className="absolute top-0 left-0 w-7 h-7 border-t-4 border-l-4 border-sky-400 -mt-1 -ml-1 rounded-tl-lg shadow-sm" />
+                <div className="absolute top-0 right-0 w-7 h-7 border-t-4 border-r-4 border-sky-400 -mt-1 -mr-1 rounded-tr-lg shadow-sm" />
+                <div className="absolute bottom-0 left-0 w-7 h-7 border-b-4 border-l-4 border-sky-400 -mb-1 -ml-1 rounded-bl-lg shadow-sm" />
+                <div className="absolute bottom-0 right-0 w-7 h-7 border-b-4 border-r-4 border-sky-400 -mb-1 -mr-1 rounded-br-lg shadow-sm" />
 
                 {/* Animated high-speed laser line */}
                 {isScanning && (
