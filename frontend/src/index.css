@@ -31,15 +31,25 @@
     touch-action: manipulation;
   }
 
-  /* Hardware-accelerated smooth scrolling on touch and desktop */
+  /* Main workspace & vertical scrolling containers */
   main,
   .overflow-y-auto,
-  .overflow-x-auto,
   .modern-scrollbar {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;
     scroll-behavior: smooth;
-    touch-action: pan-y;
+  }
+
+  /* Table horizontal wrappers & elements: Allow seamless vertical wheel & touch scrolling through to page */
+  .overflow-x-auto,
+  table,
+  tbody,
+  thead,
+  tr {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: auto;
+    overscroll-behavior-y: auto !important;
+    touch-action: auto;
   }
 
   /* Custom subtle, high-performance scrollbar */
