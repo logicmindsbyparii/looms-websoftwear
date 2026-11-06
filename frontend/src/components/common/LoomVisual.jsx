@@ -1,5 +1,34 @@
 import React, { memo } from 'react';
 
+// Symmetrical, GPU-accelerated shuttle projectile memoized strictly to prevent telemetry restarts
+const SynchronizedShuttle = memo(function SynchronizedShuttle({ isRunning, isIdle, shuttleColor }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div
+        className={`flex items-center justify-center ${
+          isRunning
+            ? 'animate-sync-shuttle'
+            : isIdle
+            ? 'animate-sync-shuttle-slow'
+            : ''
+        }`}
+      >
+        <svg width="34" height="14" viewBox="0 0 34 14" className="drop-shadow-xs">
+          {/* Symmetrical aerodynamic shuttle body */}
+          <rect x="7" y="2" width="20" height="10" rx="3" fill={shuttleColor} />
+          {/* Left tapered nose */}
+          <polygon points="7,2 0,7 7,12" fill={shuttleColor} />
+          {/* Right tapered nose */}
+          <polygon points="27,2 34,7 27,12" fill={shuttleColor} />
+          {/* Center weft thread eyelet */}
+          <circle cx="17" cy="7" r="2" fill="#ffffff" />
+          <circle cx="17" cy="7" r="1" fill={shuttleColor} />
+        </svg>
+      </div>
+    </div>
+  );
+});
+
 function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
   const isRunning = status === 'running';
   const isIdle = status === 'idle';
@@ -70,30 +99,12 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
         />
       </svg>
 
-      {/* 2. Hardware-Accelerated Shuttle Layer (Runs on GPU Compositor Thread: Zero Scroll Lag, Instant View Mount) */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div
-          className={`flex items-center justify-center ${
-            isRunning
-              ? 'animate-sync-shuttle'
-              : isIdle
-              ? 'animate-sync-shuttle-slow'
-              : ''
-          }`}
-        >
-          <svg width="34" height="14" viewBox="0 0 34 14" className="drop-shadow-xs">
-            {/* Aerodynamic symmetrical shuttle body */}
-            <rect x="7" y="2" width="20" height="10" rx="3" fill={shuttleColor} />
-            {/* Left tapered nose */}
-            <polygon points="7,2 0,7 7,12" fill={shuttleColor} />
-            {/* Right tapered nose */}
-            <polygon points="27,2 34,7 27,12" fill={shuttleColor} />
-            {/* Center weft thread eyelet */}
-            <circle cx="17" cy="7" r="2" fill="#ffffff" />
-            <circle cx="17" cy="7" r="1" fill={shuttleColor} />
-          </svg>
-        </div>
-      </div>
+      {/* 2. Isolated Hardware-Accelerated Shuttle Layer: 100% In-Sync Across All Rows */}
+      <SynchronizedShuttle
+        isRunning={isRunning}
+        isIdle={isIdle}
+        shuttleColor={shuttleColor}
+      />
 
       {/* Speed badge overlay */}
       {isRunning && (

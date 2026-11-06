@@ -120,24 +120,17 @@
 }
 
 .animate-sync-shuttle {
-  animation: syncShuttleGlide 0.58s ease-in-out infinite;
+  animation: syncShuttleGlide 0.42s ease-in-out infinite;
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
 .animate-sync-shuttle-slow {
-  animation: syncShuttleGlide 1.6s ease-in-out infinite;
+  animation: syncShuttleGlide 1.2s ease-in-out infinite;
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
-}
-
-/* Instant-mount & frictionless 120 FPS scrolling for 50-loom fleet */
-.machine-card-optimized {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 340px;
-  contain: layout style paint;
 }
 
 /* Precision technical pattern background with fixed attachment for lag-free 120fps scrolling */
