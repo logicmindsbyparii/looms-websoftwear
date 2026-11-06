@@ -4,6 +4,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { emitToAll } from '../services/socketService.js';
+import { checkCriticalAlarmAlert } from '../services/whatsappAlertService.js';
 
 export const getAlarms = asyncHandler(async (req, res) => {
   const { type, acknowledged } = req.query;
@@ -31,6 +32,16 @@ export const createAlarm = asyncHandler(async (req, res) => {
 
   emitToAll('alarm:created', newAlarm);
 
+  if (newAlarm.type === 'critical') {
+    checkCriticalAlarmAlert({
+      id: newAlarm.id,
+      code: newAlarm.code,
+      message: newAlarm.title,
+      loomId: newAlarm.machine,
+      severity: 'critical'
+    }).catch(err => console.warn('WhatsApp alarm alert failed:', err.message));
+  }
+
   res.status(201).json(new ApiResponse(201, newAlarm, 'Alarm created'));
 });
 
@@ -56,6 +67,16 @@ export const addTestAlarm = asyncHandler(async (req, res) => {
   });
 
   emitToAll('alarm:created', newAlarm);
+
+  if (newAlarm.type === 'critical') {
+    checkCriticalAlarmAlert({
+      id: newAlarm.id,
+      code: newAlarm.code,
+      message: newAlarm.title,
+      loomId: newAlarm.machine,
+      severity: 'critical'
+    }).catch(err => console.warn('WhatsApp alarm alert failed:', err.message));
+  }
 
   res.status(201).json(new ApiResponse(201, newAlarm, `New ${picked.type.toUpperCase()} Alarm: ${picked.title}`));
 });

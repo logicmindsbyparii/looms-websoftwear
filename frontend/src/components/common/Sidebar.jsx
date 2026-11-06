@@ -22,6 +22,7 @@ import {
   UserCheck,
   QrCode
 } from 'lucide-react';
+import { WhatsAppBrandIcon } from './WhatsAppIcon';
 
 export default function Sidebar() {
   const {
@@ -63,6 +64,7 @@ export default function Sidebar() {
     { id: 'sales', label: t('nav.sales'), icon: Briefcase },
     { id: 'rolls', label: t('nav.rolls') || 'Rolls & QR Tracking', icon: QrCode },
     { id: 'analytics', label: t('nav.analytics'), icon: TrendingUp },
+    { id: 'whatsapp-reports', label: t('nav.whatsappReports') || 'WhatsApp AI', icon: WhatsAppBrandIcon },
     { id: 'users', label: t('nav.users'), icon: UserCheck }
   ];
 
@@ -79,7 +81,8 @@ export default function Sidebar() {
     },
     { id: 'workers', label: t('nav.workers'), icon: Users },
     { id: 'rawmaterial', label: t('nav.rawmaterial'), icon: Layers },
-    { id: 'rolls', label: t('nav.rolls') || 'Rolls & QR Tracking', icon: QrCode }
+    { id: 'rolls', label: t('nav.rolls') || 'Rolls & QR Tracking', icon: QrCode },
+    { id: 'whatsapp-reports', label: t('nav.whatsappReports') || 'WhatsApp AI', icon: WhatsAppBrandIcon }
   ];
 
   const operatorNav = [

@@ -2,6 +2,7 @@ import http from 'http';
 import app from './app.js';
 import { connectDB } from './config/db.js';
 import { initSocket } from './services/socketService.js';
+import { initWhatsAppScheduler } from './services/whatsappSchedulerService.js';
 import { logger } from './utils/logger.js';
 
 const PORT = process.env.PORT || 5000;
@@ -11,8 +12,9 @@ const server = http.createServer(app);
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
 
-// Initialize WebSockets
-initSocket(server, process.env.CLIENT_URL);
+    // Initialize WebSockets & Background Schedulers
+    initSocket(server, process.env.CLIENT_URL);
+    initWhatsAppScheduler();
 
 // Start Server
 const startServer = async () => {

@@ -28,6 +28,7 @@ import SalesView from './components/views/SalesView';
 import AnalyticsView from './components/views/AnalyticsView';
 import UsersView from './components/views/UsersView';
 import RollsView from './components/views/RollsView';
+import WhatsAppReportsView from './components/views/WhatsAppReportsView';
 import PublicRollPage from './components/rolls/PublicRollPage';
 import ScanModal from './components/scanner/ScanModal';
 import RollDetailModal from './components/rolls/RollDetailModal';
@@ -37,8 +38,8 @@ import { Clock } from 'lucide-react';
 
 // Role-Based Access Control (RBAC) Tab Whitelists
 const ROLE_ALLOWED_TABS = {
-  Admin: ['dashboard', 'machines', 'control', 'production', 'alarms', 'workers', 'rawmaterial', 'sales', 'analytics', 'users', 'rolls'],
-  Supervisor: ['supervisor-floor', 'machines', 'production', 'alarms', 'workers', 'rawmaterial', 'rolls'],
+  Admin: ['dashboard', 'machines', 'control', 'production', 'alarms', 'workers', 'rawmaterial', 'sales', 'analytics', 'users', 'rolls', 'whatsapp-reports'],
+  Supervisor: ['supervisor-floor', 'machines', 'production', 'alarms', 'workers', 'rawmaterial', 'rolls', 'whatsapp-reports'],
   Operator: ['operator-console', 'machines', 'production', 'alarms']
 };
 
@@ -169,6 +170,8 @@ export default function App() {
         return userRole === 'Admin' ? <UsersView /> : <DashboardView />;
       case 'rolls':
         return <RollsView onOpenScan={() => setIsScanModalOpen(true)} />;
+      case 'whatsapp-reports':
+        return <WhatsAppReportsView />;
       default:
         return userRole === 'Admin' ? <DashboardView /> : userRole === 'Supervisor' ? <SupervisorFloor /> : <OperatorConsole />;
     }

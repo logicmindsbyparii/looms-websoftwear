@@ -6,6 +6,7 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { logAuditEvent } from '../services/auditService.js';
 import { emitToAll } from '../services/socketService.js';
+import { checkLoomStopAlert } from '../services/whatsappAlertService.js';
 
 export const getMachines = asyncHandler(async (req, res) => {
   const { shed, status, search } = req.query;
@@ -168,6 +169,13 @@ export const updateMachineStatus = asyncHandler(async (req, res) => {
   });
 
   emitToAll('machine:updated', machine);
+
+  // Trigger real-time WhatsApp alert if loom unexpectedly stopped
+  if (status === 'stopped' && prevStatus === 'running') {
+    checkLoomStopAlert(machine, prevStatus).catch(err => {
+      console.warn('Failed to dispatch loom stop WhatsApp alert:', err.message);
+    });
+  }
 
   res.status(200).json(new ApiResponse(200, machine, `Machine ${machine.id} set to ${status.toUpperCase()}`));
 });

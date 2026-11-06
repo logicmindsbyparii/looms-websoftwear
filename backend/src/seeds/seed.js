@@ -15,6 +15,8 @@ import { Location } from '../models/Location.js';
 import { Roll } from '../models/Roll.js';
 import { RollMovement } from '../models/RollMovement.js';
 import { Counter } from '../models/Counter.js';
+import { WhatsAppConfig } from '../models/WhatsAppConfig.js';
+import { WhatsAppRecipient } from '../models/WhatsAppRecipient.js';
 import { demoLocations, getDemoRollsAndMovements } from './rollSeeds.js';
 import { connectDB } from '../config/db.js';
 import { logger } from '../utils/logger.js';
@@ -110,6 +112,33 @@ const seed = async () => {
         defaultLanguage: 'en'
       });
       logger.info('✅ Default factory settings initialized.');
+    }
+
+    // 4b. Seed WhatsApp AI Configuration & Recipient
+    let waConfig = await WhatsAppConfig.findOne();
+    if (!waConfig) {
+      await WhatsAppConfig.create({
+        isEnabled: true,
+        apiToken: process.env.WHATSAPP_API_TOKEN || '',
+        phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '',
+        businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || '',
+        webhookVerifyToken: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || 'loomus_webhook_verify_token_secure_2026',
+        apiVersion: process.env.WHATSAPP_API_VERSION || 'v21.0'
+      });
+      logger.info('✅ Seeded WhatsApp AI Automation Configuration.');
+    }
+
+    let defaultRecipient = await WhatsAppRecipient.findOne();
+    if (!defaultRecipient) {
+      await WhatsAppRecipient.create({
+        id: 'REC-01',
+        name: 'Mill General Manager',
+        phone: process.env.WHATSAPP_ADMIN_PHONE || '+91 75675 74107',
+        role: 'Admin',
+        isActive: true,
+        notes: 'Primary factory administration channel'
+      });
+      logger.info('✅ Seeded primary WhatsApp recipient (+91 75675 74107).');
     }
 
     // 5. Initial Factory Floor Data (50 Looms, Workers, Alarms, Stock, etc.)

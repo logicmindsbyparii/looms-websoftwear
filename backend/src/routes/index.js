@@ -15,11 +15,13 @@ import dataRoutes from './dataRoutes.js';
 import rollRoutes from './rollRoutes.js';
 import locationRoutes from './locationRoutes.js';
 import publicRollRoutes from './publicRollRoutes.js';
+import whatsappRoutes from './whatsappRoutes.js';
 
 const router = Router();
 
 // Public routes (no auth required)
 router.use('/public/rolls', publicRollRoutes);
+router.use('/whatsapp', whatsappRoutes);
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
