@@ -37,10 +37,10 @@ export default function CustomSelect({
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // Determine target width (matches button or defaults to 240px, capped at viewport)
+    // Determine target width (ensures full machine name & fabric text fits without truncation)
     const idealWidth = Math.min(
-      Math.max(triggerRect.width, 240),
-      Math.min(viewportWidth - 24, 380)
+      Math.max(triggerRect.width, 360),
+      Math.min(viewportWidth - 24, 480)
     );
 
     // Determine horizontal alignment
@@ -208,7 +208,7 @@ export default function CustomSelect({
             : 'px-3.5 py-2.5 text-xs font-semibold'
         } ${buttonClassName}`}
       >
-        <div className="flex items-center gap-2 truncate text-left min-w-0">
+        <div className="flex items-center gap-2 text-left min-w-0">
           {selectedOption?.status && (
             <span
               className={`rounded-full shrink-0 ${
@@ -217,14 +217,14 @@ export default function CustomSelect({
             />
           )}
           <span
-            className={`truncate ${
+            className={`shrink-0 whitespace-nowrap ${
               isMono ? 'font-mono font-bold' : 'font-semibold'
             } text-slate-800`}
           >
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           {selectedOption?.subtitle && (
-            <span className="text-[11px] text-slate-400 font-normal font-sans truncate hidden sm:inline">
+            <span className="text-[11px] text-slate-500 font-normal font-sans whitespace-nowrap">
               ({selectedOption.subtitle})
             </span>
           )}
@@ -294,15 +294,15 @@ export default function CustomSelect({
                           : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-medium'
                       }`}
                     >
-                      <div className="flex items-center gap-2 truncate min-w-0">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
                         {statusDot && (
                           <span
                             className={`w-2 h-2 rounded-full shrink-0 ${statusDot}`}
                           />
                         )}
                         <span
-                          className={`truncate ${
-                            isMono ? 'font-mono font-bold' : ''
+                          className={`shrink-0 whitespace-nowrap ${
+                            isMono ? 'font-mono font-bold' : 'font-semibold'
                           } ${
                             isSelected
                               ? 'font-bold text-sky-950'
@@ -312,7 +312,7 @@ export default function CustomSelect({
                           {opt.label}
                         </span>
                         {opt.subtitle && (
-                          <span className="text-[11px] text-slate-400 font-normal font-sans truncate">
+                          <span className="text-[11px] text-slate-500 font-normal font-sans whitespace-nowrap">
                             ({opt.subtitle})
                           </span>
                         )}
