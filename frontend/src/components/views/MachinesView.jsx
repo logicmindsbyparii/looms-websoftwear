@@ -591,7 +591,7 @@ const MachineCard = memo(function MachineCard({
   return (
     <div
       onClick={() => onSelect(machine.id)}
-      className={`group heavy-card rounded-2xl p-4 bg-white border hover:shadow-lg transition-all duration-200 cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+      className={`group heavy-card machine-card-optimized rounded-2xl p-4 bg-white border hover:shadow-lg transition-all duration-200 cursor-pointer relative overflow-hidden flex flex-col justify-between ${
         isRunning
           ? 'border-emerald-200/90 hover:border-emerald-400'
           : isStopped

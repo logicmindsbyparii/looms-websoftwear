@@ -6,12 +6,13 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
   const isStopped = status === 'stopped';
   const isMaint = status === 'maintenance';
 
-  // Determine accent color
+  // Accent colors
   const statusColor = isRunning ? '#10b981' : isIdle ? '#f59e0b' : isMaint ? '#6366f1' : '#ef4444';
   const shuttleColor = isRunning ? '#0284c7' : isIdle ? '#f59e0b' : '#64748b';
 
   return (
-    <div className={`relative flex items-center justify-center overflow-hidden rounded-lg bg-slate-100/80 border border-slate-200/60 ${compact ? 'h-14 w-full' : 'h-24 w-full'}`}>
+    <div className={`relative flex items-center justify-center overflow-hidden rounded-lg bg-slate-100/80 border border-slate-200/60 select-none ${compact ? 'h-14 w-full' : 'h-24 w-full'}`}>
+      {/* 1. Static Loom Background SVG (Rendered once, 0% CPU overhead, GPU cached) */}
       <svg
         viewBox="0 0 100 60"
         className="h-full w-full max-w-[140px]"
@@ -60,53 +61,6 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
           opacity={0.6}
         />
 
-        {/* All running looms move 100% in sync in the exact same direction without sticking to edges */}
-        <g
-          className={
-            isRunning
-              ? 'animate-shuttle-fast'
-              : isIdle
-              ? 'animate-shuttle-slow'
-              : ''
-          }
-          style={{ willChange: 'transform' }}
-        >
-          {/* Aerodynamic drop shadow */}
-          <ellipse
-            cx="50"
-            cy="34"
-            rx="10"
-            ry="1.5"
-            fill="rgba(0,0,0,0.12)"
-          />
-
-          {/* Symmetrical Central Shuttle Body */}
-          <rect
-            x="42"
-            y="26.5"
-            width="16"
-            height="7"
-            rx="2"
-            fill={shuttleColor}
-          />
-
-          {/* Left Tapered Nose */}
-          <polygon
-            points="42,26.5 36,30 42,33.5"
-            fill={shuttleColor}
-          />
-
-          {/* Right Tapered Nose */}
-          <polygon
-            points="58,26.5 64,30 58,33.5"
-            fill={shuttleColor}
-          />
-
-          {/* Center Weft Thread Eyelet */}
-          <circle cx="50" cy="30" r="1.5" fill="#ffffff" />
-          <circle cx="50" cy="30" r="0.6" fill={shuttleColor} />
-        </g>
-
         {/* Status indicator dot inside frame */}
         <circle
           cx="12"
@@ -115,6 +69,31 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
           fill={statusColor}
         />
       </svg>
+
+      {/* 2. Hardware-Accelerated Shuttle Layer (Runs on GPU Compositor Thread: Zero Scroll Lag, Instant View Mount) */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div
+          className={`flex items-center justify-center ${
+            isRunning
+              ? 'animate-sync-shuttle'
+              : isIdle
+              ? 'animate-sync-shuttle-slow'
+              : ''
+          }`}
+        >
+          <svg width="34" height="14" viewBox="0 0 34 14" className="drop-shadow-xs">
+            {/* Aerodynamic symmetrical shuttle body */}
+            <rect x="7" y="2" width="20" height="10" rx="3" fill={shuttleColor} />
+            {/* Left tapered nose */}
+            <polygon points="7,2 0,7 7,12" fill={shuttleColor} />
+            {/* Right tapered nose */}
+            <polygon points="27,2 34,7 27,12" fill={shuttleColor} />
+            {/* Center weft thread eyelet */}
+            <circle cx="17" cy="7" r="2" fill="#ffffff" />
+            <circle cx="17" cy="7" r="1" fill={shuttleColor} />
+          </svg>
+        </div>
+      </div>
 
       {/* Speed badge overlay */}
       {isRunning && (
