@@ -248,7 +248,13 @@ export function AppProvider({ children }) {
       socketRef.current.disconnect();
     }
 
-    const socket = io({
+    const socketUrl =
+      import.meta.env.VITE_WS_URL ||
+      (import.meta.env.DEV
+        ? `${window.location.protocol}//${window.location.hostname}:5000`
+        : undefined);
+
+    const socket = io(socketUrl, {
       auth: { token },
       transports: ['websocket', 'polling']
     });

@@ -24,19 +24,6 @@ export default defineConfig({
             console.warn('[vite] http proxy warning:', err.message);
           });
         }
-      },
-      '/socket.io': {
-        target: 'http://127.0.0.1:5000',
-        ws: true,
-        changeOrigin: true,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED' || err.code === 'EPIPE') {
-              return; // Cleanly ignore normal websocket disconnects on server restart
-            }
-            console.warn('[vite] ws proxy warning:', err.message);
-          });
-        }
       }
     }
   }
