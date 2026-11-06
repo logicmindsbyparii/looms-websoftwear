@@ -10,9 +10,13 @@ let telemetryTimer = null;
 export const initSocket = (server, clientUrl) => {
   ioInstance = new Server(server, {
     cors: {
-      origin: clientUrl || 'http://localhost:5173',
+      origin: (origin, callback) => {
+        // Allow requests with no origin, localhost, 127.0.0.1, or local LAN
+        callback(null, true);
+      },
       credentials: true
-    }
+    },
+    transports: ['websocket', 'polling']
   });
 
   // Socket Authentication Middleware

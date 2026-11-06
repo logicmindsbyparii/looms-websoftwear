@@ -7,6 +7,10 @@ import { logger } from './utils/logger.js';
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
+// Optimize keep-alive timeouts to prevent ECONNRESET on reverse proxy / Vite proxy
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
+
 // Initialize WebSockets
 initSocket(server, process.env.CLIENT_URL);
 
@@ -14,7 +18,7 @@ initSocket(server, process.env.CLIENT_URL);
 const startServer = async () => {
   try {
     await connectDB();
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       logger.info(`===================================================`);
       logger.info(`🚀 LOOMUS 2.0 Backend Server running on port ${PORT}`);
       logger.info(`🌐 Mode: ${process.env.NODE_ENV || 'development'}`);
