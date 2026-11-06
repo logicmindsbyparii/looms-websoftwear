@@ -329,21 +329,21 @@ export default function OperatorConsole() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-5">
+            <div className="flex flex-col gap-2.5 mt-5">
               <button
                 onClick={handleLogRoll}
-                className="py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-sky-600/20 flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-sky-600/20 flex items-center justify-center gap-2.5 cursor-pointer active:scale-98"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                {t('operator.logFinishedRoll')}
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-white" />
+                <span>{t('operator.logFinishedRoll')}</span>
               </button>
 
               <button
                 onClick={handleCutRollAndPrint}
-                className="py-3 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2.5 cursor-pointer active:scale-98"
               >
-                <QrCode className="w-4 h-4" />
-                <span>Cut Roll & Print QR</span>
+                <QrCode className="w-4 h-4 shrink-0 text-white" />
+                <span>{t('rollsPage.cutRollBtn') || 'Cut Roll & Print QR'}</span>
               </button>
             </div>
           </div>
