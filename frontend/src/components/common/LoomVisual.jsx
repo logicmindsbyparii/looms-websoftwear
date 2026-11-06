@@ -1,6 +1,6 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 
-function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
+function LoomVisual({ status = 'running', rpm = 850, compact = false, machineId = '' }) {
   const isRunning = status === 'running';
   const isIdle = status === 'idle';
   const isStopped = status === 'stopped';
@@ -9,6 +9,13 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
   // Determine accent color
   const statusColor = isRunning ? '#10b981' : isIdle ? '#f59e0b' : isMaint ? '#6366f1' : '#ef4444';
   const shuttleColor = isRunning ? '#0284c7' : isIdle ? '#f59e0b' : '#64748b';
+
+  // Stagger animation timing across loom fleet so they don't reverse in lockstep
+  const delaySec = useMemo(() => {
+    if (!machineId) return 0;
+    const num = parseInt(String(machineId).replace(/\D/g, ''), 10) || 0;
+    return ((num % 8) * 0.11).toFixed(2);
+  }, [machineId]);
 
   return (
     <div className={`relative flex items-center justify-center overflow-hidden rounded-lg bg-slate-100/80 border border-slate-200/60 ${compact ? 'h-14 w-full' : 'h-24 w-full'}`}>
@@ -49,7 +56,7 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
           ))}
         </g>
 
-        {/* Reed / Beat Bar */}
+        {/* Reed / Beat Bar Guide */}
         <line
           x1="12"
           y1="30"
@@ -60,7 +67,7 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
           opacity={0.6}
         />
 
-        {/* Shuttle or Weft Projectile with GPU Hardware Acceleration */}
+        {/* Shuttle or Weft Projectile (Fluid, Centered, Symmetrical, Never Touches Outer Edges) */}
         <g
           className={
             isRunning
@@ -70,34 +77,44 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
               : ''
           }
           style={{
-            transformBox: 'fill-box',
+            animationDelay: isRunning ? `${delaySec}s` : '0s',
             willChange: 'transform'
           }}
         >
-          {/* Crisp lightweight shadow accent below shuttle */}
-          <rect
-            x="40"
-            y="33"
-            width="20"
-            height="1.5"
-            rx="0.75"
-            fill="rgba(0,0,0,0.15)"
+          {/* Subtle aerodynamic drop shadow */}
+          <ellipse
+            cx="50"
+            cy="34"
+            rx="11"
+            ry="1.5"
+            fill="rgba(0,0,0,0.12)"
           />
-          {/* Main Shuttle Body */}
+
+          {/* Symmetrical Central Shuttle Body */}
           <rect
-            x="40"
-            y="26"
-            width="20"
-            height="8"
-            rx="4"
+            x="42"
+            y="26.5"
+            width="16"
+            height="7"
+            rx="2"
             fill={shuttleColor}
           />
+
+          {/* Left Tapered Nose */}
           <polygon
-            points="60,26 66,30 60,34"
+            points="42,26.5 36,30 42,33.5"
             fill={shuttleColor}
           />
-          {/* Shuttle Thread Eyelet */}
-          <circle cx="48" cy="30" r="1.5" fill="#ffffff" />
+
+          {/* Right Tapered Nose */}
+          <polygon
+            points="58,26.5 64,30 58,33.5"
+            fill={shuttleColor}
+          />
+
+          {/* Center Weft Thread Eyelet */}
+          <circle cx="50" cy="30" r="1.5" fill="#ffffff" />
+          <circle cx="50" cy="30" r="0.6" fill={shuttleColor} />
         </g>
 
         {/* Status indicator dot inside frame */}
@@ -120,4 +137,3 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
 }
 
 export default memo(LoomVisual);
-

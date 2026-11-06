@@ -660,7 +660,7 @@ const MachineCard = memo(function MachineCard({
 
         {/* Visual Shuttle Animation Graphic */}
         <div className="my-2.5 py-2.5 bg-slate-50/80 rounded-xl border border-slate-100 flex items-center justify-center">
-          <LoomVisual status={machine.status} rpm={machine.rpm} />
+          <LoomVisual status={machine.status} rpm={machine.rpm} machineId={machine.id} />
         </div>
       </div>
 
