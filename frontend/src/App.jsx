@@ -13,6 +13,7 @@ import WhatsAppShareModal from './components/common/WhatsAppShareModal';
 import FloatingWhatsApp from './components/common/FloatingWhatsApp';
 import Toast from './components/common/Toast';
 import LoginScreen from './components/auth/LoginScreen';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Views
 import DashboardView from './components/views/DashboardView';
