@@ -283,10 +283,17 @@ export async function sendManualReport(req, res) {
       results.push(sendRes);
     }
 
+    const { isLive } = await getActiveConfig();
+
     res.json({
       success: true,
-      message: `Report sent to ${targets.length} recipient(s)`,
+      message: isLive
+        ? `Report sent to ${targets.length} recipient(s) via Meta Cloud API`
+        : `Report generated & logged in Simulation/Audit Mode (Live Meta API credentials not configured yet)`,
       count: targets.length,
+      reportContent,
+      targetPhone: targets[0]?.phone,
+      isLiveConfigured: isLive,
       data: results
     });
   } catch (err) {
