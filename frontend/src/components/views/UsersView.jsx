@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { api } from '../../api/client';
+import CustomSelect from '../common/CustomSelect';
 import {
   Users,
   UserPlus,
@@ -184,17 +185,17 @@ export default function UsersView() {
           />
         </div>
 
-        <div className="flex gap-2">
-          <select
+        <div className="flex gap-2 items-center">
+          <CustomSelect
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-xs text-slate-700"
-          >
-            <option value="">{t('common.all')} {t('common.filter')}</option>
-            <option value="Admin">{t('roles.Admin')}</option>
-            <option value="Supervisor">{t('roles.Supervisor')}</option>
-            <option value="Operator">{t('roles.Operator')}</option>
-          </select>
+            onChange={(val) => setRoleFilter(val)}
+            options={[
+              { value: '', label: `${t('common.all')} ${t('common.filter')}` },
+              { value: 'Admin', label: t('roles.Admin') },
+              { value: 'Supervisor', label: t('roles.Supervisor') },
+              { value: 'Operator', label: t('roles.Operator') }
+            ]}
+          />
 
           <button
             onClick={fetchUsers}
@@ -410,15 +411,17 @@ export default function UsersView() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Role *</label>
-                  <select
+                  <CustomSelect
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  >
-                    <option value="Operator">{t('roles.Operator')}</option>
-                    <option value="Supervisor">{t('roles.Supervisor')}</option>
-                    <option value="Admin">{t('roles.Admin')}</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, role: val })}
+                    options={[
+                      { value: 'Operator', label: t('roles.Operator') },
+                      { value: 'Supervisor', label: t('roles.Supervisor') },
+                      { value: 'Admin', label: t('roles.Admin') }
+                    ]}
+                    className="w-full"
+                    buttonClassName="w-full bg-slate-50 border-slate-200 py-2 text-xs font-semibold"
+                  />
                 </div>
 
                 <div>

@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LoomVisual from '../common/LoomVisual';
+import CustomSelect from '../common/CustomSelect';
 import { openWhatsApp } from '../../utils/whatsapp';
 import {
   Play,
@@ -160,25 +161,28 @@ export default function OperatorConsole() {
 
           <div className="flex items-center gap-2 sm:gap-3 bg-slate-50 p-1.5 sm:p-2 rounded-2xl border border-slate-200 flex-1 sm:flex-none justify-between sm:justify-start">
             <label className="text-xs font-bold text-slate-600 font-mono pl-1 sm:pl-2 shrink-0">{t('control.target')}</label>
-            <select
+            <CustomSelect
               value={activeOperatorLoom || currentMachine.id}
-              onChange={e => {
-                setActiveOperatorLoom(e.target.value);
-                const m = machines.find(x => x.id === e.target.value);
+              onChange={val => {
+                setActiveOperatorLoom(val);
+                const m = machines.find(x => x.id === val);
                 if (m) {
                   setRpmInput(m.rpm || 850);
                   setTensionInput(m.tension || 65);
                   setPressureInput(m.pressure || 4.2);
                 }
               }}
-              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white text-slate-800 font-mono font-bold text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-2xs cursor-pointer"
-            >
-              {machines.map(m => (
-                <option key={m.id} value={m.id} className="bg-white text-slate-800 py-1">
-                  {m.id} ({m.fabric}) — {t(`status.${m.status}`) || m.status.toUpperCase()}
-                </option>
-              ))}
-            </select>
+              options={machines.map(m => ({
+                value: m.id,
+                label: m.id,
+                subtitle: m.fabric,
+                status: m.status,
+                badge: t(`status.${m.status}`) || m.status.toUpperCase()
+              }))}
+              searchable
+              buttonClassName="bg-white border-slate-300 font-mono font-bold text-xs sm:text-sm"
+              className="flex-1 sm:flex-none"
+            />
           </div>
         </div>
       </div>

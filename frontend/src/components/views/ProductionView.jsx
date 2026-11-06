@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import StatCard from '../common/StatCard';
+import CustomSelect from '../common/CustomSelect';
 import { formatMeters } from '../../utils/formatters';
 import {
   Boxes,
@@ -157,15 +158,20 @@ export default function ProductionView() {
           <div>
             <label className="block text-slate-500 font-semibold mb-1">{t('common.machine').toUpperCase()}</label>
             {machines.length > 0 ? (
-              <select
+              <CustomSelect
                 value={machineId}
-                onChange={e => setMachineId(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-800 focus:outline-none"
-              >
-                {machines.map(m => (
-                  <option key={m.id} value={m.id}>{m.id} ({m.fabric})</option>
-                ))}
-              </select>
+                onChange={val => setMachineId(val)}
+                options={machines.map(m => ({
+                  value: m.id,
+                  label: m.id,
+                  subtitle: m.fabric,
+                  status: m.status
+                }))}
+                searchable
+                isMono
+                className="w-full"
+                buttonClassName="w-full bg-slate-50 border-slate-200 py-2.5 font-mono font-bold"
+              />
             ) : (
               <input
                 type="text"
@@ -179,18 +185,20 @@ export default function ProductionView() {
 
           <div>
             <label className="block text-slate-500 font-semibold mb-1">{t('common.fabric').toUpperCase()}</label>
-            <select
+            <CustomSelect
               value={fabric}
-              onChange={e => setFabric(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none"
-            >
-              <option>70*72 Plain Cambric</option>
-              <option>70*68 Medium Grey</option>
-              <option>60 Gram Waterjet</option>
-              <option>Cotton 40s Combed</option>
-              <option>Heavy Denim 14oz</option>
-              <option>Silk Blend Chiffon</option>
-            </select>
+              onChange={val => setFabric(val)}
+              options={[
+                '70*72 Plain Cambric',
+                '70*68 Medium Grey',
+                '60 Gram Waterjet',
+                'Cotton 40s Combed',
+                'Heavy Denim 14oz',
+                'Silk Blend Chiffon'
+              ]}
+              className="w-full"
+              buttonClassName="w-full bg-slate-50 border-slate-200 py-2.5 font-semibold"
+            />
           </div>
 
           <div>
@@ -206,28 +214,32 @@ export default function ProductionView() {
 
           <div>
             <label className="block text-slate-500 font-semibold mb-1">{t('common.shift').toUpperCase()}</label>
-            <select
+            <CustomSelect
               value={shift}
-              onChange={e => setShift(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none"
-            >
-              <option>Morning (6AM - 2PM)</option>
-              <option>Afternoon (2PM - 10PM)</option>
-              <option>Night (10PM - 6AM)</option>
-            </select>
+              onChange={val => setShift(val)}
+              options={[
+                'Morning (6AM - 2PM)',
+                'Afternoon (2PM - 10PM)',
+                'Night (10PM - 6AM)'
+              ]}
+              className="w-full"
+              buttonClassName="w-full bg-slate-50 border-slate-200 py-2.5 font-semibold"
+            />
           </div>
 
           <div>
             <label className="block text-slate-500 font-semibold mb-1">{t('production.grading').toUpperCase()}</label>
-            <select
+            <CustomSelect
               value={quality}
-              onChange={e => setQuality(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none"
-            >
-              <option>A-Grade (Export)</option>
-              <option>B-Grade</option>
-              <option>C-Grade (Local)</option>
-            </select>
+              onChange={val => setQuality(val)}
+              options={[
+                'A-Grade (Export)',
+                'B-Grade',
+                'C-Grade (Local)'
+              ]}
+              className="w-full"
+              buttonClassName="w-full bg-slate-50 border-slate-200 py-2.5 font-semibold"
+            />
           </div>
 
           <div>

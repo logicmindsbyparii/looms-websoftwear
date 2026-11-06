@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import StatCard from '../common/StatCard';
+import CustomSelect from '../common/CustomSelect';
 import { formatRupees, formatMeters } from '../../utils/formatters';
 import {
   buildSalesOrderMessage,
@@ -263,15 +264,17 @@ export default function SalesView() {
 
           <div>
             <label className="block text-slate-500 font-semibold mb-1">{t('sales.fabricGrade')}</label>
-            <select
+            <CustomSelect
               value={rgQuality}
-              onChange={e => setRgQuality(e.target.value)}
-              className="w-full p-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800"
-            >
-              <option>A-Grade (Export)</option>
-              <option>B-Grade</option>
-              <option>C-Grade (Local)</option>
-            </select>
+              onChange={val => setRgQuality(val)}
+              options={[
+                'A-Grade (Export)',
+                'B-Grade',
+                'C-Grade (Local)'
+              ]}
+              className="w-full"
+              buttonClassName="w-full bg-white border-slate-200 py-2 font-semibold text-slate-800"
+            />
           </div>
 
           <div>
@@ -550,16 +553,19 @@ export default function SalesView() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <select
+                  <CustomSelect
                     value={o.status}
-                    onChange={e => updateOrderStatus(o.id, e.target.value)}
-                    className="p-1 bg-white border border-slate-200 rounded-lg text-[11px] font-semibold"
-                  >
-                    <option value="Pending">{t('status.Pending')}</option>
-                    <option value="In Production">{t('status.In Production')}</option>
-                    <option value="Dispatched">{t('status.Dispatched')}</option>
-                    <option value="Delivered">{t('status.Delivered')}</option>
-                  </select>
+                    onChange={val => updateOrderStatus(o.id, val)}
+                    options={[
+                      { value: 'Pending', label: t('status.Pending'), status: 'pending' },
+                      { value: 'In Production', label: t('status.In Production'), status: 'in production' },
+                      { value: 'Dispatched', label: t('status.Dispatched'), status: 'dispatched' },
+                      { value: 'Delivered', label: t('status.Delivered'), status: 'delivered' }
+                    ]}
+                    size="sm"
+                    align="right"
+                    buttonClassName="bg-white border-slate-200 py-1 px-2 text-[11px]"
+                  />
 
                   <button
                     onClick={() => deleteSalesOrder(o.id)}

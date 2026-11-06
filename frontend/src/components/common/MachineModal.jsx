@@ -4,6 +4,7 @@ import { api } from '../../api/client';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LoomVisual from './LoomVisual';
+import CustomSelect from './CustomSelect';
 import {
   X,
   Play,
@@ -241,16 +242,18 @@ export default function MachineModal() {
                 onChange={e => setAddMetersInput(e.target.value)}
                 className="px-3 py-2 bg-white border border-sky-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
-              <select
+              <CustomSelect
                 value={defectType}
-                onChange={e => setDefectType(e.target.value)}
-                className="px-3 py-2 bg-white border border-sky-200 rounded-xl text-xs font-semibold focus:outline-none"
-              >
-                <option value="None">{t('modals.machine.gradeA')}</option>
-                <option value="Warp Break">{t('operator.warpBreak')}</option>
-                <option value="Weft Miss">{t('operator.weftSlub')}</option>
-                <option value="Oil Stain">{t('operator.oilStain')}</option>
-              </select>
+                onChange={val => setDefectType(val)}
+                options={[
+                  { value: 'None', label: t('modals.machine.gradeA') },
+                  { value: 'Warp Break', label: t('operator.warpBreak') },
+                  { value: 'Weft Miss', label: t('operator.weftSlub') },
+                  { value: 'Oil Stain', label: t('operator.oilStain') }
+                ]}
+                className="w-full"
+                buttonClassName="w-full bg-white border-sky-200 py-2 text-xs font-semibold"
+              />
               <button
                 type="submit"
                 className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"

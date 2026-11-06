@@ -6,6 +6,7 @@ import { formatDate } from '../../utils/formatters';
 import { buildRollMessage, openWhatsApp } from '../../utils/whatsapp';
 import RollDetailModal from '../rolls/RollDetailModal';
 import RollQrLabel from '../rolls/RollQrLabel';
+import CustomSelect from '../common/CustomSelect';
 import { Eye, QrCode, Plus } from 'lucide-react';
 import { WhatsAppBrandIcon } from '../common/WhatsAppIcon';
 
@@ -257,62 +258,71 @@ export default function RollsView({ onOpenScan }) {
           {/* Status Filter */}
           <div>
             <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">{t('rollsPage.statusLabel')}</label>
-            <select
+            <CustomSelect
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
+              onChange={(val) => {
+                setStatusFilter(val);
                 setPage(1);
               }}
-              className="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
-            >
-              <option value="">{t('rollsPage.allStatuses')}</option>
-              <option value="Ready">Ready</option>
-              <option value="Reserved">Reserved</option>
-              <option value="Dispatched">Dispatched</option>
-              <option value="Hold">Hold</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Void">Void</option>
-            </select>
+              options={[
+                { value: '', label: t('rollsPage.allStatuses') },
+                { value: 'Ready', label: 'Ready', status: 'ready' },
+                { value: 'Reserved', label: 'Reserved', status: 'reserved' },
+                { value: 'Dispatched', label: 'Dispatched', status: 'dispatched' },
+                { value: 'Hold', label: 'Hold', status: 'hold' },
+                { value: 'Rejected', label: 'Rejected', status: 'rejected' },
+                { value: 'Void', label: 'Void', status: 'off' }
+              ]}
+              className="w-full"
+              buttonClassName="bg-slate-50/50 border-slate-200 py-2"
+            />
           </div>
 
           {/* Location Filter */}
           <div>
             <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">{t('rollsPage.locationLabel')}</label>
-            <select
+            <CustomSelect
               value={locationFilter}
-              onChange={(e) => {
-                setLocationFilter(e.target.value);
+              onChange={(val) => {
+                setLocationFilter(val);
                 setPage(1);
               }}
-              className="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
-            >
-              <option value="">{t('rollsPage.allLocations')}</option>
-              {locations.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name} ({l.shed})
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: t('rollsPage.allLocations') },
+                ...locations.map((l) => ({
+                  value: l.id,
+                  label: l.name,
+                  subtitle: l.shed
+                }))
+              ]}
+              searchable
+              className="w-full"
+              buttonClassName="bg-slate-50/50 border-slate-200 py-2"
+            />
           </div>
 
           {/* Machine Filter */}
           <div>
             <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">{t('rollsPage.loomLabel')}</label>
-            <select
+            <CustomSelect
               value={machineFilter}
-              onChange={(e) => {
-                setMachineFilter(e.target.value);
+              onChange={(val) => {
+                setMachineFilter(val);
                 setPage(1);
               }}
-              className="w-full text-xs px-3.5 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
-            >
-              <option value="">{t('rollsPage.allLooms')}</option>
-              {machines.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.id} - {m.name}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: t('rollsPage.allLooms') },
+                ...machines.map((m) => ({
+                  value: m.id,
+                  label: `${m.id} - ${m.name}`,
+                  status: m.status
+                }))
+              ]}
+              searchable
+              isMono
+              className="w-full"
+              buttonClassName="bg-slate-50/50 border-slate-200 py-2"
+            />
           </div>
         </div>
       </div>
@@ -473,24 +483,25 @@ export default function RollsView({ onOpenScan }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.assignedLoom')} *</label>
-                  <select
+                  <CustomSelect
                     value={createMachineId}
-                    onChange={(e) => {
-                      const mId = e.target.value;
-                      setCreateMachineId(mId);
-                      const m = machines.find((x) => x.id === mId);
+                    onChange={(val) => {
+                      setCreateMachineId(val);
+                      const m = machines.find((x) => x.id === val);
                       if (m?.fabric) setCreateFabric(m.fabric);
                     }}
-                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
-                    required
-                  >
-                    <option value="">Select Loom...</option>
-                    {machines.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.id} - {m.name} ({m.shed})
-                      </option>
-                    ))}
-                  </select>
+                    options={machines.map((m) => ({
+                      value: m.id,
+                      label: `${m.id} - ${m.name}`,
+                      subtitle: m.shed,
+                      status: m.status
+                    }))}
+                    placeholder="Select Loom..."
+                    searchable
+                    isMono
+                    className="w-full"
+                    buttonClassName="w-full bg-white border-slate-300 py-2.5"
+                  />
                 </div>
 
                 <div>
@@ -520,44 +531,50 @@ export default function RollsView({ onOpenScan }) {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.qualityGrade')}</label>
-                  <select
+                  <CustomSelect
                     value={createQuality}
-                    onChange={(e) => setCreateQuality(e.target.value)}
-                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
-                  >
-                    <option value="A-Grade (Export)">A-Grade (Export)</option>
-                    <option value="B-Grade (Local)">B-Grade (Local)</option>
-                    <option value="Seconds">Seconds</option>
-                  </select>
+                    onChange={(val) => setCreateQuality(val)}
+                    options={[
+                      'A-Grade (Export)',
+                      'B-Grade (Local)',
+                      'Seconds'
+                    ]}
+                    className="w-full"
+                    buttonClassName="w-full bg-white border-slate-300 py-2.5"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.storageLocation')}</label>
-                  <select
+                  <CustomSelect
                     value={createLocationId}
-                    onChange={(e) => setCreateLocationId(e.target.value)}
-                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
-                  >
-                    <option value="">Default (Floor / First Active)</option>
-                    {locations.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.name} ({l.shed} - {l.type})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setCreateLocationId(val)}
+                    options={[
+                      { value: '', label: 'Default (Floor / First Active)' },
+                      ...locations.map((l) => ({
+                        value: l.id,
+                        label: `${l.name} (${l.shed} - ${l.type})`
+                      }))
+                    ]}
+                    searchable
+                    className="w-full"
+                    buttonClassName="w-full bg-white border-slate-300 py-2.5"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">{t('rollsPage.productionShift')}</label>
-                  <select
+                  <CustomSelect
                     value={createShift}
-                    onChange={(e) => setCreateShift(e.target.value)}
-                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white"
-                  >
-                    <option value="Morning">{t('rollsPage.morningShift')}</option>
-                    <option value="Evening">{t('rollsPage.eveningShift')}</option>
-                    <option value="Night">{t('rollsPage.nightShift')}</option>
-                  </select>
+                    onChange={(val) => setCreateShift(val)}
+                    options={[
+                      { value: 'Morning', label: t('rollsPage.morningShift') },
+                      { value: 'Evening', label: t('rollsPage.eveningShift') },
+                      { value: 'Night', label: t('rollsPage.nightShift') }
+                    ]}
+                    className="w-full"
+                    buttonClassName="w-full bg-white border-slate-300 py-2.5"
+                  />
                 </div>
               </div>
 

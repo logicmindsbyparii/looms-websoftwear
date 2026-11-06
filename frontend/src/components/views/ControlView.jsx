@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LoomVisual from '../common/LoomVisual';
+import CustomSelect from '../common/CustomSelect';
 import {
   Sliders,
   Play,
@@ -93,18 +94,23 @@ export default function ControlView() {
         {/* Machine Target Selector */}
         <div className="flex items-center gap-2 sm:gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200 w-full sm:w-auto justify-between sm:justify-start">
           <label className="text-xs font-bold text-slate-500 font-mono pl-1 sm:pl-2 shrink-0">{t('control.target')}</label>
-          <select
+          <CustomSelect
             value={selectedLoom}
-            onChange={e => setSelectedLoom(e.target.value)}
-            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white text-slate-900 font-mono font-bold text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
-          >
-            <option value="all" className="bg-white text-slate-900 py-1">{t('control.allMachinesGlobal', { count: machines.length })}</option>
-            {machines.map(m => (
-              <option key={m.id} value={m.id} className="bg-white text-slate-900 py-1">
-                {m.id} ({m.fabric}) — {t(`status.${m.status}`) || m.status.toUpperCase()}
-              </option>
-            ))}
-          </select>
+            onChange={val => setSelectedLoom(val)}
+            options={[
+              { value: 'all', label: t('control.allMachinesGlobal', { count: machines.length }) },
+              ...machines.map(m => ({
+                value: m.id,
+                label: m.id,
+                subtitle: m.fabric,
+                status: m.status,
+                badge: t(`status.${m.status}`) || m.status.toUpperCase()
+              }))
+            ]}
+            searchable
+            buttonClassName="bg-white border-slate-200 font-mono font-bold text-xs sm:text-sm"
+            className="flex-1 sm:flex-none"
+          />
         </div>
       </div>
 
@@ -264,35 +270,39 @@ export default function ControlView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
               <label className="block text-slate-500 font-semibold mb-1">{t('control.fabricType').toUpperCase()}</label>
-              <select
+              <CustomSelect
                 value={fabricType}
-                onChange={e => setFabricType(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none"
-              >
-                <option>70*72 Plain Cambric</option>
-                <option>70*68 Medium Grey</option>
-                <option>60 Gram Waterjet</option>
-                <option>Cotton 40s Combed</option>
-                <option>Cotton 60s Compact</option>
-                <option>Heavy Denim 14oz</option>
-                <option>Silk Blend Chiffon</option>
-                <option>Rayon 30s Twill</option>
-              </select>
+                onChange={val => setFabricType(val)}
+                options={[
+                  '70*72 Plain Cambric',
+                  '70*68 Medium Grey',
+                  '60 Gram Waterjet',
+                  'Cotton 40s Combed',
+                  'Cotton 60s Compact',
+                  'Heavy Denim 14oz',
+                  'Silk Blend Chiffon',
+                  'Rayon 30s Twill'
+                ]}
+                className="w-full"
+                buttonClassName="bg-slate-50 border-slate-200 py-2.5 font-semibold"
+              />
             </div>
 
             <div>
               <label className="block text-slate-500 font-semibold mb-1">{t('control.weavePattern').toUpperCase()}</label>
-              <select
+              <CustomSelect
                 value={weavePattern}
-                onChange={e => setWeavePattern(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none"
-              >
-                <option>Plain 1/1</option>
-                <option>Twill 2/1</option>
-                <option>Twill 3/1 (Denim)</option>
-                <option>Satin / Sateen 4/1</option>
-                <option>Jacquard Floral</option>
-              </select>
+                onChange={val => setWeavePattern(val)}
+                options={[
+                  'Plain 1/1',
+                  'Twill 2/1',
+                  'Twill 3/1 (Denim)',
+                  'Satin / Sateen 4/1',
+                  'Jacquard Floral'
+                ]}
+                className="w-full"
+                buttonClassName="bg-slate-50 border-slate-200 py-2.5 font-semibold"
+              />
             </div>
 
             <div>

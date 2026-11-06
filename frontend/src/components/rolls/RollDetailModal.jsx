@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { formatDate } from '../../utils/formatters';
 import { buildRollMessage, openWhatsApp } from '../../utils/whatsapp';
 import RollQrLabel from './RollQrLabel';
+import CustomSelect from '../common/CustomSelect';
 import { WhatsAppBrandIcon } from '../common/WhatsAppIcon';
 import { QrCode, X } from 'lucide-react';
 
@@ -371,19 +372,18 @@ export default function RollDetailModal({ rollCode, onClose, onRefresh }) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">Destination Location</label>
-                      <select
+                      <CustomSelect
                         value={transferTargetId}
-                        onChange={(e) => setTransferTargetId(e.target.value)}
-                        className="w-full text-xs px-3 py-2 border border-slate-300 rounded-xl bg-white"
-                        required
-                      >
-                        <option value="">Select location...</option>
-                        {locations.map((loc) => (
-                          <option key={loc.id} value={loc.id}>
-                            {loc.name} ({loc.shed} - {loc.type})
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setTransferTargetId(val)}
+                        options={locations.map((loc) => ({
+                          value: loc.id,
+                          label: `${loc.name} (${loc.shed} - ${loc.type})`
+                        }))}
+                        placeholder="Select location..."
+                        searchable
+                        className="w-full"
+                        buttonClassName="w-full bg-white border-slate-300 py-2"
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">Note (Optional)</label>
@@ -421,16 +421,18 @@ export default function RollDetailModal({ rollCode, onClose, onRefresh }) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-slate-700 mb-1">New Status</label>
-                      <select
+                      <CustomSelect
                         value={newStatus}
-                        onChange={(e) => setNewStatus(e.target.value)}
-                        className="w-full text-xs px-3 py-2 border border-slate-300 rounded-xl bg-white"
-                        required
-                      >
-                        {allowedTransitions(data.roll.status).map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setNewStatus(val)}
+                        options={allowedTransitions(data.roll.status).map((s) => ({
+                          value: s,
+                          label: s,
+                          status: s
+                        }))}
+                        placeholder="Select new status..."
+                        className="w-full"
+                        buttonClassName="w-full bg-white border-slate-300 py-2"
+                      />
                     </div>
                     {newStatus === 'Reserved' && (
                       <div>

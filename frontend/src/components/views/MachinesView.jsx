@@ -2,6 +2,7 @@ import React, { useState, useMemo, memo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import LoomVisual from '../common/LoomVisual';
+import CustomSelect from '../common/CustomSelect';
 import {
   Play,
   Square,
@@ -135,39 +136,39 @@ export default function MachinesView() {
           />
         </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <select
+        <div className="flex gap-2 flex-wrap items-center">
+          <CustomSelect
             value={shedFilter}
-            onChange={(e) => setShedFilter(e.target.value)}
-            className="px-3 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-xs text-slate-700"
-          >
-            <option value="all">{t('common.all')} {t('common.shed')}</option>
-            <option value="shed a">Shed A</option>
-            <option value="shed b">Shed B</option>
-          </select>
+            onChange={(val) => setShedFilter(val)}
+            options={[
+              { value: 'all', label: `${t('common.all')} ${t('common.shed')}` },
+              { value: 'shed a', label: 'Shed A' },
+              { value: 'shed b', label: 'Shed B' }
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-xs text-slate-700"
-          >
-            <option value="all">{t('common.all')} {t('common.statusLabel')}</option>
-            <option value="running">{t('status.running')}</option>
-            <option value="stopped">{t('status.stopped')}</option>
-            <option value="idle">{t('status.idle')}</option>
-            <option value="maintenance">{t('status.maintenance')}</option>
-          </select>
+            onChange={(val) => setStatusFilter(val)}
+            options={[
+              { value: 'all', label: `${t('common.all')} ${t('common.statusLabel')}` },
+              { value: 'running', label: t('status.running'), status: 'running' },
+              { value: 'stopped', label: t('status.stopped'), status: 'stopped' },
+              { value: 'idle', label: t('status.idle'), status: 'idle' },
+              { value: 'maintenance', label: t('status.maintenance'), status: 'maintenance' }
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-xs text-slate-700"
-          >
-            <option value="id">Sort: Loom ID</option>
-            <option value="output">Sort: {t('common.output')}</option>
-            <option value="rpm">Sort: RPM</option>
-            <option value="efficiency">Sort: {t('common.efficiency')}</option>
-          </select>
+            onChange={(val) => setSortBy(val)}
+            options={[
+              { value: 'id', label: 'Sort: Loom ID' },
+              { value: 'output', label: `Sort: ${t('common.output')}` },
+              { value: 'rpm', label: 'Sort: RPM' },
+              { value: 'efficiency', label: `Sort: ${t('common.efficiency')}` }
+            ]}
+          />
         </div>
       </div>
 

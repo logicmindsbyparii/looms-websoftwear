@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import StatCard from '../common/StatCard';
+import CustomSelect from '../common/CustomSelect';
 import {
   buildAttendanceSummaryMessage
 } from '../../utils/whatsapp';
@@ -175,17 +176,19 @@ export default function WorkersView() {
             </div>
             <div>
               <label className="block text-slate-600 font-bold mb-1">{t('workers.designation')}</label>
-              <select
+              <CustomSelect
                 value={role}
-                onChange={e => setRole(e.target.value)}
-                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-900"
-              >
-                <option value="Senior Loom Master">Senior Loom Master</option>
-                <option value="Chief Mechanic">Chief Mechanic</option>
-                <option value="Loom Operator">Loom Operator</option>
-                <option value="Quality Inspector">Quality Inspector</option>
-                <option value="Floor Supervisor">Floor Supervisor</option>
-              </select>
+                onChange={val => setRole(val)}
+                options={[
+                  'Senior Loom Master',
+                  'Chief Mechanic',
+                  'Loom Operator',
+                  'Quality Inspector',
+                  'Floor Supervisor'
+                ]}
+                className="w-full"
+                buttonClassName="w-full bg-slate-50 border-slate-200 py-2 font-semibold text-slate-900"
+              />
             </div>
             <div>
               <label className="block text-slate-600 font-bold mb-1">{t('workers.assignedMachine')}</label>
@@ -265,15 +268,18 @@ export default function WorkersView() {
                   {(userRole === 'Admin' || userRole === 'Supervisor') && (
                     <td className="py-3 px-4 pr-16 md:pr-24 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <select
+                        <CustomSelect
                           value={w.status}
-                          onChange={e => updateWorkerStatus(w.id, e.target.value)}
-                          className="text-[11px] p-1 bg-slate-50 border border-slate-200 rounded-lg font-semibold"
-                        >
-                          <option value="active">{t('status.active')}</option>
-                          <option value="break">{t('status.break')}</option>
-                          <option value="off">{t('status.off')}</option>
-                        </select>
+                          onChange={val => updateWorkerStatus(w.id, val)}
+                          options={[
+                            { value: 'active', label: t('status.active'), status: 'active' },
+                            { value: 'break', label: t('status.break'), status: 'break' },
+                            { value: 'off', label: t('status.off'), status: 'off' }
+                          ]}
+                          size="sm"
+                          align="right"
+                          buttonClassName="bg-slate-50 border-slate-200 py-1 px-2 text-[11px]"
+                        />
                         <button
                           onClick={() => deleteWorker(w.id)}
                           className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg"

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { WhatsAppBrandIcon } from './WhatsAppIcon';
+import CustomSelect from './CustomSelect';
 import { openWhatsApp, cleanPhoneNumber } from '../../utils/whatsapp';
 import {
   X,
@@ -274,17 +275,19 @@ export default function WhatsAppShareModal() {
 
                 {recipientType === 'broker' && (
                   <div className="mt-2 pl-2">
-                    <select
+                    <CustomSelect
                       value={selectedBrokerId}
-                      onChange={e => setSelectedBrokerId(e.target.value)}
-                      className="w-full p-2.5 bg-white border border-purple-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      {brokers.map(b => (
-                        <option key={b.id} value={b.id}>
-                          {b.name} ({b.company}) — {b.phone}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={val => setSelectedBrokerId(val)}
+                      options={brokers.map(b => ({
+                        value: b.id,
+                        label: `${b.name} (${b.company})`,
+                        subtitle: b.phone
+                      }))}
+                      placeholder="Select broker..."
+                      searchable
+                      className="w-full"
+                      buttonClassName="w-full bg-white border-purple-200 py-2.5 text-slate-900"
+                    />
                   </div>
                 )}
               </div>

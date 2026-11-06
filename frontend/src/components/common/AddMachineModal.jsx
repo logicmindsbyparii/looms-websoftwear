@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { FABRIC_TYPES, LOOM_MODELS } from '../../data/initialData';
+import CustomSelect from './CustomSelect';
 import {
   X,
   Cpu,
@@ -121,15 +122,13 @@ export default function AddMachineModal() {
               <label className="block text-slate-700 font-bold mb-1">
                 {t('machines.modelType')}
               </label>
-              <select
+              <CustomSelect
                 value={model}
-                onChange={e => setModel(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              >
-                {LOOM_MODELS.map(m => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
-              </select>
+                onChange={val => setModel(val)}
+                options={LOOM_MODELS}
+                className="w-full"
+                buttonClassName="w-full bg-slate-50 border-slate-200 py-2.5 font-semibold text-slate-900"
+              />
             </div>
 
             {/* Fabric Variety */}
@@ -138,15 +137,13 @@ export default function AddMachineModal() {
                 {t('machines.fabricType')}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <select
+                <CustomSelect
                   value={fabric}
-                  onChange={e => setFabric(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-900 focus:outline-none"
-                >
-                  {FABRIC_TYPES.map(f => (
-                    <option key={f} value={f}>{f}</option>
-                  ))}
-                </select>
+                  onChange={val => setFabric(val)}
+                  options={FABRIC_TYPES}
+                  className="w-full"
+                  buttonClassName="w-full bg-slate-50 border-slate-200 py-2.5 font-semibold text-slate-900"
+                />
 
                 <input
                   type="text"
