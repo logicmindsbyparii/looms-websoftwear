@@ -106,7 +106,13 @@ function startTelemetrySimulation() {
         m.temp = newTemp;
         m.output += pickIncrement;
         m.picksPerMin = Math.floor(newRpm * 0.94);
-        m.efficiency = Math.min(100, Math.round((m.output / (m.targetOutput || 75)) * 100));
+        
+        // Realistic loom operational efficiency calculation (82% - 96% based on RPM vs target and stops)
+        const targetRpm = m.targetRpm || 850;
+        const rpmRatio = (newRpm / targetRpm);
+        const stopPenalty = ((m.warpStops || 0) * 1.5) + ((m.weftStops || 0) * 0.8);
+        const calculatedEff = Math.round(rpmRatio * 93 - stopPenalty + (Math.random() * 2 - 1));
+        m.efficiency = Math.max(72, Math.min(97, calculatedEff));
 
         await m.save();
         updates.push({

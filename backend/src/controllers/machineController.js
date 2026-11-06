@@ -155,6 +155,11 @@ export const updateMachineStatus = asyncHandler(async (req, res) => {
   machine.rpm = isRunning ? (machine.targetRpm || 850) : 0;
   machine.pressure = isRunning ? 4.5 : 0;
   machine.tension = isRunning ? 65 : 0;
+  if (!isRunning) {
+    machine.efficiency = Math.max(0, Math.round((machine.efficiency || 82) * 0.5));
+  } else if (!machine.efficiency || machine.efficiency < 70) {
+    machine.efficiency = Math.floor(Math.random() * 8 + 88);
+  }
   await machine.save();
 
   await MachineStatusEvent.create({
@@ -186,20 +191,19 @@ export const startAllMachines = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'No machines configured yet', 'NO_MACHINES');
   }
 
-  await Machine.updateMany(
-    {},
-    {
-      $set: {
-        status: 'running',
-        rpm: 850,
-        pressure: 4.5,
-        tension: 65
-      }
-    }
-  );
+  // Set running with realistic starting efficiencies (88% - 94%)
+  const machines = await Machine.find();
+  for (const m of machines) {
+    m.status = 'running';
+    m.rpm = m.targetRpm || 850;
+    m.pressure = 4.5;
+    m.tension = 65;
+    m.efficiency = Math.floor(Math.random() * 8 + 88);
+    await m.save();
+  }
 
-  const machines = await Machine.find().sort({ id: 1 });
-  emitToAll('machines:mass_updated', { status: 'running', machines });
+  const updatedMachines = await Machine.find().sort({ id: 1 });
+  emitToAll('machines:mass_updated', { status: 'running', machines: updatedMachines });
 
   await logAuditEvent({
     action: 'MACHINES_START_ALL',
@@ -207,7 +211,7 @@ export const startAllMachines = asyncHandler(async (req, res) => {
     req
   });
 
-  res.status(200).json(new ApiResponse(200, machines, `All ${count} loom units activated`));
+  res.status(200).json(new ApiResponse(200, updatedMachines, `All ${count} loom units activated`));
 });
 
 export const stopAllMachines = asyncHandler(async (req, res) => {
@@ -221,7 +225,8 @@ export const stopAllMachines = asyncHandler(async (req, res) => {
         status: 'stopped',
         rpm: 0,
         pressure: 0,
-        tension: 0
+        tension: 0,
+        efficiency: 0
       }
     }
   );
