@@ -220,12 +220,13 @@ export async function sendTestMessage(req, res) {
 }
 
 /**
- * POST /api/whatsapp/send-report
+ * POST /api/whatsapp/send-report and /api/whatsapp/reports/:reportType/send
  * Manually dispatch any of the 11 reports to chosen recipient or role
  */
 export async function sendManualReport(req, res) {
   try {
-    const { reportId, phone, role } = req.body;
+    const reportId = req.params.reportType || req.body.reportId;
+    const { phone, role } = req.body || {};
     const generator = REPORT_GENERATORS[reportId];
 
     if (!generator) {
@@ -250,6 +251,19 @@ export async function sendManualReport(req, res) {
         ]
       });
       targets.push(...subscribers);
+
+      // If no specific subscribers, fallback to any active recipient or default admin
+      if (targets.length === 0) {
+        const anyRecipients = await WhatsAppRecipient.find({ isActive: true });
+        if (anyRecipients.length > 0) {
+          targets.push(...anyRecipients);
+        } else {
+          targets.push({
+            phone: process.env.WHATSAPP_ADMIN_PHONE || '+91 75675 74107',
+            name: 'Mill Administrator'
+          });
+        }
+      }
     }
 
     if (targets.length === 0) {
@@ -282,18 +296,23 @@ export async function sendManualReport(req, res) {
 }
 
 /**
- * POST /api/whatsapp/ask-ai
+ * POST /api/whatsapp/ask-ai and /api/whatsapp/ai/query
  * Test the AI assistant from dashboard
  */
 export async function askAiAssistant(req, res) {
   try {
-    const { query } = req.body;
+    const query = req.body.query || req.body.text || req.body.question;
     if (!query || !query.trim()) {
       return res.status(400).json({ success: false, message: 'Query text is required' });
     }
 
     const answer = await processAiQuery(query);
-    res.json({ success: true, query, answer });
+    res.json({
+      success: true,
+      query,
+      answer,
+      data: { reply: answer, query }
+    });
   } catch (err) {
     logger.error('Error testing AI query:', err.message);
     res.status(500).json({ success: false, message: err.message });

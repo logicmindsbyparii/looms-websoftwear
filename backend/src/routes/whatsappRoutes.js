@@ -45,11 +45,14 @@ router.delete('/recipients/:id', requireRole('Admin'), deleteRecipient);
 // Manual dispatch & testing
 router.post('/test', requireRole('Admin', 'Supervisor'), sendTestMessage);
 router.post('/send-report', requireRole('Admin', 'Supervisor'), sendManualReport);
+router.post('/reports/:reportType/send', requireRole('Admin', 'Supervisor'), sendManualReport);
 router.post('/ask-ai', requireRole('Admin', 'Supervisor'), askAiAssistant);
+router.post('/ai/query', requireRole('Admin', 'Supervisor'), askAiAssistant);
 
 // Message logs, analytics & retry
 router.get('/logs', requireRole('Admin', 'Supervisor'), getLogs);
 router.post('/retry/:logId', requireRole('Admin', 'Supervisor'), retryMessage);
+router.post('/logs/:logId/retry', requireRole('Admin', 'Supervisor'), retryMessage);
 router.get('/analytics', requireRole('Admin', 'Supervisor'), getAnalytics);
 
 export default router;
