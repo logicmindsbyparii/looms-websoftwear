@@ -36,8 +36,8 @@ export default {
         display: ['Rajdhani', 'Noto Sans Gujarati', 'Noto Sans Devanagari', 'Outfit', 'sans-serif']
       },
       animation: {
-        'shuttle-fast': 'shuttleMove 0.85s ease-in-out infinite',
-        'shuttle-slow': 'shuttleMove 2.0s ease-in-out infinite',
+        'shuttle-fast': 'shuttleMove 0.58s ease-in-out infinite',
+        'shuttle-slow': 'shuttleMove 1.6s ease-in-out infinite',
         'pulse-subtle': 'pulseSubtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'spin-slow': 'spin 12s linear infinite'
       },

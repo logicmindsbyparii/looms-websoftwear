@@ -120,14 +120,14 @@
 }
 
 .animate-sync-shuttle {
-  animation: syncShuttleGlide 0.85s ease-in-out infinite;
+  animation: syncShuttleGlide 0.58s ease-in-out infinite;
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
 .animate-sync-shuttle-slow {
-  animation: syncShuttleGlide 2.2s ease-in-out infinite;
+  animation: syncShuttleGlide 1.6s ease-in-out infinite;
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
