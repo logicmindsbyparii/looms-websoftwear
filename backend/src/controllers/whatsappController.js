@@ -189,30 +189,39 @@ export async function deleteRecipient(req, res) {
  */
 export async function sendTestMessage(req, res) {
   try {
-    const { phone } = req.body;
+    let { phone } = req.body || {};
     if (!phone) {
-      return res.status(400).json({ success: false, message: 'Phone number is required' });
+      phone = process.env.WHATSAPP_ADMIN_PHONE || '+91 96646 83069';
     }
 
-    const text = `✅ *LOOMUS WhatsApp Business API Connected!*
+    const text = `✅ *LOOMUS WhatsApp Connected!*
 ----------------------------------------
 🏭 *Facility:* LOOMUS Advanced Weaving Facility
 📅 *Date:* ${new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
 🕒 *Time:* ${new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })}
 ----------------------------------------
 ✨ Automated AI Reports and Real-Time Alerts are active.
-🤖 You can now reply to this chat to ask any factory questions in English, Hindi, or Gujarati!`;
+🤖 Ask any mill questions in English, Hindi, or Gujarati!`;
 
     const result = await sendWhatsAppMessage({
       to: phone,
-      recipientName: 'Test Recipient',
+      recipientName: 'Mill Administrator',
       text,
       messageType: 'test',
-      title: 'WhatsApp API Connection Test',
+      title: 'WhatsApp Connection Test',
       metadata: { test: true }
     });
 
-    res.json({ success: true, message: 'Test message processed', data: result });
+    const { isLive } = await getActiveConfig();
+
+    res.json({
+      success: true,
+      message: isLive ? 'Test message sent via Meta Cloud API' : 'Opening WhatsApp on your computer...',
+      targetPhone: phone,
+      text,
+      isLiveConfigured: isLive,
+      data: result
+    });
   } catch (err) {
     logger.error('Error sending test WhatsApp message:', err.message);
     res.status(500).json({ success: false, message: err.message });

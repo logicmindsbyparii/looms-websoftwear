@@ -196,11 +196,12 @@ export default function WhatsAppReportsView() {
       const res = await api.post('/whatsapp/test', payload);
       showToast(res.message || 'Test message dispatched!', 'success');
 
-      // If in simulation mode, also trigger openWhatsApp so user immediately sees it
-      if (!isLiveConnected && res?.data?.text) {
+      // Always launch WhatsApp directly on laptop so user can send immediately
+      const textToOpen = res?.text || res?.data?.text || res?.data?.log?.messageBody;
+      if (textToOpen) {
         openWhatsApp({
           phone: customPhone || '+91 96646 83069',
-          message: res.data.text
+          message: textToOpen
         });
       }
 

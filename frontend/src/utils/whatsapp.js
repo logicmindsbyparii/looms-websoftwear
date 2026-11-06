@@ -12,11 +12,11 @@ export function cleanPhoneNumber(phone) {
 }
 
 export function openWhatsApp({ phone, message }) {
-  const clean = cleanPhoneNumber(phone);
+  const clean = cleanPhoneNumber(phone) || '919664683069';
   const encodedText = encodeURIComponent(message);
   let url = '';
   if (clean) {
-    url = `https://wa.me/${clean}?text=${encodedText}`;
+    url = `https://api.whatsapp.com/send?phone=${clean}&text=${encodedText}`;
   } else {
     url = `https://api.whatsapp.com/send?text=${encodedText}`;
   }
