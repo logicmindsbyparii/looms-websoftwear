@@ -320,6 +320,7 @@ export default function RollsView({ onOpenScan }) {
               ]}
               searchable
               isMono
+              align="right"
               className="w-full"
               buttonClassName="bg-slate-50/50 border-slate-200 py-2"
             />

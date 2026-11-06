@@ -180,6 +180,7 @@ export default function OperatorConsole() {
                 badge: t(`status.${m.status}`) || m.status.toUpperCase()
               }))}
               searchable
+              align="right"
               buttonClassName="bg-white border-slate-300 font-mono font-bold text-xs sm:text-sm"
               className="flex-1 sm:flex-none"
             />

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
 
 export default function CustomSelect({
@@ -12,12 +12,83 @@ export default function CustomSelect({
   searchable = false,
   isMono = false,
   size = 'md', // 'sm' | 'md'
-  align = 'left', // 'left' | 'right'
+  align = 'auto', // 'auto' | 'left' | 'right'
   disabled = false
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const selectRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  // Position & collision state
+  const [position, setPosition] = useState({
+    alignRight: align === 'right',
+    openUpward: false,
+    offsetX: 0
+  });
+
+  // Calculate safe alignment before opening
+  const updatePosition = useCallback(() => {
+    if (!selectRef.current) return;
+    const triggerRect = selectRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let shouldAlignRight = align === 'right';
+    if (align === 'auto' || !align) {
+      // If button is in the right half of the screen or doesn't have 320px clearance on right
+      shouldAlignRight =
+        (viewportWidth - triggerRect.left < 340) ||
+        (triggerRect.right > viewportWidth / 2 && triggerRect.left > 120);
+    }
+
+    // Check vertical space (flip up if too close to bottom)
+    const spaceBelow = viewportHeight - triggerRect.bottom;
+    const spaceAbove = triggerRect.top;
+    const shouldOpenUp = spaceBelow < 260 && spaceAbove > spaceBelow;
+
+    setPosition(prev => ({
+      ...prev,
+      alignRight: shouldAlignRight,
+      openUpward: shouldOpenUp,
+      offsetX: 0
+    }));
+  }, [align]);
+
+  // Recalculate on open, resize, or scroll
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener('resize', updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
+    }
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [isOpen, updatePosition]);
+
+  // Viewport Edge Collision Clamping: Guarantees dropdown NEVER overflows right or left edge of screen
+  useEffect(() => {
+    if (!isOpen || !dropdownRef.current) return;
+
+    const dropRect = dropdownRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const padding = 12; // 12px safe boundary from viewport edge
+
+    let shift = 0;
+    if (dropRect.right > viewportWidth - padding) {
+      // Bleeding off right edge -> shift left into view
+      shift = -(dropRect.right - (viewportWidth - padding));
+    } else if (dropRect.left < padding) {
+      // Bleeding off left edge -> shift right into view
+      shift = padding - dropRect.left;
+    }
+
+    if (shift !== 0) {
+      setPosition(prev => ({ ...prev, offsetX: shift }));
+    }
+  }, [isOpen, search, options]);
 
   // Close when clicking outside or pressing Escape
   useEffect(() => {
@@ -117,9 +188,17 @@ export default function CustomSelect({
 
       {isOpen && (
         <div
+          ref={dropdownRef}
+          style={
+            position.offsetX !== 0
+              ? { transform: `translateX(${position.offsetX}px)` }
+              : undefined
+          }
           className={`absolute ${
-            align === 'right' ? 'right-0' : 'left-0'
-          } top-full mt-1.5 min-w-[200px] w-max max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 ${dropdownClassName}`}
+            position.alignRight ? 'right-0' : 'left-0'
+          } ${
+            position.openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+          } min-w-[220px] w-max max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 ${dropdownClassName}`}
         >
           {searchable && normalizedOptions.length > 5 && (
             <div className="p-2 border-b border-slate-100">

@@ -162,6 +162,7 @@ export default function MachinesView() {
           <CustomSelect
             value={sortBy}
             onChange={(val) => setSortBy(val)}
+            align="right"
             options={[
               { value: 'id', label: 'Sort: Loom ID' },
               { value: 'output', label: `Sort: ${t('common.output')}` },

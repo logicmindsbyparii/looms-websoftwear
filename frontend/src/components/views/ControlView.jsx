@@ -108,6 +108,7 @@ export default function ControlView() {
               }))
             ]}
             searchable
+            align="right"
             buttonClassName="bg-white border-slate-200 font-mono font-bold text-xs sm:text-sm"
             className="flex-1 sm:flex-none"
           />
