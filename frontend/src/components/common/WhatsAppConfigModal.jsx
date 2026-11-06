@@ -30,9 +30,9 @@ export default function WhatsAppConfigModal() {
   } = useApp();
   const { t } = useTranslation();
 
-  const [inputAdminPhone, setInputAdminPhone] = useState(adminWhatsAppPhone || '+91 75675 74107');
-  const [inputGodownPhone, setInputGodownPhone] = useState(godownWhatsAppPhone || '+91 75675 74107');
-  const [inputSalesPhone, setInputSalesPhone] = useState(salesWhatsAppPhone || '+91 75675 74107');
+  const [inputAdminPhone, setInputAdminPhone] = useState(adminWhatsAppPhone || '+91 96646 83069');
+  const [inputGodownPhone, setInputGodownPhone] = useState(godownWhatsAppPhone || '+91 96646 83069');
+  const [inputSalesPhone, setInputSalesPhone] = useState(salesWhatsAppPhone || '+91 96646 83069');
 
   if (!isWhatsAppModalOpen) return null;
 
@@ -106,7 +106,7 @@ export default function WhatsAppConfigModal() {
               <Phone className="w-4 h-4 text-emerald-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="+91 75675 74107"
+                placeholder="+91 96646 83069"
                 value={inputAdminPhone}
                 onChange={e => setInputAdminPhone(e.target.value)}
                 required
@@ -146,7 +146,7 @@ export default function WhatsAppConfigModal() {
               <Phone className="w-4 h-4 text-sky-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="+91 75675 74107"
+                placeholder="+91 96646 83069"
                 value={inputGodownPhone}
                 onChange={e => setInputGodownPhone(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl font-mono font-bold text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -185,7 +185,7 @@ export default function WhatsAppConfigModal() {
               <Phone className="w-4 h-4 text-indigo-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="+91 75675 74107"
+                placeholder="+91 96646 83069"
                 value={inputSalesPhone}
                 onChange={e => setInputSalesPhone(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl font-mono font-bold text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"

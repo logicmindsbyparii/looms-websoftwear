@@ -89,7 +89,7 @@ export async function getRecipients(req, res) {
       const defaultAdmin = await WhatsAppRecipient.create({
         id: `REC-${Date.now()}`,
         name: 'Mill General Manager',
-        phone: process.env.WHATSAPP_ADMIN_PHONE || '+91 75675 74107',
+        phone: process.env.WHATSAPP_ADMIN_PHONE || '+91 96646 83069',
         role: 'Admin',
         isActive: true,
         notes: 'Primary factory administration channel'
@@ -259,7 +259,7 @@ export async function sendManualReport(req, res) {
           targets.push(...anyRecipients);
         } else {
           targets.push({
-            phone: process.env.WHATSAPP_ADMIN_PHONE || '+91 75675 74107',
+            phone: process.env.WHATSAPP_ADMIN_PHONE || '+91 96646 83069',
             name: 'Mill Administrator'
           });
         }

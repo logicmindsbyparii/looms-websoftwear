@@ -29,7 +29,7 @@ const initialState = {
     title: '',
     message: '',
     category: 'general',
-    defaultPhone: '+91 75675 74107',
+    defaultPhone: '+91 96646 83069',
     entityName: ''
   }
 };
@@ -105,7 +105,7 @@ export const uiSlice = createSlice({
         title: action.payload.title || '',
         message: action.payload.message || '',
         category: action.payload.category || 'general',
-        defaultPhone: action.payload.defaultPhone || '+91 75675 74107',
+        defaultPhone: action.payload.defaultPhone || '+91 96646 83069',
         entityName: action.payload.entityName || ''
       };
     },

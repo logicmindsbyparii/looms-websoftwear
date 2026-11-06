@@ -8,15 +8,15 @@ const settingsSchema = new mongoose.Schema(
     },
     adminWhatsAppPhone: {
       type: String,
-      default: '+91 75675 74107'
+      default: '+91 96646 83069'
     },
     godownWhatsAppPhone: {
       type: String,
-      default: '+91 75675 74107'
+      default: '+91 96646 83069'
     },
     salesWhatsAppPhone: {
       type: String,
-      default: '+91 75675 74107'
+      default: '+91 96646 83069'
     },
     idleTimeoutMinutes: {
       type: Number,

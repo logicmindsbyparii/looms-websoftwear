@@ -199,7 +199,7 @@ export default function WhatsAppReportsView() {
       // If in simulation mode, also trigger openWhatsApp so user immediately sees it
       if (!isLiveConnected && res?.data?.text) {
         openWhatsApp({
-          phone: customPhone || '+91 75675 74107',
+          phone: customPhone || '+91 96646 83069',
           message: res.data.text
         });
       }
@@ -225,7 +225,7 @@ export default function WhatsAppReportsView() {
       if (openDirect || !res.isLiveConfigured) {
         if (res.reportContent) {
           openWhatsApp({
-            phone: res.targetPhone || '+91 75675 74107',
+            phone: res.targetPhone || '+91 96646 83069',
             message: res.reportContent
           });
         }
@@ -1332,7 +1332,7 @@ export default function WhatsAppReportsView() {
                   onChange={(e) => setRecipientForm({ ...recipientForm, phone: e.target.value })}
                   className="w-full text-xs font-mono px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">E.g. +91 75675 74107 or 9876543210 (India default).</p>
+                <p className="text-[10px] text-slate-400 mt-1">E.g. +91 96646 83069 or 9876543210 (India default).</p>
               </div>
 
               <div>

@@ -73,11 +73,11 @@ export default function WhatsAppShareModal() {
   const getDestinationPhone = () => {
     switch (recipientType) {
       case 'admin':
-        return adminWhatsAppPhone || '+91 75675 74107';
+        return adminWhatsAppPhone || '+91 96646 83069';
       case 'godown':
-        return godownWhatsAppPhone || adminWhatsAppPhone || '+91 75675 74107';
+        return godownWhatsAppPhone || adminWhatsAppPhone || '+91 96646 83069';
       case 'sales':
-        return salesWhatsAppPhone || adminWhatsAppPhone || '+91 75675 74107';
+        return salesWhatsAppPhone || adminWhatsAppPhone || '+91 96646 83069';
       case 'broker': {
         const found = brokers.find(b => b.id === selectedBrokerId);
         return found ? found.phone : '';
@@ -93,7 +93,7 @@ export default function WhatsAppShareModal() {
   const getRecipientLabel = () => {
     switch (recipientType) {
       case 'admin':
-        return `${t('modals.whatsAppShare.sendToAdmin')} (${adminWhatsAppPhone || '7567574107'})`;
+        return `${t('modals.whatsAppShare.sendToAdmin')} (${adminWhatsAppPhone || '9664683069'})`;
       case 'godown':
         return `${t('modals.whatsAppShare.sendToGodown')} (${godownWhatsAppPhone || adminWhatsAppPhone})`;
       case 'sales':
@@ -190,7 +190,7 @@ export default function WhatsAppShareModal() {
                     <span>{t('modals.whatsAppShare.sendToAdmin')}</span>
                     <span className="text-[9px] px-1.5 py-0.2 bg-emerald-200 text-emerald-900 rounded font-mono">Default</span>
                   </div>
-                  <span className="text-[11px] font-mono text-slate-500 block mt-0.5">{adminWhatsAppPhone || '7567574107'}</span>
+                  <span className="text-[11px] font-mono text-slate-500 block mt-0.5">{adminWhatsAppPhone || '9664683069'}</span>
                 </div>
               </button>
 

@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const DEFAULT_ADMIN_PHONE = '+91 75675 74107';
+const DEFAULT_ADMIN_PHONE = '+91 96646 83069';
 
 const initialState = {
   adminWhatsAppPhone: DEFAULT_ADMIN_PHONE,

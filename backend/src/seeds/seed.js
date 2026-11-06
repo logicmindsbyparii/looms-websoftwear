@@ -41,7 +41,7 @@ const seed = async () => {
         username: adminUsername,
         displayName: process.env.ADMIN_SEED_NAME || 'Mill Administrator',
         email: 'admin@loomus.local',
-        phone: process.env.ADMIN_SEED_PHONE || '+91 75675 74107',
+        phone: process.env.ADMIN_SEED_PHONE || '+91 96646 83069',
         role: 'Admin',
         passwordHash: adminHash,
         isActive: true,
@@ -105,13 +105,18 @@ const seed = async () => {
     if (!settings) {
       await Settings.create({
         plantName: 'LOOMUS Advanced Weaving Facility',
-        adminWhatsAppPhone: '+91 75675 74107',
-        godownWhatsAppPhone: '+91 75675 74107',
-        salesWhatsAppPhone: '+91 75675 74107',
+        adminWhatsAppPhone: '+91 96646 83069',
+        godownWhatsAppPhone: '+91 96646 83069',
+        salesWhatsAppPhone: '+91 96646 83069',
         idleTimeoutMinutes: 30,
         defaultLanguage: 'en'
       });
       logger.info('✅ Default factory settings initialized.');
+    } else {
+      settings.adminWhatsAppPhone = '+91 96646 83069';
+      settings.godownWhatsAppPhone = '+91 96646 83069';
+      settings.salesWhatsAppPhone = '+91 96646 83069';
+      await settings.save();
     }
 
     // 4b. Seed WhatsApp AI Configuration & Recipient
@@ -133,12 +138,16 @@ const seed = async () => {
       await WhatsAppRecipient.create({
         id: 'REC-01',
         name: 'Mill General Manager',
-        phone: process.env.WHATSAPP_ADMIN_PHONE || '+91 75675 74107',
+        phone: process.env.WHATSAPP_ADMIN_PHONE || '+91 96646 83069',
         role: 'Admin',
         isActive: true,
         notes: 'Primary factory administration channel'
       });
-      logger.info('✅ Seeded primary WhatsApp recipient (+91 75675 74107).');
+      logger.info('✅ Seeded primary WhatsApp recipient (+91 96646 83069).');
+    } else {
+      defaultRecipient.phone = process.env.WHATSAPP_ADMIN_PHONE || '+91 96646 83069';
+      await defaultRecipient.save();
+      logger.info('✅ Updated primary WhatsApp recipient (+91 96646 83069).');
     }
 
     // 5. Initial Factory Floor Data (50 Looms, Workers, Alarms, Stock, etc.)

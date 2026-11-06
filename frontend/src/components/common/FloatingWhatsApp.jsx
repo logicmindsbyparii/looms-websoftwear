@@ -60,7 +60,7 @@ export default function FloatingWhatsApp() {
   const handleSend = (textToSend) => {
     const finalMsg = textToSend || message.trim() || t('whatsApp.welcomeMsg');
     openWhatsApp({
-      phone: adminWhatsAppPhone || '+91 75675 74107',
+      phone: adminWhatsAppPhone || '+91 96646 83069',
       message: finalMsg
     });
     setIsOpen(false);
@@ -188,7 +188,7 @@ export default function FloatingWhatsApp() {
             {/* Direct WhatsApp Callout & Hub Link */}
             <div className="flex items-center justify-between text-[11px] px-1 text-slate-500">
               <span className="font-mono text-[10px] text-slate-400">
-                {adminWhatsAppPhone || '+91 75675 74107'}
+                {adminWhatsAppPhone || '+91 96646 83069'}
               </span>
 
               {isAuthenticated && userRole === 'Admin' && (

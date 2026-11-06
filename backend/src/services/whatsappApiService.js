@@ -4,7 +4,7 @@ import { WhatsAppLog } from '../models/WhatsAppLog.js';
 import { logger } from '../utils/logger.js';
 
 /**
- * Clean and standardize phone number to international E.164 format (e.g. 917567574107)
+ * Clean and standardize phone number to international E.164 format (e.g. 919664683069)
  */
 export function formatPhoneNumber(phone) {
   if (!phone) return '';
