@@ -36,16 +36,16 @@ export default {
         display: ['Rajdhani', 'Noto Sans Gujarati', 'Noto Sans Devanagari', 'Outfit', 'sans-serif']
       },
       animation: {
-        'shuttle-fast': 'shuttleMove 0.88s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite',
-        'shuttle-slow': 'shuttleMove 2.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite',
+        'shuttle-fast': 'shuttleMove 0.85s ease-in-out infinite',
+        'shuttle-slow': 'shuttleMove 2.0s ease-in-out infinite',
         'pulse-subtle': 'pulseSubtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'spin-slow': 'spin 12s linear infinite'
       },
       keyframes: {
         shuttleMove: {
-          '0%': { transform: 'translateX(-15px)' },
-          '50%': { transform: 'translateX(15px)' },
-          '100%': { transform: 'translateX(-15px)' },
+          '0%': { transform: 'translateX(-14px)' },
+          '50%': { transform: 'translateX(14px)' },
+          '100%': { transform: 'translateX(-14px)' },
         },
         pulseSubtle: {
           '0%, 100%': { opacity: '1' },

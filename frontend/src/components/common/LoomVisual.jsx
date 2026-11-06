@@ -1,6 +1,6 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo } from 'react';
 
-function LoomVisual({ status = 'running', rpm = 850, compact = false, machineId = '' }) {
+function LoomVisual({ status = 'running', rpm = 850, compact = false }) {
   const isRunning = status === 'running';
   const isIdle = status === 'idle';
   const isStopped = status === 'stopped';
@@ -9,13 +9,6 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false, machineId 
   // Determine accent color
   const statusColor = isRunning ? '#10b981' : isIdle ? '#f59e0b' : isMaint ? '#6366f1' : '#ef4444';
   const shuttleColor = isRunning ? '#0284c7' : isIdle ? '#f59e0b' : '#64748b';
-
-  // Stagger animation timing across loom fleet so they don't reverse in lockstep
-  const delaySec = useMemo(() => {
-    if (!machineId) return 0;
-    const num = parseInt(String(machineId).replace(/\D/g, ''), 10) || 0;
-    return ((num % 8) * 0.11).toFixed(2);
-  }, [machineId]);
 
   return (
     <div className={`relative flex items-center justify-center overflow-hidden rounded-lg bg-slate-100/80 border border-slate-200/60 ${compact ? 'h-14 w-full' : 'h-24 w-full'}`}>
@@ -67,7 +60,7 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false, machineId 
           opacity={0.6}
         />
 
-        {/* Shuttle or Weft Projectile (Fluid, Centered, Symmetrical, Never Touches Outer Edges) */}
+        {/* All running looms move 100% in sync in the exact same direction without sticking to edges */}
         <g
           className={
             isRunning
@@ -76,16 +69,13 @@ function LoomVisual({ status = 'running', rpm = 850, compact = false, machineId 
               ? 'animate-shuttle-slow'
               : ''
           }
-          style={{
-            animationDelay: isRunning ? `${delaySec}s` : '0s',
-            willChange: 'transform'
-          }}
+          style={{ willChange: 'transform' }}
         >
-          {/* Subtle aerodynamic drop shadow */}
+          {/* Aerodynamic drop shadow */}
           <ellipse
             cx="50"
             cy="34"
-            rx="11"
+            rx="10"
             ry="1.5"
             fill="rgba(0,0,0,0.12)"
           />
