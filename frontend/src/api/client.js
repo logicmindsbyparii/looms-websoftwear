@@ -61,7 +61,14 @@ export async function apiClient(endpoint, options = {}) {
   }
 
   try {
-    const response = await fetch(url, fetchOptions);
+    let response;
+    try {
+      response = await fetch(url, fetchOptions);
+    } catch (networkErr) {
+      // If server was briefly restarting (ECONNRESET/ECONNREFUSED), retry once after 500ms
+      await new Promise((r) => setTimeout(r, 500));
+      response = await fetch(url, fetchOptions);
+    }
 
     if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
       if (isRefreshing) {
