@@ -47,6 +47,9 @@ export default function DashboardView() {
     avgEfficiency
   } = useSelector(selectMachineMetrics);
 
+  const totalUnits = (machines || []).length;
+  const safeAlarms = alarms || [];
+
   const shedACount = (machines || []).filter(m => m?.shed?.toLowerCase().includes('shed a') && m?.status === 'running').length;
   const shedBCount = (machines || []).filter(m => m?.shed?.toLowerCase().includes('shed b') && m?.status === 'running').length;
 
@@ -67,7 +70,7 @@ export default function DashboardView() {
             {t('dashboard.factoryOverview')}
           </h2>
           <p className="text-xs text-slate-500 mt-1 max-w-xl font-medium">
-            {t('dashboard.monitoredUnits', { count: machines.length })}
+            {t('dashboard.monitoredUnits', { count: totalUnits })}
           </p>
         </div>
 
@@ -75,13 +78,13 @@ export default function DashboardView() {
         <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
           <button
             onClick={() => setIsAddMachineOpen(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-sky-600/30 active:scale-95"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-sky-600/30 active:scale-95 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>{t('dashboard.addLoomBtn')}</span>
           </button>
 
-          {machines.length > 0 && (
+          {totalUnits > 0 && (
             <>
               <button
                 onClick={startAllMachines}
@@ -112,7 +115,7 @@ export default function DashboardView() {
       </div>
 
       {/* When 0 machines exist: Display Onboarding Setup Guide */}
-      {machines.length === 0 && (
+      {totalUnits === 0 && (
         <div className="heavy-card rounded-3xl p-8 bg-white border border-slate-200 shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -191,7 +194,7 @@ export default function DashboardView() {
         <StatCard
           title={t('nav.activeLooms')}
           value={runningLooms}
-          unit={`/ ${machines.length} ${t('common.unit')}`}
+          unit={`/ ${totalUnits} ${t('common.unit')}`}
           subtitle={`${stoppedLooms} ${t('status.stopped')} • ${idleLooms} ${t('status.idle')}`}
           icon={Cpu}
           variant="green"
@@ -200,7 +203,7 @@ export default function DashboardView() {
         <StatCard
           title={t('dashboard.totalShiftOutput')}
           value={formatMeters(totalMetersToday)}
-          subtitle={`Target: ${machines.length * 75} m`}
+          subtitle={`Target: ${totalUnits * 75} m`}
           icon={Boxes}
           variant="blue"
         />
@@ -215,10 +218,10 @@ export default function DashboardView() {
 
         <StatCard
           title={t('dashboard.activeAlarmsCount')}
-          value={alarms.length}
-          subtitle={`${alarms.filter(a => a.type === 'critical').length} ${t('alarms.critical')}`}
+          value={safeAlarms.length}
+          subtitle={`${safeAlarms.filter(a => a.type === 'critical').length} ${t('alarms.critical')}`}
           icon={AlertTriangle}
-          variant={alarms.length > 0 ? 'rose' : 'green'}
+          variant={safeAlarms.length > 0 ? 'rose' : 'green'}
         />
       </div>
 
@@ -342,13 +345,13 @@ export default function DashboardView() {
               </button>
             </div>
 
-            {alarms.length === 0 ? (
+            {safeAlarms.length === 0 ? (
               <div className="p-6 text-center text-slate-400 text-xs">
                 {t('alarms.noAlarms')}
               </div>
             ) : (
               <div className="space-y-2">
-                {alarms.slice(0, 4).map((a) => (
+                {safeAlarms.slice(0, 4).map((a) => (
                   <div
                     key={a.id}
                     className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs ${

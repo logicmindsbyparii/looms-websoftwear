@@ -42,11 +42,12 @@ export default function SupervisorFloor() {
   const [selectedShed, setSelectedShed] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredMachines = machines.filter(m => {
-    const matchesShed = selectedShed === 'all' || m.shed.toLowerCase().includes(selectedShed.toLowerCase());
-    const matchesSearch = m.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          m.fabric.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          m.operator.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredMachines = (machines || []).filter(m => {
+    const matchesShed = selectedShed === 'all' || (m?.shed || '').toLowerCase().includes(selectedShed.toLowerCase());
+    const matchesSearch = !searchQuery ||
+                          (m?.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (m?.fabric || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (m?.operator || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesShed && matchesSearch;
   });
 

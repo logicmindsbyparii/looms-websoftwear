@@ -41,12 +41,13 @@ export default function OperatorConsole() {
   } = useApp();
   const { t } = useTranslation();
 
-  const currentMachine = machines.find(m => m.id === activeOperatorLoom) || machines[0];
+  const machineList = machines || [];
+  const currentMachine = machineList.find(m => m?.id === activeOperatorLoom) || machineList[0];
   const [rpmInput, setRpmInput] = useState(currentMachine?.rpm || 850);
   const [tensionInput, setTensionInput] = useState(currentMachine?.tension || 65);
   const [pressureInput, setPressureInput] = useState(currentMachine?.pressure || 4.2);
 
-  if (!currentMachine || machines.length === 0) {
+  if (!currentMachine || machineList.length === 0) {
     return (
       <div className="heavy-card rounded-3xl p-12 text-center space-y-4 max-w-xl mx-auto my-12 border-2 border-dashed border-slate-200">
         <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
