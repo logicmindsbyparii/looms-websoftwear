@@ -12,7 +12,11 @@ export const TRANSLATIONS = {
       "idleTimeoutWarning": "You have been idle. You will be logged out in {countdown} seconds for security.",
       "sessionExpired": "Session expired. Please log in again.",
       "viewAsActive": "Previewing as {role}",
-      "exitViewAs": "Exit Preview"
+      "exitViewAs": "Exit Preview",
+      "loomFleet": "LOOM FLEET",
+      "activeMode": "Active Mode",
+      "dataReset": "Data Reset",
+      "navigationMenu": "Navigation Menu"
     },
     "nav": {
       "dashboard": "Dashboard",
@@ -512,7 +516,11 @@ export const TRANSLATIONS = {
       "idleTimeoutWarning": "તમે નિષ્ક્રિય છો. સુરક્ષા માટે {countdown} સેકન્ડમાં લૉગ આઉટ કરવામાં આવશે.",
       "sessionExpired": "સત્ર સમાપ્ત થઈ ગયું છે. કૃપા કરીને ફરી લૉગિન કરો.",
       "viewAsActive": "{role} તરીકે પૂર્વાવલોકન કરી રહ્યા છો",
-      "exitViewAs": "પૂર્વાવલોકન બંધ કરો"
+      "exitViewAs": "પૂર્વાવલોકન બંધ કરો",
+      "loomFleet": "લૂમ ફ્લીટ",
+      "activeMode": "સક્રિય મોડ",
+      "dataReset": "ડેટા રીસેટ",
+      "navigationMenu": "નેવિગેશન મેનુ"
     },
     "nav": {
       "dashboard": "ડેશબોર્ડ",
@@ -1012,7 +1020,11 @@ export const TRANSLATIONS = {
       "idleTimeoutWarning": "आप निष्क्रिय हैं। सुरक्षा के लिए {countdown} सेकंड में लॉग आउट किया जाएगा।",
       "sessionExpired": "सत्र समाप्त हो गया है। कृपया पुनः लॉगिन करें।",
       "viewAsActive": "{role} के रूप में पूर्वावलोकन कर रहे हैं",
-      "exitViewAs": "पूर्वावलोकन बंद करें"
+      "exitViewAs": "पूर्वावलोकन बंद करें",
+      "loomFleet": "लूम बेड़ा (फ्लीट)",
+      "activeMode": "सक्रिय मोड",
+      "dataReset": "डेटा रीसेट",
+      "navigationMenu": "नेविगेशन मेनू"
     },
     "nav": {
       "dashboard": "डैशबोर्ड",
@@ -1512,7 +1524,11 @@ export const TRANSLATIONS = {
       "idleTimeoutWarning": "आपण निष्क्रिय आहात. सुरक्षिततेसाठी {countdown} सेकंदात लॉग आउट केले जाईल.",
       "sessionExpired": "सत्र संपले आहे. कृपया पुन्हा लॉगिन करा.",
       "viewAsActive": "{role} म्हणून पूर्वावलोकन करत आहात",
-      "exitViewAs": "पूर्वावलोकन बंद करा"
+      "exitViewAs": "पूर्वावलोकन बंद करा",
+      "loomFleet": "लूम फ्लीट",
+      "activeMode": "सक्रिय मोड",
+      "dataReset": "डेटा रीसेट",
+      "navigationMenu": "नेव्हिगेशन मेनू"
     },
     "nav": {
       "dashboard": "डॅशबोर्ड",

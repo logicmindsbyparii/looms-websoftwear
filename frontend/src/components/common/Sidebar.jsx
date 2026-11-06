@@ -202,7 +202,7 @@ export default function Sidebar() {
                 setIsDataManagerOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              title={collapsed ? 'Data Reset' : undefined}
+              title={collapsed ? t('app.dataReset') : undefined}
               className="w-full flex items-center h-10 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-colors duration-75 cursor-pointer shadow-2xs group"
             >
               <div className="w-8 h-8 flex items-center justify-center shrink-0">
@@ -215,7 +215,7 @@ export default function Sidebar() {
                     : 'max-w-[180px] opacity-100'
                 }`}
               >
-                <span>Data Reset</span>
+                <span>{t('app.dataReset')}</span>
               </div>
             </button>
           )}
@@ -230,12 +230,12 @@ export default function Sidebar() {
         {collapsed ? (
           <div
             className="p-2 flex flex-col items-center justify-center gap-1 transition-all duration-300 cursor-default"
-            title={`Looms: ${runningCount} Run, ${stoppedCount} Stop, ${idleCount} Idle | Power: ${powerLoadPercent}%`}
+            title={`Looms: ${runningCount} ${t('status.running')}, ${stoppedCount} ${t('status.stopped')}, ${idleCount} ${t('status.idle')} | ${t('app.powerLoad')}: ${powerLoadPercent}%`}
           >
             <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-mono font-bold text-xs shadow-2xs">
               {runningCount}
             </div>
-            <span className="text-[8.5px] font-mono text-slate-400 font-bold">RUN</span>
+            <span className="text-[8.5px] font-mono text-slate-400 font-bold truncate max-w-[48px]">{t('status.running')}</span>
           </div>
         ) : (
           <div className="p-3 transition-all duration-300 animate-in fade-in duration-200">
@@ -243,23 +243,23 @@ export default function Sidebar() {
               <div className="flex items-center justify-between text-xs font-bold text-slate-700">
                 <div className="flex items-center gap-1.5">
                   <Gauge className="w-3.5 h-3.5 text-sky-600" />
-                  <span>LOOM FLEET</span>
+                  <span>{t('app.loomFleet')}</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">{machines.length} Total</span>
+                <span className="text-[10px] font-mono text-slate-400">{machines.length} {t('common.total')}</span>
               </div>
 
               {/* 3 mini status badges */}
               <div className="grid grid-cols-3 gap-1 text-center">
                 <div className="p-1 rounded-lg bg-emerald-50 border border-emerald-200/80">
-                  <div className="text-[9px] font-semibold text-emerald-700">RUN</div>
+                  <div className="text-[9px] font-semibold text-emerald-700 truncate">{t('status.running')}</div>
                   <div className="text-xs font-extrabold text-emerald-800 font-mono">{runningCount}</div>
                 </div>
                 <div className="p-1 rounded-lg bg-rose-50 border border-rose-200/80">
-                  <div className="text-[9px] font-semibold text-rose-700">STOP</div>
+                  <div className="text-[9px] font-semibold text-rose-700 truncate">{t('status.stopped')}</div>
                   <div className="text-xs font-extrabold text-rose-800 font-mono">{stoppedCount}</div>
                 </div>
                 <div className="p-1 rounded-lg bg-amber-50 border border-amber-200/80">
-                  <div className="text-[9px] font-semibold text-amber-700">IDLE</div>
+                  <div className="text-[9px] font-semibold text-amber-700 truncate">{t('status.idle')}</div>
                   <div className="text-xs font-extrabold text-amber-800 font-mono">{idleCount}</div>
                 </div>
               </div>
@@ -325,7 +325,7 @@ export default function Sidebar() {
         >
           <div className="flex items-center justify-between whitespace-nowrap">
             <span className="text-[10px] font-bold tracking-wider uppercase font-mono text-slate-500">
-              Active Mode
+              {t('app.activeMode')}
             </span>
             <span
               className={`text-[11px] font-extrabold px-2 py-0.5 rounded-md font-mono ${
@@ -368,7 +368,7 @@ export default function Sidebar() {
                   </div>
                   <div>
                     <span className="font-extrabold text-sm text-slate-900 block">TEAM LMP</span>
-                    <span className="text-[10px] font-mono block text-slate-400">Navigation Menu</span>
+                    <span className="text-[10px] font-mono block text-slate-400">{t('app.navigationMenu')}</span>
                   </div>
                 </div>
 
