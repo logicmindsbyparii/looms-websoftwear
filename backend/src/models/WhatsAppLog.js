@@ -76,3 +76,4 @@ whatsAppLogSchema.index({ messageType: 1, sentAt: -1 });
 whatsAppLogSchema.index({ recipientPhone: 1, sentAt: -1 });
 
 export const WhatsAppLog = mongoose.model('WhatsAppLog', whatsAppLogSchema);
+

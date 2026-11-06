@@ -1332,3 +1332,4 @@ export default function WhatsAppReportsView() {
     </div>
   );
 }
+

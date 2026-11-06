@@ -431,3 +431,4 @@ export const REPORT_GENERATORS = {
   order_completion: generateOrderCompletionReport,
   daily_factory_summary: generateDailyFactorySummary
 };
+

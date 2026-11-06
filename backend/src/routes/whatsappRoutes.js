@@ -53,3 +53,4 @@ router.post('/retry/:logId', requireRole('Admin', 'Supervisor'), retryMessage);
 router.get('/analytics', requireRole('Admin', 'Supervisor'), getAnalytics);
 
 export default router;
+

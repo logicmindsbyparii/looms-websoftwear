@@ -374,3 +374,4 @@ Please reply with your question!`;
     return `⚠️ Error fetching factory data. Please try again or contact system administrator.`;
   }
 }
+

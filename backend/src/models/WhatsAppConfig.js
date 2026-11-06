@@ -315,3 +315,4 @@ const whatsAppConfigSchema = new mongoose.Schema(
 );
 
 export const WhatsAppConfig = mongoose.model('WhatsAppConfig', whatsAppConfigSchema);
+

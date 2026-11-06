@@ -59,3 +59,4 @@ const whatsAppRecipientSchema = new mongoose.Schema(
 );
 
 export const WhatsAppRecipient = mongoose.model('WhatsAppRecipient', whatsAppRecipientSchema);
+

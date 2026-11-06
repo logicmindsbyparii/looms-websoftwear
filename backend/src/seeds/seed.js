@@ -272,6 +272,63 @@ const seed = async () => {
         { id: 'ORD-8402', broker: 'Rajesh Brothers Exports', buyer: 'Dubai Tex FZE', fabric: 'Cotton 40s Combed', qty: 5000, rate: 64, total: 320000, date: '2026-10-30', deliveryDate: '2026-11-08', status: 'Dispatched', advance: 100000 }
       ];
 
+      const demoProductionLogs = [
+        { id: 'PR-901', time: '11:15 AM', machine: 'M-07', fabric: '70*72 Plain Cambric', shift: 'Morning', output: 72, target: 75, quality: 'A-Grade (Export)', defects: 0.5, operator: 'Ramesh Patel' },
+        { id: 'PR-902', time: '10:45 AM', machine: 'M-12', fabric: 'Cotton 40s Combed', shift: 'Morning', output: 68, target: 70, quality: 'A-Grade (Export)', defects: 0.2, operator: 'Prakash Rathod' }
+      ];
+
+      await Promise.all([
+        Machine.insertMany(demoMachines),
+        Worker.insertMany(demoWorkers),
+        Alarm.insertMany(demoAlarms),
+        Stock.insertMany(demoStock),
+        Broker.insertMany(demoBrokers),
+        ReadyGoods.insertMany(demoReadyGoods),
+        SalesOrder.insertMany(demoSalesOrders),
+        ProductionLog.insertMany(demoProductionLogs)
+      ]);
+      logger.info('✅ Seeded 50 looms, workers, alarms, stock, brokers, ready goods, and logs.');
+    } else {
+      logger.info(`ℹ️  Factory database already contains ${machineCount} machines.`);
+    }
+
+    // Seed master storage locations if not already present
+    const locationCount = await Location.countDocuments();
+    if (locationCount === 0) {
+      await Location.insertMany(demoLocations);
+      logger.info(`✅ Seeded ${demoLocations.length} storage & production locations.`);
+    }
+
+    // Seed demo rolls and movement ledger if not already present
+    const rollCount = await Roll.countDocuments();
+    if (rollCount === 0) {
+      const year = new Date().getFullYear();
+      const { rolls, movements } = getDemoRollsAndMovements(admin?._id);
+      await Roll.insertMany(rolls);
+      await RollMovement.insertMany(movements);
+      await Counter.findOneAndUpdate(
+        { key: `roll-${year}` },
+        { $set: { seq: rolls.length } },
+        { upsert: true }
+      );
+      logger.info(`✅ Seeded ${rolls.length} demo fabric rolls with full movement histories.`);
+    }
+
+    logger.info(`========================================================`);
+    logger.info(`SEEDING COMPLETE! Credentials Summary:`);
+    logger.info(`Admin:      username="${adminUsername}"     password="${adminPassword}"`);
+    logger.info(`Supervisor: username="${supervisorUsername}" password="${supervisorPassword}"`);
+    logger.info(`Operator:   username="${operatorUsername}"   password="${operatorPassword}"`);
+    logger.info(`========================================================`);
+
+    await mongoose.connection.close();
+    process.exit(0);
+  } catch (err) {
+    logger.error('Seeder failed:', err);
+    process.exit(1);
+  }
+};
 
 seed();
+
 
