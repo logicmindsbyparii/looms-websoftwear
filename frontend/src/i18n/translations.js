@@ -13,7 +13,7 @@ export const TRANSLATIONS = {
       "sessionExpired": "Session expired. Please log in again.",
       "viewAsActive": "Previewing as {role}",
       "exitViewAs": "Exit Preview",
-      "loomFleet": "LOOM FLEET",
+      "loomFleet": "LOOM UNIT",
       "activeMode": "Active Mode",
       "dataReset": "Data Reset",
       "navigationMenu": "Navigation Menu"
@@ -158,7 +158,8 @@ export const TRANSLATIONS = {
       "recentAlerts": "Recent Critical Alarms",
       "viewAllAlarms": "View All Alarms",
       "topProducers": "Top Producing Looms",
-      "metersProduced": "Meters Produced Today"
+      "metersProduced": "Meters Produced Today",
+      "unitAverage": "Unit average"
     },
     "machines": {
       "title": "Loom Machines Management",
@@ -441,7 +442,7 @@ export const TRANSLATIONS = {
     },
     "rollsPage": {
       "title": "Roll QR & Barcode Tracking",
-      "badge": "Live Fleet",
+      "badge": "Live Unit",
       "subtitle": "Real-time fabric roll tracking, QR sticker labels, and immutable ledger movements.",
       "cutRollBtn": "Cut & Log Roll",
       "totalRolls": "Total Rolls",
@@ -517,7 +518,7 @@ export const TRANSLATIONS = {
       "sessionExpired": "સત્ર સમાપ્ત થઈ ગયું છે. કૃપા કરીને ફરી લૉગિન કરો.",
       "viewAsActive": "{role} તરીકે પૂર્વાવલોકન કરી રહ્યા છો",
       "exitViewAs": "પૂર્વાવલોકન બંધ કરો",
-      "loomFleet": "લૂમ ફ્લીટ",
+      "loomFleet": "લૂમ યુનિટ",
       "activeMode": "સક્રિય મોડ",
       "dataReset": "ડેટા રીસેટ",
       "navigationMenu": "નેવિગેશન મેનુ"
@@ -662,7 +663,8 @@ export const TRANSLATIONS = {
       "recentAlerts": "તાજેતરના ગંભીર એલાર્મ",
       "viewAllAlarms": "બધા એલાર્મ જુઓ",
       "topProducers": "સૌથી વધુ ઉત્પાદન કરતા લૂમ",
-      "metersProduced": "આજે ઉત્પાદિત કાપડ (મીટર)"
+      "metersProduced": "આજે ઉત્પાદિત કાપડ (મીટર)",
+      "unitAverage": "યુનિટ સરેરાશ"
     },
     "machines": {
       "title": "લૂમ મશીન સંચાલન",
@@ -945,7 +947,7 @@ export const TRANSLATIONS = {
     },
     "rollsPage": {
       "title": "રોલ QR અને બારકોડ ટ્રેકિંગ",
-      "badge": "લાઇવ ફ્લીટ",
+      "badge": "લાઇવ યુનિટ",
       "subtitle": "રીઅલ-ટાઇમ કાપડ રોલ ટ્રેકિંગ, QR સ્ટીકર લેબલ્સ અને અચળ લેજર મૂવમેન્ટ્સ.",
       "cutRollBtn": "રોલ કટ અને લોગ કરો",
       "totalRolls": "કુલ રોલ્સ",
@@ -1021,7 +1023,7 @@ export const TRANSLATIONS = {
       "sessionExpired": "सत्र समाप्त हो गया है। कृपया पुनः लॉगिन करें।",
       "viewAsActive": "{role} के रूप में पूर्वावलोकन कर रहे हैं",
       "exitViewAs": "पूर्वावलोकन बंद करें",
-      "loomFleet": "लूम बेड़ा (फ्लीट)",
+      "loomFleet": "लूम यूनिट",
       "activeMode": "सक्रिय मोड",
       "dataReset": "डेटा रीसेट",
       "navigationMenu": "नेविगेशन मेनू"
@@ -1166,7 +1168,8 @@ export const TRANSLATIONS = {
       "recentAlerts": "हाल के गंभीर अलार्म",
       "viewAllAlarms": "सभी अलार्म देखें",
       "topProducers": "शीर्ष उत्पादक लूम",
-      "metersProduced": "आज उत्पादित कपड़ा (मीटर)"
+      "metersProduced": "आज उत्पादित कपड़ा (मीटर)",
+      "unitAverage": "यूनिट औसत"
     },
     "machines": {
       "title": "लूम मशीन प्रबंधन",
@@ -1449,7 +1452,7 @@ export const TRANSLATIONS = {
     },
     "rollsPage": {
       "title": "रोल QR और बारकोड ट्रैकिंग",
-      "badge": "लाइव फ्लीट",
+      "badge": "लाइव यूनिट",
       "subtitle": "रीयल-टाइम कपड़ा रोल ट्रैकिंग, QR स्टिकर लेबल्स और पूर्ण लेजर मूवमेंट्स।",
       "cutRollBtn": "रोल कट और लॉग करें",
       "totalRolls": "कुल रोल्स",
@@ -1525,7 +1528,7 @@ export const TRANSLATIONS = {
       "sessionExpired": "सत्र संपले आहे. कृपया पुन्हा लॉगिन करा.",
       "viewAsActive": "{role} म्हणून पूर्वावलोकन करत आहात",
       "exitViewAs": "पूर्वावलोकन बंद करा",
-      "loomFleet": "लूम फ्लीट",
+      "loomFleet": "लूम युनिट",
       "activeMode": "सक्रिय मोड",
       "dataReset": "डेटा रीसेट",
       "navigationMenu": "नेव्हिगेशन मेनू"
@@ -1670,7 +1673,8 @@ export const TRANSLATIONS = {
       "recentAlerts": "अलीकडील गंभीर अलार्म",
       "viewAllAlarms": "सर्व अलार्म पहा",
       "topProducers": "सर्वाधिक उत्पादन करणारे लूम",
-      "metersProduced": "आज तयार झालेले कापड (मीटर)"
+      "metersProduced": "आज तयार झालेले कापड (मीटर)",
+      "unitAverage": "युनिट सरासरी"
     },
     "machines": {
       "title": "लूम मशीन व्यवस्थापन",
@@ -1953,7 +1957,7 @@ export const TRANSLATIONS = {
     },
     "rollsPage": {
       "title": "रोल QR आणि बारकोड ट्रॅकिंग",
-      "badge": "लाईव्ह फ्लीट",
+      "badge": "लाईव्ह युनिट",
       "subtitle": "रिअल-टाइम कापड रोल ट्रॅकिंग, QR स्टिकर लेबल्स आणि अचूक लेजर मूव्हमेंट्स.",
       "cutRollBtn": "रोल कट आणि नोंदवा",
       "totalRolls": "एकूण रोल्स",

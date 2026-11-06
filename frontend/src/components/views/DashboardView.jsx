@@ -208,7 +208,7 @@ export default function DashboardView() {
         <StatCard
           title={t('dashboard.plantEfficiency')}
           value={`${avgEfficiency}%`}
-          subtitle="Fleet average"
+          subtitle={t('dashboard.unitAverage')}
           icon={Activity}
           variant="indigo"
         />
