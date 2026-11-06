@@ -32,7 +32,8 @@ import {
   Sliders,
   Bell,
   Sparkles,
-  Info
+  Info,
+  X
 } from 'lucide-react';
 
 const REPORT_DEFINITIONS = [
@@ -76,6 +77,7 @@ export default function WhatsAppReportsView() {
   const [logs, setLogs] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [logFilter, setLogFilter] = useState('all');
+  const [viewingLog, setViewingLog] = useState(null);
 
   // Recipient Modal State
   const [isRecipientModalOpen, setIsRecipientModalOpen] = useState(false);
@@ -1000,22 +1002,36 @@ export default function WhatsAppReportsView() {
                               {log.status}
                             </span>
                           </td>
-                          <td className="p-3.5 text-slate-500 max-w-[200px] truncate" title={log.errorDescription || log.messageBody}>
-                            {log.errorDescription ? (
-                              <span className="text-rose-600 font-mono text-[11px]">{log.errorDescription}</span>
+                          <td
+                            className="p-3.5 text-slate-500 max-w-[240px] truncate cursor-pointer hover:text-emerald-600 transition-colors"
+                            onClick={() => setViewingLog(log)}
+                            title="Click to view full message"
+                          >
+                            {log.error || log.errorDescription ? (
+                              <span className="text-rose-600 font-mono text-[11px]">{log.error || log.errorDescription}</span>
                             ) : (
-                              log.messageBody?.slice(0, 50) + '...'
+                              ((log.content || log.messageBody || '').slice(0, 50)) +
+                              (((log.content || log.messageBody || '').length > 50) ? '...' : '')
                             )}
                           </td>
-                          <td className="p-3.5 text-right">
-                            {log.status === 'failed' && (
+                          <td className="p-3.5 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
                               <button
-                                onClick={() => handleRetryMessage(id)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-rose-50 text-rose-600 hover:bg-rose-100 text-[11px] font-semibold transition-colors"
+                                onClick={() => setViewingLog(log)}
+                                title="View full message text"
+                                className="p-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                               >
-                                <RefreshCw className="w-3 h-3" /> Retry
+                                <Eye className="w-3.5 h-3.5" />
                               </button>
-                            )}
+                              {log.status === 'failed' && (
+                                <button
+                                  onClick={() => handleRetryMessage(id)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-rose-50 text-rose-600 hover:bg-rose-100 text-[11px] font-semibold transition-colors"
+                                >
+                                  <RefreshCw className="w-3 h-3" /> Retry
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1381,6 +1397,58 @@ export default function WhatsAppReportsView() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* View Message Modal */}
+      {viewingLog && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <WhatsAppBrandIcon className="w-5 h-5 fill-emerald-600" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">
+                  {viewingLog.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setViewingLog(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-xs space-y-2 text-slate-600 dark:text-slate-300">
+              <div className="flex items-center justify-between text-[11px]">
+                <span>To: <strong className="text-slate-900 dark:text-white font-mono">+{viewingLog.recipientPhone}</strong></span>
+                <span>Sent: <strong className="font-mono">{new Date(viewingLog.createdAt).toLocaleString()}</strong></span>
+              </div>
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 font-mono text-[11px] whitespace-pre-wrap leading-relaxed max-h-[300px] overflow-y-auto border border-slate-200/60 dark:border-slate-700">
+                {viewingLog.content || viewingLog.messageBody || viewingLog.error || 'No message content available.'}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => {
+                  openWhatsApp({
+                    phone: viewingLog.recipientPhone,
+                    message: viewingLog.content || viewingLog.messageBody
+                  });
+                }}
+                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-xs flex items-center gap-1.5"
+              >
+                <WhatsAppBrandIcon className="w-3.5 h-3.5 fill-white" />
+                Open in WhatsApp
+              </button>
+              <button
+                onClick={() => setViewingLog(null)}
+                className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
