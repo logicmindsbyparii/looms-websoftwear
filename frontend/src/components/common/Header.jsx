@@ -51,6 +51,13 @@ export default function Header() {
     if (!userMenuRef.current) return;
     const rect = userMenuRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    if (rect.bottom < -20 || rect.top > viewportHeight + 20) {
+      setShowUserMenu(false);
+      return;
+    }
+
     const menuWidth = 224;
 
     let left = rect.right - menuWidth;

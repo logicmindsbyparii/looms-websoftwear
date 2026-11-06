@@ -16,6 +16,13 @@ export default function LanguageSwitcher({ variant = 'default' }) {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    if (rect.bottom < -20 || rect.top > viewportHeight + 20) {
+      setIsOpen(false);
+      return;
+    }
+
     const menuWidth = 160;
 
     let left = rect.right - menuWidth;

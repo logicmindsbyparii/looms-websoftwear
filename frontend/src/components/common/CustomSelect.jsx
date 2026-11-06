@@ -37,6 +37,12 @@ export default function CustomSelect({
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
+    // Auto-close if trigger scrolls completely out of view
+    if (triggerRect.bottom < -20 || triggerRect.top > viewportHeight + 20) {
+      setIsOpen(false);
+      return;
+    }
+
     // Determine target width (ensures full machine name & fabric text fits without truncation)
     const idealWidth = Math.min(
       Math.max(triggerRect.width, 360),
