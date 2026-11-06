@@ -187,7 +187,9 @@ export default function App() {
         <Header />
 
         <main className="flex-1 h-full overflow-y-auto overscroll-y-auto p-3 sm:p-5 md:p-8 pb-36 md:pb-36 bg-slate-50 scroll-smooth modern-scrollbar">
-          {renderActiveView()}
+          <ErrorBoundary>
+            {renderActiveView()}
+          </ErrorBoundary>
         </main>
       </div>
 

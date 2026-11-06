@@ -12,14 +12,15 @@ const server = http.createServer(app);
 server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
 
-    // Initialize WebSockets & Background Schedulers
-    initSocket(server, process.env.CLIENT_URL);
-    initWhatsAppScheduler();
-
 // Start Server
 const startServer = async () => {
   try {
     await connectDB();
+
+    // Initialize WebSockets & Background Schedulers after DB is connected
+    initSocket(server, process.env.CLIENT_URL);
+    initWhatsAppScheduler();
+
     server.listen(PORT, '0.0.0.0', () => {
       logger.info(`===================================================`);
       logger.info(`🚀 LOOMUS 2.0 Backend Server running on port ${PORT}`);

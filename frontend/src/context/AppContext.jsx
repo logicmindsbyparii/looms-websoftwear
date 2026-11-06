@@ -204,7 +204,6 @@ export function AppProvider({ children }) {
         rgRes,
         bRes,
         soRes,
-        cRes,
         plRes,
         settingsRes
       ] = await Promise.allSettled([
