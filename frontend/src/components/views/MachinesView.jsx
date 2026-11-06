@@ -101,8 +101,9 @@ export default function MachinesView() {
   const maintCount = useMemo(() => (machines || []).filter(m => m.status === 'maintenance').length, [machines]);
 
   const avgEfficiency = useMemo(() => {
-    if (!machines || machines.length === 0) return 0;
-    const running = machines.filter(m => m.status === 'running');
+    const list = machines || [];
+    if (list.length === 0) return 0;
+    const running = list.filter(m => m.status === 'running');
     if (running.length === 0) return 0;
     const sum = running.reduce((acc, m) => acc + (m.efficiency || 0), 0);
     return Math.round(sum / running.length);
@@ -120,15 +121,16 @@ export default function MachinesView() {
     setSortBy('id');
   };
 
+  const totalCount = (machines || []).length;
   const hasActiveFilters = shedFilter !== 'all' || statusFilter !== 'all' || modelFilter !== 'all' || searchQuery !== '';
 
   return (
     <div className="space-y-6">
       {/* Top Action & Global Controls Header */}
-      <div className="heavy-card rounded-2xl p-5 sm:p-6 bg-white border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="heavy-card rounded-2xl p-4 sm:p-6 bg-white border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-2.5 bg-sky-100 text-sky-700 rounded-xl shadow-2xs">
+            <span className="p-2.5 bg-sky-100 text-sky-700 rounded-xl shadow-2xs shrink-0">
               <Cpu className="w-5 h-5" />
             </span>
             <div>
@@ -136,7 +138,7 @@ export default function MachinesView() {
                 {t('machines.title')}
               </h2>
               <p className="text-xs text-slate-500 font-mono mt-0.5">
-                {machines.length} Weaving Units Configured • Live Telemetry &amp; Actuation
+                {totalCount} Weaving Units Configured • Live Telemetry &amp; Actuation
               </p>
             </div>
           </div>
@@ -147,14 +149,14 @@ export default function MachinesView() {
           {(userRole === 'Admin' || userRole === 'Supervisor') && (
             <button
               onClick={() => setIsAddMachineOpen(true)}
-              className="flex-1 sm:flex-none px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-sky-600/30 flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+              className="flex-1 sm:flex-none px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-sky-600/30 flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               <span>{t('dashboard.addLoomBtn')}</span>
             </button>
           )}
 
-          {machines.length > 0 && (
+          {totalCount > 0 && (
             <>
               {(userRole === 'Admin' || userRole === 'Supervisor') && (
                 <>
@@ -202,7 +204,7 @@ export default function MachinesView() {
             <span className="text-[11px] font-bold uppercase tracking-wider">Total Looms</span>
             <Cpu className="w-4 h-4 text-slate-400" />
           </div>
-          <div className="text-xl font-black font-mono text-slate-900">{machines.length}</div>
+          <div className="text-xl font-black font-mono text-slate-900">{totalCount}</div>
           <span className="text-[10px] text-slate-400 font-mono">100% Floor Cap</span>
         </div>
 
@@ -223,7 +225,7 @@ export default function MachinesView() {
           </div>
           <div className="text-xl font-black font-mono text-emerald-700">{runningCount}</div>
           <span className="text-[10px] text-emerald-600 font-medium font-mono">
-            {machines.length ? Math.round((runningCount / machines.length) * 100) : 0}% Active
+            {totalCount ? Math.round((runningCount / totalCount) * 100) : 0}% Active
           </span>
         </div>
 
@@ -314,10 +316,11 @@ export default function MachinesView() {
             )}
           </div>
 
-          {/* Filter Dropdowns */}
-          <div className="flex gap-2 flex-wrap items-center">
+          {/* Filter Dropdowns - Fully Responsive Across Mobile, Tablet, Desktop */}
+          <div className="flex gap-2 flex-wrap items-center w-full lg:w-auto">
             {/* Shed Filter */}
             <CustomSelect
+              className="flex-1 sm:flex-none min-w-[110px]"
               value={shedFilter}
               onChange={(val) => setShedFilter(val)}
               options={[
@@ -329,6 +332,7 @@ export default function MachinesView() {
 
             {/* Status Filter */}
             <CustomSelect
+              className="flex-1 sm:flex-none min-w-[110px]"
               value={statusFilter}
               onChange={(val) => setStatusFilter(val)}
               options={[
@@ -343,6 +347,7 @@ export default function MachinesView() {
             {/* Model Filter */}
             {availableModels.length > 0 && (
               <CustomSelect
+                className="flex-1 sm:flex-none min-w-[110px]"
                 value={modelFilter}
                 onChange={(val) => setModelFilter(val)}
                 options={[
@@ -354,6 +359,7 @@ export default function MachinesView() {
 
             {/* Sort Filter */}
             <CustomSelect
+              className="flex-1 sm:flex-none min-w-[110px]"
               value={sortBy}
               onChange={(val) => setSortBy(val)}
               align="right"
@@ -408,7 +414,7 @@ export default function MachinesView() {
         <div className="flex items-center gap-1.5 flex-wrap pt-1 text-xs text-slate-500">
           <span className="font-semibold text-slate-400 text-[11px] mr-1">Showing:</span>
           <span className="font-mono font-bold text-slate-700">
-            {filteredMachines.length} of {machines.length} Units
+            {filteredMachines.length} of {totalCount} Units
           </span>
 
           {hasActiveFilters && (
@@ -462,8 +468,8 @@ export default function MachinesView() {
         </div>
       ) : (
         <div className="heavy-card rounded-2xl bg-white border border-slate-200/90 overflow-hidden shadow-2xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="overflow-x-auto modern-scrollbar">
+            <table className="w-full min-w-[650px] text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-4">Loom ID</th>

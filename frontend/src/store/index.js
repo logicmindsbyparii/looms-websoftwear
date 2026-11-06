@@ -16,7 +16,7 @@ export const store = configureStore({
     ui: uiReducer,
     settings: settingsReducer
   },
-  devTools: process.env.NODE_ENV !== 'production'
+  devTools: Boolean(import.meta.env?.DEV)
 });
 
 // Typed or convenience hooks
