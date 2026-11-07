@@ -77,7 +77,8 @@ export function buildAttendanceSummaryMessage(workers = []) {
 ✅ LOOMUS 2.0 Staff Management`;
 }
 
-export function buildReadyGoodsMessage(goods) {
+export function buildReadyGoodsMessage(goods = {}) {
+  goods = goods || {};
   const lang = getCurrentLang();
   const today = formatDate(new Date().toISOString());
   const meters = goods.meters || goods.qty || 0;
@@ -141,7 +142,8 @@ export function buildReadyGoodsMessage(goods) {
 /**
  * 1. Raw Yarn Inward Message
  */
-export function buildYarnInwardMessage(yarn) {
+export function buildYarnInwardMessage(yarn = {}) {
+  yarn = yarn || {};
   const lang = getCurrentLang();
   const today = formatDate(new Date().toISOString());
   const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -207,7 +209,8 @@ export function buildYarnInwardMessage(yarn) {
 /**
  * 2. Sales Order / Cloth Dispatch Message
  */
-export function buildSalesOrderMessage(order) {
+export function buildSalesOrderMessage(order = {}) {
+  order = order || {};
   const lang = getCurrentLang();
   const today = formatDate(new Date().toISOString());
   const qty = order.qty || 0;
@@ -399,10 +402,11 @@ export function buildDailyAdminExecutiveReport({ machines = [], productionLogs =
 🚀 *LOOMUS 2.0 Smart Textile Suite*`;
 }
 
-export function buildRollMessage(roll, publicUrl = '') {
+export function buildRollMessage(roll = {}, publicUrl = '') {
+  roll = roll || {};
   const lang = getCurrentLang();
   const url = publicUrl || `${window.location.origin}/?roll=${roll.qrToken || roll.id}`;
-  const metresStr = `${Number(roll.metres).toFixed(2)}m`;
+  const metresStr = `${Number(roll.metres || 0).toFixed(2)}m`;
   const machineStr = roll.machineName || roll.machineId || 'Loom';
   const locationStr = roll.locationId || 'Floor';
 
