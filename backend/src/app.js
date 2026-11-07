@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import hpp from 'hpp';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import routes from './routes/index.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { apiLimiter } from './middlewares/rateLimiter.js';
@@ -82,7 +83,14 @@ app.use('/api', apiLimiter);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', time: new Date().toISOString(), system: 'LOOMUS 2.0 Backend' });
+  const isDbConnected = mongoose.connection.readyState === 1;
+  res.status(isDbConnected ? 200 : 503).json({
+    status: isDbConnected ? 'ok' : 'degraded',
+    db: isDbConnected ? 'connected' : 'disconnected',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    system: 'LOOMUS 2.0 Backend'
+  });
 });
 
 // API Routes

@@ -178,11 +178,13 @@ export const loadDemoData = asyncHandler(async (req, res) => {
     const fabric = FABRIC_TYPES[i % FABRIC_TYPES.length];
     const targetOutput = 75;
     const currentOutput = Math.floor(Math.random() * 35 + (isRunning ? 35 : 10));
-    const efficiency = Math.min(100, Math.round((currentOutput / (targetOutput * 0.7)) * 100));
+    const efficiency = isRunning
+      ? Math.floor(Math.random() * 8 + 88)
+      : (status === 'stopped' ? Math.floor(Math.random() * 10 + 40) : 55);
 
     return {
       id,
-      name: `Loom Unit ${num}`,
+      name: `Unit #${num < 10 ? '0' + num : num}`,
       shed,
       model: LOOM_MODELS[i % LOOM_MODELS.length],
       status,

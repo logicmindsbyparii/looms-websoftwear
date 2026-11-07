@@ -29,5 +29,19 @@ export default defineConfig({
         }
       }
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-redux': ['@reduxjs/toolkit', 'react-redux'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-qr': ['html5-qrcode', 'qrcode.react', 'jsbarcode', 'jsqr'],
+          'vendor-socket': ['socket.io-client']
+        }
+      }
+    }
   }
 });
